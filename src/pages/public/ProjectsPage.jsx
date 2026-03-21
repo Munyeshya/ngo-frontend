@@ -181,12 +181,7 @@ function ProjectsPage() {
       setNextPage(normalizedProjects.next)
       setPrevPage(normalizedProjects.previous)
       setBeneficiaryCountMap(countsMap)
-
-      console.log('Projects response:', projectsResponse.data)
-      console.log('Beneficiaries response:', beneficiariesResponse.data)
-      console.log('Beneficiary count map:', countsMap)
     } catch (err) {
-      console.error('Projects/Beneficiaries API error:', err)
       setError(
         err?.response?.data?.detail ||
           err?.message ||
@@ -263,7 +258,7 @@ function ProjectsPage() {
 
             <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5 p-3 backdrop-blur">
               <img
-                src="https://images.unsplash.com/photo-1593113598332-cd59a93d7c2b?auto=format&fit=crop&w=1200&q=80"
+                src="https://cdn.prod.website-files.com/6618114bae6895cc12d3dc1d/665f1765f1432b0533fb7524_iStock-1498170916.webp"
                 alt="Featured NGO projects"
                 className="h-[280px] w-full rounded-[22px] object-cover sm:h-[360px] lg:h-[420px]"
               />
@@ -359,7 +354,7 @@ function ProjectsPage() {
           <SectionTitle
             badge="Available projects"
             title="Support ongoing initiatives with confidence"
-            text="This page now uses live backend data, backend search, backend filters, backend ordering, and beneficiary totals computed from the beneficiaries endpoint."
+            text="This page uses live backend data, backend search, backend filters, backend ordering, and beneficiary totals computed from the beneficiaries endpoint."
           />
 
           <div className="rounded-2xl bg-white px-5 py-3 text-sm text-gray-600 shadow-sm">
@@ -392,6 +387,7 @@ function ProjectsPage() {
                 const progress = getProjectProgress(project)
                 const statusLabel = getProjectStatusLabel(project)
                 const beneficiaryCount = beneficiaryCountMap[project.id] ?? 0
+                const projectPath = `/projects/${getProjectSlugOrId(project)}`
 
                 return (
                   <Card
@@ -447,9 +443,18 @@ function ProjectsPage() {
                         </div>
                       </div>
 
-                      <p className="mt-4 text-sm leading-7 text-gray-600">
-                        {project.description}
-                      </p>
+                      <div className="mt-4">
+                        <p className="line-clamp-3 text-sm leading-7 text-gray-600">
+                          {project.description}
+                        </p>
+
+                        <Link
+                          to={projectPath}
+                          className="mt-2 inline-flex text-sm font-medium text-green-800 transition hover:text-green-900"
+                        >
+                          More
+                        </Link>
+                      </div>
 
                       <div className="mt-6 rounded-2xl bg-[#F8F8F6] p-4">
                         <div className="mb-3 flex items-center justify-between text-sm">
@@ -480,11 +485,8 @@ function ProjectsPage() {
                         </div>
                       </div>
 
-                      <div className="mt-auto flex items-center gap-3 pt-6">
-                        <Link
-                          to={`/projects/${getProjectSlugOrId(project)}`}
-                          className="flex-1 min-w-0"
-                        >
+                      <div className="mt-auto flex items-center gap-3 pt-2">
+                        <Link to={projectPath} className="flex-1 min-w-0">
                           <Button className="w-full whitespace-nowrap">
                             View Project <ArrowRight size={16} className="ml-2 shrink-0" />
                           </Button>
