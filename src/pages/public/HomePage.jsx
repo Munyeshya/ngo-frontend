@@ -126,7 +126,33 @@ function HomePage() {
           </div>
         </div>
       </section>
+      <section className="relative overflow-hidden bg-black">
+        <AnimatedBackground variant="dark" />
 
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-16 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
+              Support transparent change
+            </p>
+            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+              Help fund projects that deliver visible community impact
+            </h2>
+            <p className="mt-4 text-base leading-8 text-white/70">
+              Explore causes, follow updates, and contribute to meaningful initiatives with
+              confidence.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4 lg:justify-end">
+            <Link to="/projects">
+              <Button variant="accent">Browse Projects</Button>
+            </Link>
+            <Link to="/contact">
+              <Button variant="darkOutline">Contact Us</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionTitle
@@ -178,33 +204,7 @@ function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-black">
-        <AnimatedBackground variant="dark" />
 
-        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-16 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
-              Support transparent change
-            </p>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-              Help fund projects that deliver visible community impact
-            </h2>
-            <p className="mt-4 text-base leading-8 text-white/70">
-              Explore causes, follow updates, and contribute to meaningful initiatives with
-              confidence.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 lg:justify-end">
-            <Link to="/projects">
-              <Button variant="accent">Browse Projects</Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="darkOutline">Contact Us</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

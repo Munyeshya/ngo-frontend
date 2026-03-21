@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Button from '../ui/Button'
-import AnimatedBackground from '../common/AnimatedBackground'
 
 const slides = [
   {
@@ -48,17 +47,18 @@ function HeroSlider() {
   const currentSlide = slides[currentIndex]
 
   return (
-    <section className="relative h-[82svh] min-h-[580px] w-full overflow-hidden bg-black">
+    <section className="relative h-[90svh] min-h-[640px] w-full overflow-hidden bg-black">
       <div className="absolute inset-0 h-full w-full">
         <img
           src={currentSlide.image}
           alt={currentSlide.title}
-          className="h-full w-full object-cover object-center opacity-45"
+          className="h-full w-full object-cover object-center"
         />
       </div>
 
-      <AnimatedBackground variant="dark" />
+      <div className="absolute inset-0 bg-black/45" />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/30" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(22,101,52,0.35),_transparent_25%)]" />
 
       <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
