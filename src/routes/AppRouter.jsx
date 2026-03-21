@@ -7,6 +7,8 @@ import ProtectedRoute from './ProtectedRoute'
 
 import HomePage from '../pages/public/HomePage'
 import ProjectsPage from '../pages/public/ProjectsPage'
+import AboutPage from '../pages/public/AboutPage'
+import ContactPage from '../pages/public/ContactPage'
 import LoginPage from '../pages/auth/LoginPage'
 import DonorProfilePage from '../pages/donor/DonorProfilePage'
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
@@ -19,7 +21,9 @@ function AppRouter() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Route>
 
         <Route element={<AuthLayout />}>
