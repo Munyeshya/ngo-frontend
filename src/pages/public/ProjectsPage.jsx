@@ -21,6 +21,7 @@ const projectCategories = ['All', 'Health', 'Education', 'Community', 'Environme
 const projects = [
   {
     id: 1,
+    slug: 'community-health-outreach',
     title: 'Community Health Outreach',
     category: 'Health',
     location: 'Kigali, Rwanda',
@@ -37,6 +38,7 @@ const projects = [
   },
   {
     id: 2,
+    slug: 'back-to-school-support',
     title: 'Back to School Support',
     category: 'Education',
     location: 'Huye, Rwanda',
@@ -53,6 +55,7 @@ const projects = [
   },
   {
     id: 3,
+    slug: 'women-empowerment-initiative',
     title: 'Women Empowerment Initiative',
     category: 'Community',
     location: 'Musanze, Rwanda',
@@ -69,6 +72,7 @@ const projects = [
   },
   {
     id: 4,
+    slug: 'green-village-restoration',
     title: 'Green Village Restoration',
     category: 'Environment',
     location: 'Nyagatare, Rwanda',
@@ -85,6 +89,7 @@ const projects = [
   },
   {
     id: 5,
+    slug: 'nutrition-for-families',
     title: 'Nutrition for Families',
     category: 'Health',
     location: 'Rubavu, Rwanda',
@@ -101,6 +106,7 @@ const projects = [
   },
   {
     id: 6,
+    slug: 'youth-skills-lab',
     title: 'Youth Skills Lab',
     category: 'Education',
     location: 'Kigali, Rwanda',
@@ -229,10 +235,11 @@ function ProjectsPage() {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category
-                  ? 'bg-green-800 text-white'
-                  : 'bg-green-50 text-green-800 hover:bg-green-100'
-                  }`}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  selectedCategory === category
+                    ? 'bg-green-800 text-white'
+                    : 'bg-green-50 text-green-800 hover:bg-green-100'
+                }`}
               >
                 {category}
               </button>
@@ -263,14 +270,14 @@ function ProjectsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid items-stretch gap-7 md:grid-cols-2 xl:grid-cols-3">
             {filteredProjects.map((project) => {
               const Icon = project.icon
 
               return (
                 <Card
                   key={project.id}
-                  className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.10)]"
+                  className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.10)]"
                 >
                   <div className="relative overflow-hidden">
                     <img
@@ -284,10 +291,11 @@ function ProjectsPage() {
                         {project.category}
                       </span>
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${project.status === 'Almost Funded'
-                          ? 'bg-amber-100/90 text-amber-800'
-                          : 'bg-green-100/90 text-green-800'
-                          }`}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${
+                          project.status === 'Almost Funded'
+                            ? 'bg-amber-100/90 text-amber-800'
+                            : 'bg-green-100/90 text-green-800'
+                        }`}
                       >
                         {project.status}
                       </span>
@@ -298,7 +306,7 @@ function ProjectsPage() {
                     </div>
                   </div>
 
-                  <div className="p-6">
+                  <div className="flex h-full flex-col p-6">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="text-2xl font-semibold leading-snug text-gray-900">
                         {project.title}
@@ -316,7 +324,9 @@ function ProjectsPage() {
                       </div>
                     </div>
 
-                    <p className="mt-4 text-sm leading-7 text-gray-600">{project.description}</p>
+                    <p className="mt-4 text-sm leading-7 text-gray-600">
+                      {project.description}
+                    </p>
 
                     <div className="mt-6 rounded-2xl bg-[#F8F8F6] p-4">
                       <div className="mb-3 flex items-center justify-between text-sm">
@@ -343,8 +353,11 @@ function ProjectsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center gap-3">
-                      <Link to={`/projects/${project.slug || project.id}`} className="flex-1 min-w-0">
+                    <div className="mt-auto flex items-center gap-3 pt-6">
+                      <Link
+                        to={`/projects/${project.slug || project.id}`}
+                        className="flex-1 min-w-0"
+                      >
                         <Button className="w-full whitespace-nowrap">
                           View Project <ArrowRight size={16} className="ml-2 shrink-0" />
                         </Button>
@@ -352,8 +365,9 @@ function ProjectsPage() {
 
                       <Button
                         variant="outline"
-                        className="whitespace-nowrap"
+                        className="shrink-0 whitespace-nowrap px-5"
                       >
+                        <HandCoins size={16} className="mr-2 shrink-0" />
                         Donate
                       </Button>
                     </div>
