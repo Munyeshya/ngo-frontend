@@ -1,85 +1,30 @@
 import { Link } from 'react-router-dom'
-import {
-  ArrowRight,
-  BadgeDollarSign,
-  HandHeart,
-  HeartPulse,
-  Lightbulb,
-  ShieldCheck,
-  Users,
-} from 'lucide-react'
+import { ArrowRight, HeartHandshake, ShieldCheck, HandCoins, Users, HeartPulse, Play } from 'lucide-react'
 import HeroSlider from '../../components/home/HeroSlider'
 import SectionTitle from '../../components/common/SectionTitle'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 
-const impactStats = [
-  { label: 'Projects supported', value: '50+' },
-  { label: 'Active donors', value: '1,200+' },
-  { label: 'Communities reached', value: '30+' },
-  { label: 'Lives impacted', value: '15,000+' },
-]
-
 const features = [
   {
+    icon: HeartHandshake,
+    title: 'Choose your cause',
+    text: 'Browse active NGO projects and explore the causes that matter most.',
+  },
+  {
     icon: ShieldCheck,
-    title: 'Transparent donation flow',
-    text: 'Follow funding progress and see how support connects to visible project outcomes.',
+    title: 'Track transparency',
+    text: 'Follow visible progress and understand how support connects to results.',
   },
   {
-    icon: HandHeart,
-    title: 'Public impact visibility',
-    text: 'Visitors can discover projects, beneficiaries, and updates without unnecessary friction.',
-  },
-  {
-    icon: BadgeDollarSign,
-    title: 'Better accountability',
-    text: 'Organizations can communicate progress clearly and strengthen donor trust.',
-  },
-]
-
-const focusAreas = [
-  {
-    icon: HeartPulse,
-    title: 'Health Support',
-    text: 'Helping communities access treatment, outreach, and essential care.',
+    icon: HandCoins,
+    title: 'Donate confidently',
+    text: 'Support projects through a cleaner public giving experience.',
   },
   {
     icon: Users,
-    title: 'Community Empowerment',
-    text: 'Supporting families, youth, and vulnerable groups through direct impact programs.',
-  },
-  {
-    icon: Lightbulb,
-    title: 'Education & Awareness',
-    text: 'Promoting long-term change through knowledge, materials, and opportunity.',
-  },
-]
-
-const featuredProjects = [
-  {
-    title: 'Community Health Outreach',
-    location: 'Kigali, Rwanda',
-    progress: 72,
-    text: 'Improving access to preventive healthcare services for vulnerable families.',
-    image:
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1000&q=80',
-  },
-  {
-    title: 'Back to School Support',
-    location: 'Huye, Rwanda',
-    progress: 48,
-    text: 'Providing school materials and support for children from low-income households.',
-    image:
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80',
-  },
-  {
-    title: 'Women Empowerment Initiative',
-    location: 'Musanze, Rwanda',
-    progress: 63,
-    text: 'Supporting women through skills development, mentorship, and community programs.',
-    image:
-      'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1000&q=80',
+    title: 'Stay connected',
+    text: 'Receive updates and follow how initiatives impact communities.',
   },
 ]
 
@@ -88,182 +33,159 @@ function HomePage() {
     <div className="bg-white">
       <HeroSlider />
 
-      <section className="border-y border-green-100 bg-green-50/60">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-          {impactStats.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-green-100 bg-white p-6 text-center shadow-sm">
-              <p className="text-3xl font-bold text-green-800">{item.value}</p>
-              <p className="mt-2 text-sm text-gray-600">{item.label}</p>
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
+            <div className="overflow-hidden rounded-[28px] shadow-xl">
+              <img
+                src="https://images.unsplash.com/photo-1527525443983-6e60c75fff46?auto=format&fit=crop&w=1200&q=80"
+                alt="Helping communities"
+                className="h-[340px] w-full object-cover sm:h-[420px] lg:h-[500px]"
+              />
             </div>
-          ))}
+
+            <div>
+              <h2 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl">
+                Transforming good intentions into good actions
+              </h2>
+
+              <p className="mt-6 text-base leading-8 text-gray-600">
+                The platform is designed to help donors, communities, and NGOs connect through transparent project visibility, trusted giving, and impact-focused communication.
+              </p>
+
+              <div className="mt-8 grid gap-5 sm:grid-cols-2">
+                {features.map((item, index) => {
+                  const Icon = item.icon
+
+                  return (
+                    <div key={item.title} className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-700 text-sm font-bold text-white">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{item.title}</p>
+                        <p className="mt-1 text-sm leading-7 text-gray-600">{item.text}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8">
-        <SectionTitle
-          badge="Why this platform matters"
-          title="A better public experience for trust, giving, and measurable impact"
-          text="The NGO platform should help people discover initiatives, understand progress, and support causes confidently through a modern and transparent interface."
-          center
-        />
-
-        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {features.map((feature) => {
-            const Icon = feature.icon
-
-            return (
-              <Card key={feature.title} className="rounded-3xl p-6">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-800">
-                  <Icon size={24} />
-                </div>
-                <h3 className="mt-5 text-xl font-semibold text-gray-900">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-gray-600">{feature.text}</p>
-              </Card>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="bg-gray-50">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 py-18 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <section className="bg-[#F6F6F4]">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
           <div>
-            <SectionTitle
-              badge="About the platform"
-              title="Built to connect donations with real project outcomes"
-              text="This system is designed around accountability, project visibility, donor trust, and beneficiary-centered storytelling."
-            />
+            <div className="text-6xl font-bold leading-none text-green-700">“</div>
+            <h3 className="mt-3 max-w-md text-3xl font-bold leading-tight text-gray-900">
+              Together, we can change lives for the better
+            </h3>
+            <p className="mt-5 max-w-md text-sm leading-8 text-gray-600">
+              Transparent digital experiences help people trust what they support. By making project progress, updates, and outcomes clearer, NGOs can build stronger and more lasting relationships with donors and communities.
+            </p>
 
-            <div className="mt-8 space-y-5">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="font-semibold text-gray-900">Donation transparency</p>
-                <p className="mt-2 text-sm leading-7 text-gray-600">
-                  Every contribution should help tell a clearer story of funding, progress, and impact.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="font-semibold text-gray-900">Project-focused communication</p>
-                <p className="mt-2 text-sm leading-7 text-gray-600">
-                  Visitors can explore projects, follow updates, and understand what support achieves.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="font-semibold text-gray-900">NGO-friendly management</p>
-                <p className="mt-2 text-sm leading-7 text-gray-600">
-                  Staff and admins work from secure dashboards while donors keep a simpler user experience.
-                </p>
-              </div>
+            <div className="mt-6">
+              <p className="font-semibold text-gray-900">NGO Platform</p>
+              <p className="text-sm text-gray-500">Public impact experience</p>
             </div>
 
-            <div className="mt-8">
-              <Link to="/about">
-                <Button variant="secondary">
-                  Read More About Us <ArrowRight size={16} className="ml-2" />
-                </Button>
-              </Link>
+            <div className="mt-8 flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+              <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+              <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
-            {focusAreas.map((item) => {
+          <div className="relative overflow-hidden rounded-[24px] shadow-xl">
+            <img
+              src="https://images.unsplash.com/photo-1593113630400-ea4288922497?auto=format&fit=crop&w=1200&q=80"
+              alt="Story section"
+              className="h-[340px] w-full object-cover sm:h-[420px]"
+            />
+            <div className="absolute inset-0 bg-black/15" />
+            <button
+              type="button"
+              className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:bg-green-700"
+            >
+              <Play size={22} className="ml-1" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+          <SectionTitle
+            badge="Core focus"
+            title="Support causes that create visible community change"
+            text="Discover how this platform presents impact through projects, beneficiaries, updates, and donations."
+            center
+          />
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {[
+              {
+                title: 'Health support',
+                text: 'Improving access to medical outreach, preventive care, and community health services.',
+                icon: HeartPulse,
+              },
+              {
+                title: 'Community care',
+                text: 'Helping vulnerable groups through direct support and sustainable local initiatives.',
+                icon: Users,
+              },
+              {
+                title: 'Transparent funding',
+                text: 'Showing how donations contribute to visible progress and project milestones.',
+                icon: HandCoins,
+              },
+            ].map((item) => {
               const Icon = item.icon
 
               return (
-                <Card key={item.title} className="rounded-3xl p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-green-800">
-                    <Icon size={22} />
+                <Card key={item.title} className="rounded-[24px] border border-gray-200 p-6">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-800">
+                    <Icon size={24} />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-gray-900">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-gray-600">{item.text}</p>
+                  <h3 className="mt-5 text-2xl font-semibold text-gray-900">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-8 text-gray-600">{item.text}</p>
                 </Card>
               )
             })}
+          </div>
 
-            <div className="rounded-3xl bg-green-800 p-6 text-white shadow-lg sm:col-span-2">
-              <p className="text-sm font-medium text-green-100">Responsive by design</p>
-              <h3 className="mt-3 text-2xl font-semibold">Clean on desktop, tablet, and mobile</h3>
-              <p className="mt-3 text-sm leading-7 text-green-50/90">
-                The public pages, hero section, navigation, cards, and CTAs are designed to adapt smoothly across screen sizes.
-              </p>
-            </div>
+          <div className="mt-12 text-center">
+            <Link to="/projects">
+              <Button variant="primary">
+                View Projects <ArrowRight size={16} className="ml-2" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <SectionTitle
-            badge="Featured projects"
-            title="Explore causes that need support now"
-            text="These highlighted initiatives show how funding progress and project storytelling can work together."
-          />
-
-          <Link to="/projects">
-            <Button variant="outline">View All Projects</Button>
-          </Link>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {featuredProjects.map((project) => (
-            <Card key={project.title} className="overflow-hidden rounded-3xl">
-              <img src={project.image} alt={project.title} className="h-56 w-full object-cover" />
-
-              <div className="p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                    {project.location}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-sm leading-7 text-gray-600">{project.text}</p>
-
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Funding progress</span>
-                    <span className="font-semibold text-green-800">{project.progress}%</span>
-                  </div>
-
-                  <div className="h-2.5 rounded-full bg-gray-200">
-                    <div
-                      className="h-2.5 rounded-full bg-green-800"
-                      style={{ width: `${project.progress}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <Button className="w-full">View Project</Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-green-900">
+      <section className="bg-black">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-16 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
           <div className="max-w-2xl">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-200">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
               Support transparent change
             </p>
             <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
               Help fund projects that deliver visible community impact
             </h2>
-            <p className="mt-4 text-base leading-7 text-green-100">
-              Explore public projects, follow updates, and contribute to initiatives that matter.
+            <p className="mt-4 text-base leading-8 text-white/70">
+              Explore causes, follow updates, and contribute to meaningful initiatives with confidence.
             </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 lg:justify-end">
             <Link to="/projects">
-              <Button className="bg-white text-green-900 hover:bg-green-50">Browse Projects</Button>
+              <Button variant="accent">Browse Projects</Button>
             </Link>
             <Link to="/contact">
-              <Button variant="secondary" className="border border-white/20 bg-white/10 text-white hover:bg-white/20">
-                Contact Us
-              </Button>
+              <Button variant="darkOutline">Contact Us</Button>
             </Link>
           </div>
         </div>

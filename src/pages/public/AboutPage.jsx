@@ -1,80 +1,101 @@
-import { Globe, HeartHandshake, ShieldCheck, Target } from 'lucide-react'
+import { HeartHandshake, Eye, ShieldCheck } from 'lucide-react'
 import SectionTitle from '../../components/common/SectionTitle'
-import Card from '../../components/ui/Card'
 
-const values = [
-  {
-    icon: ShieldCheck,
-    title: 'Transparency',
-    text: 'We believe donations and project outcomes should be visible, understandable, and easy to follow.',
-  },
+const items = [
   {
     icon: HeartHandshake,
-    title: 'Trust',
-    text: 'The platform is designed to strengthen donor confidence through clearer reporting and public visibility.',
+    title: 'Our Mission',
+    text: 'To make donation flows more transparent and impactful by helping people discover projects, understand funding progress, and follow visible community outcomes.',
   },
   {
-    icon: Target,
-    title: 'Impact',
-    text: 'Projects, updates, and beneficiary records help communicate the real value of support.',
+    icon: Eye,
+    title: 'Our Vision',
+    text: 'A stronger public digital experience for NGOs where trust, accountability, and measurable social change are clearly visible to donors and communities.',
   },
   {
-    icon: Globe,
-    title: 'Accessibility',
-    text: 'Public pages are built to make project discovery and engagement simple across devices.',
+    icon: ShieldCheck,
+    title: 'Our Values',
+    text: 'Transparency, trust, community-centered design, responsible stewardship, and a commitment to making support more meaningful and visible.',
   },
 ]
 
 function AboutPage() {
   return (
-    <div className="bg-white">
-      <section className="bg-gradient-to-b from-green-50 to-white">
-        <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6 lg:px-8">
+    <div className="bg-[#F8F8F6]">
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionTitle
             badge="About us"
-            title="A modern NGO platform focused on accountability and public trust"
-            text="This platform supports transparent donation tracking, project storytelling, and better visibility into social impact."
+            title="About our organization"
+            text="A public NGO platform designed to present projects, donations, updates, and community impact with more clarity and trust."
+            center
           />
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-2">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Who we are</h3>
-            <p className="mt-4 text-base leading-8 text-gray-600">
-              The NGO platform is built to help organizations manage projects more clearly while giving donors and the public a better view of progress, funding, and beneficiary impact.
-            </p>
-            <p className="mt-4 text-base leading-8 text-gray-600">
-              It combines public project discovery with secure internal dashboards for staff and administrators, allowing both transparency and operational control in one system.
-            </p>
+            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+              About our Organization
+            </h2>
+
+            <div className="mt-10 space-y-8">
+              {items.map((item) => {
+                const Icon = item.icon
+
+                return (
+                  <div key={item.title} className="flex gap-5">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-700 text-white shadow-md">
+                      <Icon size={22} />
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-semibold text-gray-900">{item.title}</h3>
+                      <p className="mt-3 max-w-2xl text-sm leading-8 text-gray-600 sm:text-base">
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
-          <div className="rounded-[30px] border border-green-100 bg-green-50 p-8">
-            <h3 className="text-2xl font-bold text-gray-900">What we aim to improve</h3>
-            <ul className="mt-5 space-y-4 text-sm leading-7 text-gray-700">
-              <li>Clearer donation visibility from contribution to project support</li>
-              <li>Better public communication through project and beneficiary stories</li>
-              <li>Improved confidence for donors, partners, and communities</li>
-              <li>Responsive tools for NGO teams managing real operations</li>
-            </ul>
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            <div className="overflow-hidden rounded-[28px]">
+              <img
+                src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=900&q=80"
+                alt="NGO impact"
+                className="h-[420px] w-full object-cover sm:h-[520px]"
+              />
+            </div>
+
+            <div className="overflow-hidden rounded-[28px] pt-10 sm:pt-14">
+              <img
+                src="https://images.unsplash.com/photo-1593113598332-cd59a93d7c2b?auto=format&fit=crop&w=900&q=80"
+                alt="Community support"
+                className="h-[420px] w-full object-cover sm:h-[520px]"
+              />
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {values.map((item) => {
-            const Icon = item.icon
+      <section className="bg-black">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 text-white sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
+              Why this matters
+            </p>
+            <h3 className="mt-4 text-3xl font-bold sm:text-4xl">
+              Better visibility creates stronger donor confidence
+            </h3>
+          </div>
 
-            return (
-              <Card key={item.title} className="rounded-3xl p-6">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-800">
-                  <Icon size={24} />
-                </div>
-                <h3 className="mt-5 text-xl font-semibold text-gray-900">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-gray-600">{item.text}</p>
-              </Card>
-            )
-          })}
+          <p className="text-base leading-8 text-white/70">
+            This platform is not just about collecting donations. It is about helping NGOs communicate real progress, helping donors understand where support goes, and building a public digital space where impact can be followed with confidence.
+          </p>
         </div>
       </section>
     </div>
