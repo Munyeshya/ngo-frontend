@@ -47,16 +47,20 @@ function HeroSlider() {
   const currentSlide = slides[currentIndex]
 
   return (
-    <section className="relative min-h-[88vh] overflow-hidden bg-black">
-      <img
-        src={currentSlide.image}
-        alt={currentSlide.title}
-        className="absolute inset-0 h-full w-full object-cover opacity-55"
-      />
+    <section className="relative h-[90svh] min-h-[640px] w-full overflow-hidden bg-black">
+      <div className="absolute inset-0 h-full w-full">
+        <img
+          src={currentSlide.image}
+          alt={currentSlide.title}
+          className="h-full w-full object-cover object-center"
+        />
+      </div>
+
+      <div className="absolute inset-0 bg-black/45" />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/30" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(22,101,52,0.35),_transparent_25%)]" />
 
-      <div className="relative mx-auto flex min-h-[88vh] max-w-7xl items-center px-4 py-16 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
           <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-green-200 backdrop-blur">
             Transparent giving for stronger communities
@@ -109,7 +113,7 @@ function HeroSlider() {
         </div>
       </div>
 
-      <div className="absolute bottom-8 right-4 flex gap-2 sm:right-6 lg:right-8">
+      <div className="absolute bottom-8 right-4 z-10 flex gap-2 sm:right-6 lg:right-8">
         <button
           type="button"
           onClick={() => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)}
