@@ -235,11 +235,10 @@ function ProjectsPage() {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  selectedCategory === category
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category
                     ? 'bg-green-800 text-white'
                     : 'bg-green-50 text-green-800 hover:bg-green-100'
-                }`}
+                  }`}
               >
                 {category}
               </button>
@@ -291,11 +290,10 @@ function ProjectsPage() {
                         {project.category}
                       </span>
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${
-                          project.status === 'Almost Funded'
+                        className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${project.status === 'Almost Funded'
                             ? 'bg-amber-100/90 text-amber-800'
                             : 'bg-green-100/90 text-green-800'
-                        }`}
+                          }`}
                       >
                         {project.status}
                       </span>
@@ -363,13 +361,15 @@ function ProjectsPage() {
                         </Button>
                       </Link>
 
-                      <Button
-                        variant="outline"
-                        className="shrink-0 whitespace-nowrap px-5"
-                      >
-                        <HandCoins size={16} className="mr-2 shrink-0" />
-                        Donate
-                      </Button>
+                      <Link to={`/donate/${project.slug || project.id}`} className="shrink-0">
+                        <Button
+                          variant="outline"
+                          className="whitespace-nowrap px-5"
+                        >
+                          <HandCoins size={16} className="mr-2 shrink-0" />
+                          Donate
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </Card>

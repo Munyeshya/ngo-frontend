@@ -15,6 +15,7 @@ import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
 import ProjectDetailsPage from '../pages/public/ProjectDetailsPage'
+import DonatePage from '../pages/public/DonatePage'
 
 function AppRouter() {
   return (
@@ -26,6 +27,7 @@ function AppRouter() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
+          <Route path="/donate/:projectId" element={<DonatePage />} />
         </Route>
 
         <Route element={<AuthLayout />}>
