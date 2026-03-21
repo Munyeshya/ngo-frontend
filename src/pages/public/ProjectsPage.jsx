@@ -44,20 +44,19 @@ const orderingOptions = [
   { label: 'Title A-Z', value: 'title' },
 ]
 
-const iconMap = {
-  health: HeartPulse,
-  education: GraduationCap,
-  environment: Sprout,
-  community: Users,
-}
-
 function inferProjectIcon(project) {
   const text = `${project.title || ''} ${project.description || ''}`.toLowerCase()
 
   if (text.includes('health') || text.includes('medical')) return HeartPulse
-  if (text.includes('school') || text.includes('education') || text.includes('student')) return GraduationCap
-  if (text.includes('tree') || text.includes('environment') || text.includes('green')) return Sprout
-  if (text.includes('community') || text.includes('women') || text.includes('youth')) return Users
+  if (text.includes('school') || text.includes('education') || text.includes('student')) {
+    return GraduationCap
+  }
+  if (text.includes('tree') || text.includes('environment') || text.includes('green')) {
+    return Sprout
+  }
+  if (text.includes('community') || text.includes('women') || text.includes('youth')) {
+    return Users
+  }
 
   return HandCoins
 }
@@ -72,12 +71,56 @@ function normalizeListResponse(data) {
     }
   }
 
-  return {
-    results: data?.results || [],
-    count: data?.count || 0,
-    next: data?.next || null,
-    previous: data?.previous || null,
+  if (Array.isArray(data?.results)) {
+    return {
+      results: data.results,
+      count: data.count ?? data.results.length,
+      next: data.next ?? null,
+      previous: data.previous ?? null,
+    }
   }
+
+  if (Array.isArray(data?.data)) {
+    return {
+      results: data.data,
+      count: data.count ?? data.data.length,
+      next: data.next ?? null,
+      previous: data.previous ?? null,
+    }
+  }
+
+  if (Array.isArray(data?.data?.results)) {
+    return {
+      results: data.data.results,
+      count: data.data.count ?? data.data.results.length,
+      next: data.data.next ?? null,
+      previous: data.data.previous ?? null,
+    }
+  }
+
+  return {
+    results: [],
+    count: 0,
+    next: null,
+    previous: null,
+  }
+}
+
+function buildBeneficiaryCountMap(beneficiaries) {
+  const map = {}
+
+  beneficiaries.forEach((beneficiary) => {
+    const projectId =
+      beneficiary.project?.id ??
+      beneficiary.project_id ??
+      beneficiary.project
+
+    if (projectId !== undefined && projectId !== null) {
+      map[projectId] = (map[projectId] || 0) + 1
+    }
+  })
+
+  return map
 }
 
 function ProjectsPage() {
@@ -90,6 +133,7 @@ function ProjectsPage() {
   )
 
   const [projects, setProjects] = useState([])
+  const [beneficiaryCountMap, setBeneficiaryCountMap] = useState({})
   const [count, setCount] = useState(0)
   const [nextPage, setNextPage] = useState(null)
   const [prevPage, setPrevPage] = useState(null)
@@ -117,25 +161,36 @@ function ProjectsPage() {
     return query
   }, [searchTerm, selectedStatus, selectedOrdering, currentPage])
 
-  const fetchProjects = async () => {
+  const fetchProjectsAndBeneficiaries = async () => {
     try {
       setLoading(true)
       setError('')
 
-      const { data } = await api.get(endpoints.projects, {
-        params: queryObject,
-      })
+      const [projectsResponse, beneficiariesResponse] = await Promise.all([
+        api.get(endpoints.projects, { params: queryObject }),
+        api.get(endpoints.beneficiaries),
+      ])
 
-      const normalized = normalizeListResponse(data)
+      const normalizedProjects = normalizeListResponse(projectsResponse.data)
+      const normalizedBeneficiaries = normalizeListResponse(beneficiariesResponse.data)
 
-      setProjects(normalized.results)
-      setCount(normalized.count)
-      setNextPage(normalized.next)
-      setPrevPage(normalized.previous)
+      const countsMap = buildBeneficiaryCountMap(normalizedBeneficiaries.results)
+
+      setProjects(normalizedProjects.results)
+      setCount(normalizedProjects.count)
+      setNextPage(normalizedProjects.next)
+      setPrevPage(normalizedProjects.previous)
+      setBeneficiaryCountMap(countsMap)
+
+      console.log('Projects response:', projectsResponse.data)
+      console.log('Beneficiaries response:', beneficiariesResponse.data)
+      console.log('Beneficiary count map:', countsMap)
     } catch (err) {
+      console.error('Projects/Beneficiaries API error:', err)
       setError(
         err?.response?.data?.detail ||
-          'Failed to load projects. Please check your API connection and try again.'
+          err?.message ||
+          'Failed to load projects and beneficiaries. Please check your API connection and try again.'
       )
     } finally {
       setLoading(false)
@@ -143,7 +198,7 @@ function ProjectsPage() {
   }
 
   useEffect(() => {
-    fetchProjects()
+    fetchProjectsAndBeneficiaries()
   }, [queryObject])
 
   useEffect(() => {
@@ -162,7 +217,6 @@ function ProjectsPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault()
     setCurrentPage(1)
-    fetchProjects()
   }
 
   const handleStatusClick = (statusValue) => {
@@ -188,7 +242,7 @@ function ProjectsPage() {
 
               <p className="mt-5 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">
                 Explore real NGO projects from the backend, search what matters, filter by status,
-                and follow funding progress with accurate live data.
+                and follow funding progress with live data.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-6 text-white">
@@ -305,7 +359,7 @@ function ProjectsPage() {
           <SectionTitle
             badge="Available projects"
             title="Support ongoing initiatives with confidence"
-            text="This page now uses live backend data, backend search, backend filters, backend ordering, and backend funding calculations."
+            text="This page now uses live backend data, backend search, backend filters, backend ordering, and beneficiary totals computed from the beneficiaries endpoint."
           />
 
           <div className="rounded-2xl bg-white px-5 py-3 text-sm text-gray-600 shadow-sm">
@@ -316,18 +370,18 @@ function ProjectsPage() {
         </div>
 
         {loading ? (
-          <LoadingState text="Loading projects from backend..." />
+          <LoadingState text="Loading projects and beneficiaries from backend..." />
         ) : error ? (
           <ErrorState
             title="Unable to load projects"
             message={error}
-            onRetry={fetchProjects}
+            onRetry={fetchProjectsAndBeneficiaries}
           />
         ) : projects.length === 0 ? (
           <div className="rounded-[28px] border border-dashed border-gray-300 bg-white px-6 py-14 text-center">
             <p className="text-2xl font-semibold text-gray-900">No projects found</p>
             <p className="mt-3 text-sm leading-7 text-gray-600">
-              Try changing the search keyword, status filter, or sort option.
+              The API responded, but no project records were returned for the current filters.
             </p>
           </div>
         ) : (
@@ -337,6 +391,7 @@ function ProjectsPage() {
                 const Icon = inferProjectIcon(project)
                 const progress = getProjectProgress(project)
                 const statusLabel = getProjectStatusLabel(project)
+                const beneficiaryCount = beneficiaryCountMap[project.id] ?? 0
 
                 return (
                   <Card
@@ -388,11 +443,7 @@ function ProjectsPage() {
 
                         <div className="flex items-center gap-2">
                           <Users size={16} className="text-green-700" />
-                          <span>
-                            {project.beneficiaries_count ??
-                              project.beneficiaries_total ??
-                              'N/A'}
-                          </span>
+                          <span>{beneficiaryCount}</span>
                         </div>
                       </div>
 
@@ -427,26 +478,6 @@ function ProjectsPage() {
                             </p>
                           </div>
                         </div>
-
-                        {project.remaining_amount != null || project.exceeded_amount != null ? (
-                          <div className="mt-4 border-t border-gray-200 pt-3 text-xs text-gray-500">
-                            {Number(project.exceeded_amount || 0) > 0 ? (
-                              <span>
-                                Exceeded by{' '}
-                                <span className="font-semibold text-green-800">
-                                  {project.exceeded_amount}
-                                </span>
-                              </span>
-                            ) : (
-                              <span>
-                                Remaining:{' '}
-                                <span className="font-semibold text-gray-900">
-                                  {project.remaining_amount}
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        ) : null}
                       </div>
 
                       <div className="mt-auto flex items-center gap-3 pt-6">
