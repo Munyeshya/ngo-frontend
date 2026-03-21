@@ -386,7 +386,7 @@ function DonatePage() {
               </span>
 
               <h1 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
-                Donate to {project.title}
+                {project.title}
               </h1>
 
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-white/75 sm:text-sm">
