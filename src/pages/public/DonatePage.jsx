@@ -1,13 +1,8 @@
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   HandCoins,
-  HeartPulse,
-  GraduationCap,
-  Users,
-  Sprout,
-  MapPin,
   CreditCard,
   Smartphone,
   Wallet,
@@ -15,65 +10,22 @@ import {
   ShieldCheck,
   CheckCircle2,
   Landmark,
+  MapPin,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react'
-import Card from '../../components/ui/Card'
+
+import api from '../../api/axios'
+import endpoints from '../../api/endpoints'
 import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
 
-const projects = [
-  {
-    id: 1,
-    slug: 'community-health-outreach',
-    title: 'Community Health Outreach',
-    category: 'Health',
-    location: 'Kigali, Rwanda',
-    raised: '$36,000',
-    goal: '$50,000',
-    progress: 72,
-    image:
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80',
-    icon: HeartPulse,
-  },
-  {
-    id: 2,
-    slug: 'back-to-school-support',
-    title: 'Back to School Support',
-    category: 'Education',
-    location: 'Huye, Rwanda',
-    raised: '$24,000',
-    goal: '$50,000',
-    progress: 48,
-    image:
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80',
-    icon: GraduationCap,
-  },
-  {
-    id: 3,
-    slug: 'women-empowerment-initiative',
-    title: 'Women Empowerment Initiative',
-    category: 'Community',
-    location: 'Musanze, Rwanda',
-    raised: '$31,500',
-    goal: '$50,000',
-    progress: 63,
-    image:
-      'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80',
-    icon: Users,
-  },
-  {
-    id: 4,
-    slug: 'green-village-restoration',
-    title: 'Green Village Restoration',
-    category: 'Environment',
-    location: 'Nyagatare, Rwanda',
-    raised: '$40,500',
-    goal: '$50,000',
-    progress: 81,
-    image:
-      'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1600&q=80',
-    icon: Sprout,
-  },
-]
+const currencyFormatter = new Intl.NumberFormat('en-RW', {
+  style: 'currency',
+  currency: 'RWF',
+  maximumFractionDigits: 0,
+})
 
 const paymentMethods = [
   {
@@ -96,16 +48,104 @@ const paymentMethods = [
   },
 ]
 
-const quickAmounts = [10, 25, 50, 100, 250, 500]
+const quickAmounts = [1000, 5000, 10000, 25000, 50000, 100000]
+
+function unwrapPayload(payload) {
+  if (!payload) return payload
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.results)) return payload.results
+  if (Array.isArray(payload?.data)) return payload.data
+  if (payload?.data && typeof payload.data === 'object') return payload.data
+  return payload
+}
+
+function formatCurrency(value) {
+  const amount = Number(value || 0)
+  return currencyFormatter.format(Number.isNaN(amount) ? 0 : amount)
+}
+
+function getApiOrigin() {
+  const baseURL = api?.defaults?.baseURL || ''
+  return baseURL.replace(/\/api\/?$/, '')
+}
+
+function buildMediaUrl(path) {
+  if (!path) return ''
+  if (String(path).startsWith('http://') || String(path).startsWith('https://')) {
+    return path
+  }
+
+  const origin = getApiOrigin()
+  return `${origin}${String(path).startsWith('/') ? path : `/${path}`}`
+}
+
+function getProjectImage(project) {
+  return (
+    buildMediaUrl(project?.feature_image) ||
+    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1600&q=80'
+  )
+}
+
+function inferCategory(project) {
+  const text = `${project?.title || ''} ${project?.description || ''}`.toLowerCase()
+
+  if (
+    text.includes('health') ||
+    text.includes('medical') ||
+    text.includes('clinic') ||
+    text.includes('hospital')
+  ) {
+    return 'Health'
+  }
+
+  if (
+    text.includes('school') ||
+    text.includes('education') ||
+    text.includes('student') ||
+    text.includes('learning')
+  ) {
+    return 'Education'
+  }
+
+  if (
+    text.includes('environment') ||
+    text.includes('green') ||
+    text.includes('tree') ||
+    text.includes('climate')
+  ) {
+    return 'Environment'
+  }
+
+  if (
+    text.includes('women') ||
+    text.includes('community') ||
+    text.includes('livelihood') ||
+    text.includes('empowerment')
+  ) {
+    return 'Community'
+  }
+
+  return 'Project'
+}
+
+function resolveDonationEndpoint() {
+  return (
+    endpoints?.donations ||
+    endpoints?.donationCreate ||
+    endpoints?.createDonation ||
+    '/donations/'
+  )
+}
 
 function DonatePage() {
-  const { projectId } = useParams()
+  const params = useParams()
+  const routeProjectId = params.projectId ?? params.id ?? ''
 
-  const project = useMemo(() => {
-    return projects.find(
-      (item) => String(item.id) === projectId || item.slug === projectId
-    )
-  }, [projectId])
+  const navigate = useNavigate()
+
+  const [project, setProject] = useState(null)
+  const [isLoadingProject, setIsLoadingProject] = useState(true)
+  const [projectError, setProjectError] = useState('')
 
   const [formData, setFormData] = useState({
     donor_name: '',
@@ -129,27 +169,55 @@ function DonatePage() {
     cash_collection_point: '',
   })
 
-  if (!project) {
-    return (
-      <div className="bg-[#F8F8F6]">
-        <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-          <Card className="rounded-[24px] p-8 text-center">
-            <p className="text-2xl font-bold text-gray-900">Project not found</p>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              The project you want to support is not available.
-            </p>
-            <div className="mt-5">
-              <Link to="/projects">
-                <Button>Back to Projects</Button>
-              </Link>
-            </div>
-          </Card>
-        </section>
-      </div>
-    )
-  }
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitSuccess, setSubmitSuccess] = useState('')
 
-  const Icon = project.icon
+  useEffect(() => {
+    let active = true
+
+    async function fetchProject() {
+      try {
+        setIsLoadingProject(true)
+        setProjectError('')
+
+        const response = await api.get(endpoints.projectDetails(routeProjectId))
+        const projectData = unwrapPayload(response.data)
+
+        if (!active) return
+        setProject(projectData)
+      } catch (error) {
+        if (!active) return
+
+        setProjectError(
+          error?.response?.data?.message ||
+            error?.response?.data?.detail ||
+            'Failed to load project.'
+        )
+      } finally {
+        if (active) {
+          setIsLoadingProject(false)
+        }
+      }
+    }
+
+    if (routeProjectId) {
+      fetchProject()
+    } else {
+      setProjectError('Invalid project route.')
+      setIsLoadingProject(false)
+    }
+
+    return () => {
+      active = false
+    }
+  }, [routeProjectId])
+
+  const projectImage = useMemo(() => getProjectImage(project), [project])
+  const projectCategory = useMemo(() => inferCategory(project), [project])
+  const projectRaised = useMemo(() => formatCurrency(project?.total_donated || 0), [project])
+  const projectGoal = useMemo(() => formatCurrency(project?.target_amount || 0), [project])
+  const projectProgress = useMemo(() => Number(project?.funding_percentage || 0), [project])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -174,41 +242,117 @@ function DonatePage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.donor_name.trim()) return 'Full name is required.'
+    if (!formData.donor_email.trim()) return 'Email address is required.'
+    if (!/\S+@\S+\.\S+/.test(formData.donor_email)) return 'Enter a valid email address.'
+    if (!formData.amount || Number(formData.amount) <= 0) return 'Enter a valid donation amount.'
+    if (!formData.payment_method) return 'Select a payment method.'
+    if (!project?.id) return 'Project information is missing.'
+    return ''
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitError('')
+    setSubmitSuccess('')
+
+    const validationError = validateForm()
+    if (validationError) {
+      setSubmitError(validationError)
+      return
+    }
 
     const payload = {
       project: project.id,
-      donor_name: formData.donor_name,
-      donor_email: formData.donor_email,
-      amount: formData.amount,
+      donor_name: formData.donor_name.trim(),
+      donor_email: formData.donor_email.trim(),
+      amount: Number(formData.amount).toFixed(2),
       payment_method: formData.payment_method,
-      message: formData.message,
+      message: formData.message.trim(),
       is_anonymous: formData.is_anonymous,
     }
 
-    const paymentDetails =
-      formData.payment_method === 'momo'
-        ? {
-            momo_phone: formData.momo_phone,
-            momo_provider: formData.momo_provider,
-            momo_reference: formData.momo_reference,
-          }
-        : formData.payment_method === 'card'
-        ? {
-            card_holder_name: formData.card_holder_name,
-            card_number: formData.card_number,
-            card_expiry: formData.card_expiry,
-            card_cvv: formData.card_cvv,
-          }
-        : {
-            cash_payer_name: formData.cash_payer_name,
-            cash_reference: formData.cash_reference,
-            cash_collection_point: formData.cash_collection_point,
-          }
+    try {
+      setIsSubmitting(true)
 
-    console.log('Donation payload:', payload)
-    console.log('Payment details:', paymentDetails)
+      await api.post(resolveDonationEndpoint(), payload)
+
+      setSubmitSuccess('Donation submitted successfully.')
+
+      setFormData({
+        donor_name: '',
+        donor_email: '',
+        amount: '',
+        payment_method: 'momo',
+        message: '',
+        is_anonymous: false,
+
+        momo_phone: '',
+        momo_provider: 'mtn',
+        momo_reference: '',
+
+        card_holder_name: '',
+        card_number: '',
+        card_expiry: '',
+        card_cvv: '',
+
+        cash_payer_name: '',
+        cash_reference: '',
+        cash_collection_point: '',
+      })
+
+      setTimeout(() => {
+        navigate(`/projects/${project.id}`)
+      }, 1200)
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        'Failed to submit donation.'
+
+      setSubmitError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isLoadingProject) {
+    return (
+      <div className="bg-[#F8F8F6]">
+        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+          <Card className="rounded-[24px] p-8">
+            <div className="flex items-center justify-center gap-3 text-gray-700">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm font-medium">Loading project...</span>
+            </div>
+          </Card>
+        </section>
+      </div>
+    )
+  }
+
+  if (projectError || !project) {
+    return (
+      <div className="bg-[#F8F8F6]">
+        <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+          <Card className="rounded-[24px] p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <AlertCircle size={22} />
+            </div>
+            <p className="mt-4 text-2xl font-bold text-gray-900">Project not found</p>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              {projectError || 'The project you want to support is not available.'}
+            </p>
+            <div className="mt-5">
+              <Link to="/projects">
+                <Button>Back to Projects</Button>
+              </Link>
+            </div>
+          </Card>
+        </section>
+      </div>
+    )
   }
 
   return (
@@ -218,7 +362,7 @@ function DonatePage() {
 
         <div className="absolute inset-0">
           <img
-            src={project.image}
+            src={projectImage}
             alt={project.title}
             className="h-full w-full object-cover opacity-20"
           />
@@ -228,7 +372,7 @@ function DonatePage() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
           <Link
-            to={`/projects/${project.slug || project.id}`}
+            to={`/projects/${project.id}`}
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur transition hover:bg-white/15"
           >
             <ArrowLeft size={14} />
@@ -238,7 +382,7 @@ function DonatePage() {
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
             <div>
               <span className="inline-flex rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-800">
-                {project.category}
+                {projectCategory}
               </span>
 
               <h1 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
@@ -248,42 +392,36 @@ function DonatePage() {
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-white/75 sm:text-sm">
                 <div className="flex items-center gap-2">
                   <MapPin size={14} className="text-green-400" />
-                  <span>{project.location}</span>
+                  <span>{project.location || 'Location not specified'}</span>
                 </div>
               </div>
 
               <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70">
-                Support this project through a simple, focused donation flow with your preferred
-                payment method.
+                {project.description || 'Support this project through a simple donation flow.'}
               </p>
             </div>
 
             <Card className="rounded-[24px] border border-white/10 bg-white/10 p-4 text-white backdrop-blur-xl">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
-                  <Icon size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-white/70">Current progress</p>
-                  <p className="text-xl font-bold">{project.progress}% funded</p>
-                </div>
+              <div>
+                <p className="text-xs text-white/70">Current progress</p>
+                <p className="text-xl font-bold">{projectProgress.toFixed(2)}% funded</p>
               </div>
 
               <div className="mt-4 h-2.5 rounded-full bg-white/15">
                 <div
                   className="h-2.5 rounded-full bg-green-500"
-                  style={{ width: `${project.progress}%` }}
+                  style={{ width: `${Math.min(projectProgress, 100)}%` }}
                 />
               </div>
 
               <div className="mt-4 flex items-center justify-between text-xs sm:text-sm">
                 <div>
                   <p className="text-white/65">Raised</p>
-                  <p className="font-semibold text-white">{project.raised}</p>
+                  <p className="font-semibold text-white">{projectRaised}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/65">Goal</p>
-                  <p className="font-semibold text-white">{project.goal}</p>
+                  <p className="font-semibold text-white">{projectGoal}</p>
                 </div>
               </div>
             </Card>
@@ -310,9 +448,6 @@ function DonatePage() {
               <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Donor information</h3>
-                  <p className="mt-1 text-xs text-gray-600 sm:text-sm">
-                    Basic information required for this donation.
-                  </p>
 
                   <div className="mt-4 space-y-4">
                     <div>
@@ -413,7 +548,7 @@ function DonatePage() {
                               : 'border-gray-200 bg-white text-gray-800 hover:border-green-700 hover:text-green-800'
                           }`}
                         >
-                          ${amount}
+                          {amount.toLocaleString()}
                         </button>
                       ))}
                     </div>
@@ -534,9 +669,7 @@ function DonatePage() {
                         <div className="rounded-xl bg-white p-4">
                           <div className="mb-3 flex items-center gap-2">
                             <CreditCard size={16} className="text-green-700" />
-                            <p className="text-sm font-semibold text-gray-900">
-                              Card details
-                            </p>
+                            <p className="text-sm font-semibold text-gray-900">Card details</p>
                           </div>
 
                           <div className="space-y-3">
@@ -663,8 +796,7 @@ function DonatePage() {
                         <div>
                           <p className="text-sm font-semibold">Secure donation flow</p>
                           <p className="mt-1 text-xs leading-6 text-white/70">
-                            Main submission still uses the backend donation fields, while
-                            payment-specific details are collected based on your chosen method.
+                            Your donation is linked to the live project loaded from the backend.
                           </p>
                         </div>
                       </div>
@@ -673,13 +805,29 @@ function DonatePage() {
                 </div>
               </div>
 
+              {submitError && (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitError}
+                </div>
+              )}
+
+              {submitSuccess && (
+                <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {submitSuccess}
+                </div>
+              )}
+
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button type="submit" className="min-w-[190px] px-5 py-2.5 text-sm">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="min-w-[190px] px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-70"
+                >
                   <HandCoins size={15} className="mr-2" />
-                  Submit Donation
+                  {isSubmitting ? 'Submitting...' : 'Submit Donation'}
                 </Button>
 
-                <Link to={`/projects/${project.slug || project.id}`}>
+                <Link to={`/projects/${project.id}`}>
                   <Button variant="outline" className="px-5 py-2.5 text-sm">
                     Return to Project
                   </Button>
@@ -700,12 +848,14 @@ function DonatePage() {
 
                 <div className="rounded-xl bg-[#F8F8F6] p-3.5">
                   <p className="text-xs text-gray-500">Category</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900">{project.category}</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-900">{projectCategory}</p>
                 </div>
 
                 <div className="rounded-xl bg-[#F8F8F6] p-3.5">
                   <p className="text-xs text-gray-500">Location</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900">{project.location}</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
+                    {project.location || 'Location not specified'}
+                  </p>
                 </div>
 
                 <div className="rounded-xl bg-[#F8F8F6] p-3.5">
@@ -718,7 +868,7 @@ function DonatePage() {
                 <div className="rounded-xl bg-[#F8F8F6] p-3.5">
                   <p className="text-xs text-gray-500">Entered amount</p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
-                    {formData.amount ? `$${formData.amount}` : 'Not set'}
+                    {formData.amount ? formatCurrency(formData.amount) : 'Not set'}
                   </p>
                 </div>
               </div>
@@ -730,24 +880,26 @@ function DonatePage() {
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-500">Progress</span>
-                  <span className="font-semibold text-green-800">{project.progress}%</span>
+                  <span className="font-semibold text-green-800">
+                    {projectProgress.toFixed(2)}%
+                  </span>
                 </div>
 
                 <div className="h-2.5 rounded-full bg-gray-200">
                   <div
                     className="h-2.5 rounded-full bg-green-800"
-                    style={{ width: `${project.progress}%` }}
+                    style={{ width: `${Math.min(projectProgress, 100)}%` }}
                   />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between text-xs sm:text-sm">
                   <div>
                     <p className="text-gray-500">Raised</p>
-                    <p className="font-semibold text-gray-900">{project.raised}</p>
+                    <p className="font-semibold text-gray-900">{projectRaised}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-500">Goal</p>
-                    <p className="font-semibold text-gray-900">{project.goal}</p>
+                    <p className="font-semibold text-gray-900">{projectGoal}</p>
                   </div>
                 </div>
               </div>

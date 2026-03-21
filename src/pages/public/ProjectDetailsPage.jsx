@@ -7,12 +7,9 @@ import {
   HandCoins,
   CalendarDays,
   BadgeCheck,
-  Clock3,
   Bell,
   ArrowRight,
   Building2,
-  Image as ImageIcon,
-  FileText,
   CheckCircle2,
   AlertCircle,
   Landmark,
@@ -183,26 +180,12 @@ function ProjectDetailsPage() {
         setError('')
         setNotFound(false)
 
-        console.log('---------------- PROJECT DETAILS DEBUG ----------------')
-        console.log('useParams():', params)
-        console.log('Resolved routeProjectId:', routeProjectId)
-        console.log('Project details endpoint:', endpoints.projectDetails(routeProjectId))
-
-        // 1) Fetch project first. Only this request can decide notFound.
         const projectRes = await api.get(endpoints.projectDetails(routeProjectId))
-
         if (!active) return
 
-        console.log('Project details raw response:', projectRes)
-        console.log('Project details data:', projectRes.data)
-
         const projectData = unwrapPayload(projectRes.data)
-
-        console.log('Unwrapped project data:', projectData)
-
         setProject(projectData)
 
-        // partners are already nested objects in the project response
         if (Array.isArray(projectData?.partners)) {
           setPartners(projectData.partners)
         } else if (Array.isArray(projectData?.partner_details)) {
@@ -211,7 +194,6 @@ function ProjectDetailsPage() {
           setPartners([])
         }
 
-        // 2) Fetch secondary project-related data separately and fail softly
         const [beneficiariesRes, updatesRes] = await Promise.allSettled([
           api.get(endpoints.beneficiaries, {
             params: { project: routeProjectId },
@@ -224,27 +206,17 @@ function ProjectDetailsPage() {
         if (!active) return
 
         if (beneficiariesRes.status === 'fulfilled') {
-          console.log('Beneficiaries raw response:', beneficiariesRes.value)
-          console.log('Beneficiaries data:', beneficiariesRes.value.data)
           setBeneficiaries(normalizeListResponse(beneficiariesRes.value.data))
         } else {
-          console.log('Beneficiaries request failed:', beneficiariesRes.reason)
           setBeneficiaries([])
         }
 
         if (updatesRes.status === 'fulfilled') {
-          console.log('Updates raw response:', updatesRes.value)
-          console.log('Updates data:', updatesRes.value.data)
           setUpdates(normalizeListResponse(updatesRes.value.data))
         } else {
-          console.log('Updates request failed:', updatesRes.reason)
           setUpdates([])
         }
       } catch (err) {
-        console.log('Project details page error:', err)
-        console.log('Project details page error response:', err?.response)
-        console.log('Project details page error response data:', err?.response?.data)
-
         if (!active) return
 
         if (err?.response?.status === 404) {
@@ -261,7 +233,12 @@ function ProjectDetailsPage() {
       }
     }
 
-    loadProjectPage()
+    if (routeProjectId) {
+      loadProjectPage()
+    } else {
+      setLoading(false)
+      setNotFound(true)
+    }
 
     return () => {
       active = false
@@ -506,7 +483,9 @@ function ProjectDetailsPage() {
 
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Remaining</p>
-                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.remainingAmount)}</p>
+                  <p className="mt-2 text-xl font-bold">
+                    {formatCurrency(derived.remainingAmount)}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
@@ -580,7 +559,9 @@ function ProjectDetailsPage() {
                   <Target size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Target amount</p>
-                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.targetAmount)}</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.targetAmount)}
+                    </p>
                   </div>
                 </div>
 
@@ -588,7 +569,9 @@ function ProjectDetailsPage() {
                   <HandCoins size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Total donated</p>
-                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.totalDonated)}</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.totalDonated)}
+                    </p>
                   </div>
                 </div>
 
@@ -616,7 +599,9 @@ function ProjectDetailsPage() {
                   <AlertCircle size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Exceeded amount</p>
-                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.exceededAmount)}</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.exceededAmount)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -668,7 +653,9 @@ function ProjectDetailsPage() {
                       </div>
 
                       {partner.description && (
-                        <p className="mt-4 text-sm leading-7 text-gray-600">{partner.description}</p>
+                        <p className="mt-4 text-sm leading-7 text-gray-600">
+                          {partner.description}
+                        </p>
                       )}
                     </div>
                   ))}
@@ -796,7 +783,9 @@ function ProjectDetailsPage() {
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
                   <p className="text-sm text-gray-500">Beneficiaries</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">{derived.beneficiariesCount}</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {derived.beneficiariesCount}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
