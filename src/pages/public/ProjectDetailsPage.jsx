@@ -4,16 +4,19 @@ import {
   ArrowLeft,
   MapPin,
   Users,
+  HandCoins,
   CalendarDays,
   BadgeCheck,
   Clock3,
-  Mail,
-  ArrowRight,
-  HeartPulse,
-  HandCoins,
-  Building2,
   Bell,
+  ArrowRight,
+  Building2,
+  Image as ImageIcon,
+  FileText,
   CheckCircle2,
+  AlertCircle,
+  Landmark,
+  Target,
 } from 'lucide-react'
 
 import api from '../../api/axios'
@@ -30,69 +33,59 @@ const currencyFormatter = new Intl.NumberFormat('en-RW', {
 })
 
 function formatCurrency(value) {
-  const numeric = Number(value || 0)
-  return currencyFormatter.format(Number.isNaN(numeric) ? 0 : numeric)
+  const amount = Number(value || 0)
+  return currencyFormatter.format(Number.isNaN(amount) ? 0 : amount)
 }
 
 function formatDate(value) {
   if (!value) return 'N/A'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
+
   return date.toLocaleDateString('en-GB', {
-    year: 'numeric',
+    day: '2-digit',
     month: 'short',
-    day: 'numeric',
+    year: 'numeric',
   })
 }
 
-function buildAbsoluteUrl(url) {
-  if (!url) return ''
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-
-  const base = api.defaults.baseURL || ''
-  const origin = base.replace(/\/api\/?$/, '')
-  return `${origin}${url.startsWith('/') ? url : `/${url}`}`
-}
-
-function getListFromResponse(payload) {
+function normalizeListResponse(payload) {
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.results)) return payload.results
   return []
 }
 
+function getApiOrigin() {
+  const baseURL = api?.defaults?.baseURL || ''
+  return baseURL.replace(/\/api\/?$/, '')
+}
+
+function buildMediaUrl(path) {
+  if (!path) return ''
+  if (String(path).startsWith('http://') || String(path).startsWith('https://')) {
+    return path
+  }
+
+  const origin = getApiOrigin()
+  return `${origin}${String(path).startsWith('/') ? path : `/${path}`}`
+}
+
 function getProjectImage(project) {
   return (
-    buildAbsoluteUrl(project?.feature_image) ||
+    buildMediaUrl(project?.feature_image) ||
     'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1600&q=80'
   )
 }
 
-function getPartnerNames(project) {
-  if (!project) return []
+function getStatusTone(status, isGoalReached) {
+  const normalized = String(status || '').toLowerCase()
 
-  if (Array.isArray(project.partners)) {
-    return project.partners.map((partner) =>
-      typeof partner === 'string' ? partner : partner?.name
-    ).filter(Boolean)
-  }
+  if (isGoalReached) return 'bg-emerald-100 text-emerald-800'
+  if (normalized.includes('completed')) return 'bg-blue-100 text-blue-800'
+  if (normalized.includes('paused')) return 'bg-amber-100 text-amber-800'
+  if (normalized.includes('draft')) return 'bg-slate-200 text-slate-800'
 
-  if (Array.isArray(project.partner_details)) {
-    return project.partner_details.map((partner) => partner?.name).filter(Boolean)
-  }
-
-  return []
-}
-
-function getBeneficiaryImages(beneficiary) {
-  if (Array.isArray(beneficiary?.images)) return beneficiary.images
-  if (Array.isArray(beneficiary?.beneficiary_images)) return beneficiary.beneficiary_images
-  return []
-}
-
-function getUpdateImages(update) {
-  if (Array.isArray(update?.images)) return update.images
-  if (Array.isArray(update?.project_update_images)) return update.project_update_images
-  return []
+  return 'bg-white/90 text-gray-900'
 }
 
 function inferCategory(project) {
@@ -117,144 +110,137 @@ function inferCategory(project) {
   }
 
   if (
-    text.includes('tree') ||
-    text.includes('climate') ||
     text.includes('environment') ||
-    text.includes('green')
+    text.includes('green') ||
+    text.includes('tree') ||
+    text.includes('climate')
   ) {
     return 'Environment'
   }
 
-  return 'Community'
+  if (
+    text.includes('women') ||
+    text.includes('community') ||
+    text.includes('livelihood') ||
+    text.includes('empowerment')
+  ) {
+    return 'Community'
+  }
+
+  return 'Project'
 }
 
-function getStatusTone(status, isGoalReached) {
-  const normalized = String(status || '').toLowerCase()
+function extractBeneficiaryImages(beneficiary) {
+  if (Array.isArray(beneficiary?.images)) return beneficiary.images
+  if (Array.isArray(beneficiary?.beneficiary_images)) return beneficiary.beneficiary_images
+  return []
+}
 
-  if (isGoalReached) {
-    return 'bg-emerald-100 text-emerald-800'
-  }
-
-  if (normalized.includes('complete') || normalized.includes('completed')) {
-    return 'bg-blue-100 text-blue-800'
-  }
-
-  if (normalized.includes('pending') || normalized.includes('draft')) {
-    return 'bg-amber-100 text-amber-800'
-  }
-
-  return 'bg-white/90 text-gray-900'
+function extractUpdateImages(update) {
+  if (Array.isArray(update?.images)) return update.images
+  if (Array.isArray(update?.project_update_images)) return update.project_update_images
+  return []
 }
 
 function ProjectDetailsPage() {
   const { projectId } = useParams()
 
   const [project, setProject] = useState(null)
+  const [partners, setPartners] = useState([])
   const [beneficiaries, setBeneficiaries] = useState([])
   const [updates, setUpdates] = useState([])
+
   const [loading, setLoading] = useState(true)
-  const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
+  const [notFound, setNotFound] = useState(false)
 
   const [subscriberName, setSubscriberName] = useState('')
   const [subscriberEmail, setSubscriberEmail] = useState('')
   const [subscribeLoading, setSubscribeLoading] = useState(false)
-  const [subscribeMessage, setSubscribeMessage] = useState('')
+  const [subscribeSuccess, setSubscribeSuccess] = useState('')
   const [subscribeError, setSubscribeError] = useState('')
 
   useEffect(() => {
-    let isMounted = true
+    let active = true
 
-    async function fetchProjectDetails() {
-      setLoading(true)
-      setError('')
-      setNotFound(false)
-
+    async function loadProjectPage() {
       try {
-        const projectResponse = await api.get(endpoints.projectDetails(projectId))
-        const projectData = projectResponse.data
+        setLoading(true)
+        setError('')
+        setNotFound(false)
 
-        const [beneficiariesResponse, updatesResponse] = await Promise.allSettled([
+        const [projectRes, beneficiariesRes, updatesRes] = await Promise.all([
+          api.get(endpoints.projectDetails(projectId)),
           api.get(endpoints.beneficiaries, {
-            params: { project: projectData.id },
+            params: { project: projectId },
           }),
           api.get(endpoints.projectUpdates, {
-            params: { project: projectData.id },
+            params: { project: projectId },
           }),
         ])
 
-        const beneficiariesData =
-          beneficiariesResponse.status === 'fulfilled'
-            ? getListFromResponse(beneficiariesResponse.value.data)
-            : []
+        if (!active) return
 
-        const updatesData =
-          updatesResponse.status === 'fulfilled'
-            ? getListFromResponse(updatesResponse.value.data)
-            : []
-
-        const safeBeneficiaries = beneficiariesData.filter(
-          (item) =>
-            String(item?.project) === String(projectData?.id) ||
-            String(item?.project_id) === String(projectData?.id) ||
-            String(item?.project?.id) === String(projectData?.id)
-        )
-
-        const safeUpdates = updatesData.filter(
-          (item) =>
-            String(item?.project) === String(projectData?.id) ||
-            String(item?.project_id) === String(projectData?.id) ||
-            String(item?.project?.id) === String(projectData?.id)
-        )
-
-        if (!isMounted) return
+        const projectData = projectRes.data
+        const beneficiariesData = normalizeListResponse(beneficiariesRes.data)
+        const updatesData = normalizeListResponse(updatesRes.data)
 
         setProject(projectData)
-        setBeneficiaries(safeBeneficiaries)
-        setUpdates(safeUpdates)
+        setBeneficiaries(beneficiariesData)
+        setUpdates(updatesData)
+
+        if (Array.isArray(projectData?.partner_details)) {
+          setPartners(projectData.partner_details)
+        } else if (Array.isArray(projectData?.partners) && projectData.partners.length > 0) {
+          const partnerResponses = await Promise.all(
+            projectData.partners.map((partnerId) =>
+              api.get(endpoints.partnerDetails(partnerId))
+            )
+          )
+
+          if (!active) return
+          setPartners(partnerResponses.map((response) => response.data))
+        } else {
+          setPartners([])
+        }
       } catch (err) {
-        if (!isMounted) return
+        if (!active) return
 
         if (err?.response?.status === 404) {
           setNotFound(true)
         } else {
           setError(
             err?.response?.data?.detail ||
-              'Failed to load this project. Please try again.'
+              'Failed to load project details. Please try again.'
           )
         }
       } finally {
-        if (isMounted) setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
-    fetchProjectDetails()
+    loadProjectPage()
 
     return () => {
-      isMounted = false
+      active = false
     }
   }, [projectId])
 
   const derived = useMemo(() => {
     if (!project) return null
 
-    const title = project.title || 'Untitled Project'
-    const description = project.description || 'No description available yet.'
-    const image = getProjectImage(project)
-    const category = inferCategory(project)
-    const partners = getPartnerNames(project)
-    const goal = Number(project.target_amount || project.budget || 0)
-    const raised = Number(project.total_donated || 0)
-    const progress = Math.max(
+    const targetAmount = Number(project.target_amount || 0)
+    const budget = Number(project.budget || 0)
+    const totalDonated = Number(project.total_donated || 0)
+    const fundingPercentage = Math.max(
       0,
       Math.min(100, Number(project.funding_percentage || 0))
     )
-    const remaining = Number(project.remaining_amount || Math.max(goal - raised, 0))
-    const exceeded = Number(project.exceeded_amount || Math.max(raised - goal, 0))
+    const remainingAmount = Number(project.remaining_amount || 0)
+    const exceededAmount = Number(project.exceeded_amount || 0)
     const isGoalReached = Boolean(project.is_goal_reached)
-    const status = project.status || (isGoalReached ? 'Goal Reached' : 'Active')
 
-    const duration =
+    const timeline =
       project.start_date && project.end_date
         ? `${formatDate(project.start_date)} - ${formatDate(project.end_date)}`
         : project.start_date
@@ -263,51 +249,60 @@ function ProjectDetailsPage() {
             ? `Ends ${formatDate(project.end_date)}`
             : 'Timeline not available'
 
+    const allBeneficiaryImages = beneficiaries.flatMap((beneficiary) =>
+      extractBeneficiaryImages(beneficiary)
+    )
+    const allUpdateImages = updates.flatMap((update) => extractUpdateImages(update))
+
     return {
-      title,
-      description,
-      image,
-      category,
-      partners,
-      goal,
-      raised,
-      progress,
-      remaining,
-      exceeded,
-      isGoalReached,
-      status,
-      duration,
+      title: project.title || 'Untitled project',
+      description: project.description || 'No project description available yet.',
+      image: getProjectImage(project),
+      category: inferCategory(project),
+      status: project.status || 'Active',
       location: project.location || 'Location not specified',
+      targetAmount,
+      budget,
+      totalDonated,
+      fundingPercentage,
+      remainingAmount,
+      exceededAmount,
+      isGoalReached,
+      timeline,
       createdAt: formatDate(project.created_at),
+      updatedAt: formatDate(project.updated_at),
       beneficiariesCount: beneficiaries.length,
       updatesCount: updates.length,
+      partnerCount: partners.length,
+      beneficiaryImageCount: allBeneficiaryImages.length,
+      updateImageCount: allUpdateImages.length,
     }
-  }, [project, beneficiaries.length, updates.length])
+  }, [project, beneficiaries, updates, partners])
 
   async function handleSubscribe(event) {
     event.preventDefault()
-    setSubscribeMessage('')
-    setSubscribeError('')
 
     if (!project?.id) return
 
-    try {
-      setSubscribeLoading(true)
+    setSubscribeSuccess('')
+    setSubscribeError('')
+    setSubscribeLoading(true)
 
+    try {
       await api.post(endpoints.subscribeToProject, {
         project: project.id,
         name: subscriberName.trim(),
         email: subscriberEmail.trim(),
       })
 
-      setSubscribeMessage('You have subscribed successfully to project updates.')
+      setSubscribeSuccess('You have subscribed successfully to project updates.')
       setSubscriberName('')
       setSubscriberEmail('')
     } catch (err) {
       setSubscribeError(
         err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Subscription failed. Please check your details and try again.'
+          'Subscription failed. Please check the information and try again.'
       )
     } finally {
       setSubscribeLoading(false)
@@ -319,9 +314,9 @@ function ProjectDetailsPage() {
       <div className="bg-[#F8F8F6]">
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <Card className="rounded-[28px] p-10">
-            <p className="text-2xl font-bold text-gray-900">Loading project...</p>
-            <p className="mt-3 text-sm text-gray-600">
-              Fetching project details, beneficiaries, and updates.
+            <p className="text-3xl font-bold text-gray-900">Loading project...</p>
+            <p className="mt-3 text-sm leading-7 text-gray-600">
+              Fetching project details, partners, beneficiaries, and public updates.
             </p>
           </Card>
         </section>
@@ -329,14 +324,14 @@ function ProjectDetailsPage() {
     )
   }
 
-  if (notFound || !project || !derived) {
+  if (notFound) {
     return (
       <div className="bg-[#F8F8F6]">
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <Card className="rounded-[28px] p-10 text-center">
             <p className="text-3xl font-bold text-gray-900">Project not found</p>
             <p className="mt-3 text-sm leading-7 text-gray-600">
-              The project you are looking for does not exist or is not available.
+              The requested project does not exist or is no longer available.
             </p>
             <div className="mt-6">
               <Link to="/projects">
@@ -349,13 +344,15 @@ function ProjectDetailsPage() {
     )
   }
 
-  if (error) {
+  if (error || !project || !derived) {
     return (
       <div className="bg-[#F8F8F6]">
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <Card className="rounded-[28px] p-10 text-center">
             <p className="text-3xl font-bold text-gray-900">Unable to load project</p>
-            <p className="mt-3 text-sm leading-7 text-red-600">{error}</p>
+            <p className="mt-3 text-sm leading-7 text-red-600">
+              {error || 'Something went wrong while loading the project.'}
+            </p>
             <div className="mt-6">
               <Link to="/projects">
                 <Button>Back to Projects</Button>
@@ -430,27 +427,14 @@ function ProjectDetailsPage() {
 
                 <div className="flex items-center gap-2">
                   <Users size={16} className="text-green-400" />
-                  <span>{derived.beneficiariesCount} beneficiaries stories</span>
+                  <span>{derived.beneficiariesCount} beneficiaries</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <CalendarDays size={16} className="text-green-400" />
-                  <span>{derived.duration}</span>
+                  <span>{derived.timeline}</span>
                 </div>
               </div>
-
-              {derived.partners.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {derived.partners.map((partner) => (
-                    <span
-                      key={partner}
-                      className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur"
-                    >
-                      {partner}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl">
@@ -460,31 +444,39 @@ function ProjectDetailsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-white/70">Funding status</p>
-                  <p className="text-2xl font-bold">{Math.round(derived.progress)}% funded</p>
+                  <p className="text-2xl font-bold">
+                    {Math.round(derived.fundingPercentage)}% funded
+                  </p>
                 </div>
               </div>
 
               <div className="mt-6 h-3 rounded-full bg-white/15">
                 <div
                   className="h-3 rounded-full bg-green-500 transition-all duration-500"
-                  style={{ width: `${Math.min(100, derived.progress)}%` }}
+                  style={{ width: `${derived.fundingPercentage}%` }}
                 />
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-4">
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Raised</p>
-                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.raised)}</p>
+                  <p className="mt-2 text-xl font-bold">
+                    {formatCurrency(derived.totalDonated)}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
-                  <p className="text-sm text-white/65">Goal</p>
-                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.goal)}</p>
+                  <p className="text-sm text-white/65">Target</p>
+                  <p className="mt-2 text-xl font-bold">
+                    {formatCurrency(derived.targetAmount)}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Remaining</p>
-                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.remaining)}</p>
+                  <p className="mt-2 text-xl font-bold">
+                    {formatCurrency(derived.remainingAmount)}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
@@ -493,11 +485,11 @@ function ProjectDetailsPage() {
                 </div>
               </div>
 
-              {derived.exceeded > 0 && (
+              {derived.exceededAmount > 0 && (
                 <div className="mt-4 rounded-2xl bg-emerald-500/15 p-4 text-emerald-100">
                   <p className="text-sm font-medium">Exceeded target by</p>
                   <p className="mt-1 text-xl font-bold">
-                    {formatCurrency(derived.exceeded)}
+                    {formatCurrency(derived.exceededAmount)}
                   </p>
                 </div>
               )}
@@ -524,8 +516,8 @@ function ProjectDetailsPage() {
             <Card className="rounded-[28px] p-7">
               <SectionTitle
                 badge="Project overview"
-                title="About this project"
-                text={project.description || 'No project overview available yet.'}
+                title="Everything about this project"
+                text="This page combines all public project information available from the backend."
               />
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -540,18 +532,21 @@ function ProjectDetailsPage() {
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Start date</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {formatDate(project.start_date)}
-                  </p>
+                  <p className="text-sm text-gray-500">Last updated</p>
+                  <p className="mt-2 font-semibold text-gray-900">{derived.updatedAt}</p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">End date</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {formatDate(project.end_date)}
-                  </p>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="mt-2 font-semibold text-gray-900">{derived.location}</p>
                 </div>
+              </div>
+
+              <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-5">
+                <h3 className="text-xl font-semibold text-gray-900">Description</h3>
+                <p className="mt-3 text-sm leading-7 text-gray-700">
+                  {project.description || 'No project description available yet.'}
+                </p>
               </div>
             </Card>
 
@@ -560,11 +555,31 @@ function ProjectDetailsPage() {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
+                  <Landmark size={20} className="mt-0.5 shrink-0 text-green-700" />
+                  <div>
+                    <p className="text-sm text-gray-500">Budget</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.budget)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
+                  <Target size={20} className="mt-0.5 shrink-0 text-green-700" />
+                  <div>
+                    <p className="text-sm text-gray-500">Target amount</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.targetAmount)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
                   <HandCoins size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Total donated</p>
                     <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(project.total_donated)}
+                      {formatCurrency(derived.totalDonated)}
                     </p>
                   </div>
                 </div>
@@ -574,27 +589,27 @@ function ProjectDetailsPage() {
                   <div>
                     <p className="text-sm text-gray-500">Goal reached</p>
                     <p className="mt-1 font-semibold text-gray-900">
-                      {project.is_goal_reached ? 'Yes' : 'Not yet'}
+                      {derived.isGoalReached ? 'Yes' : 'Not yet'}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
-                  <CalendarDays size={20} className="mt-0.5 shrink-0 text-green-700" />
-                  <div>
-                    <p className="text-sm text-gray-500">Target amount</p>
-                    <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(project.target_amount || project.budget)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
-                  <HeartPulse size={20} className="mt-0.5 shrink-0 text-green-700" />
+                  <BadgeCheck size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Funding percentage</p>
                     <p className="mt-1 font-semibold text-gray-900">
-                      {Number(project.funding_percentage || 0).toFixed(1)}%
+                      {Number(derived.fundingPercentage).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
+                  <AlertCircle size={20} className="mt-0.5 shrink-0 text-green-700" />
+                  <div>
+                    <p className="text-sm text-gray-500">Exceeded amount</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {formatCurrency(derived.exceededAmount)}
                     </p>
                   </div>
                 </div>
@@ -602,16 +617,130 @@ function ProjectDetailsPage() {
             </Card>
 
             <Card className="rounded-[28px] p-7">
-              <h2 className="text-3xl font-bold text-gray-900">Beneficiaries</h2>
+              <h2 className="text-3xl font-bold text-gray-900">Project timeline and records</h2>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">Start date</p>
+                  <p className="mt-2 font-semibold text-gray-900">
+                    {formatDate(project.start_date)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">End date</p>
+                  <p className="mt-2 font-semibold text-gray-900">
+                    {formatDate(project.end_date)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">Beneficiary records</p>
+                  <p className="mt-2 font-semibold text-gray-900">
+                    {derived.beneficiariesCount}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">Public updates</p>
+                  <p className="mt-2 font-semibold text-gray-900">{derived.updatesCount}</p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">Beneficiary images</p>
+                  <p className="mt-2 font-semibold text-gray-900">
+                    {derived.beneficiaryImageCount}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                  <p className="text-sm text-gray-500">Update images</p>
+                  <p className="mt-2 font-semibold text-gray-900">
+                    {derived.updateImageCount}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="rounded-[28px] p-7">
+              <h2 className="text-3xl font-bold text-gray-900">Partners</h2>
+
+              {partners.length === 0 ? (
+                <div className="mt-6 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
+                  No partner information is attached to this project yet.
+                </div>
+              ) : (
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  {partners.map((partner) => (
+                    <div
+                      key={partner.id || partner.name}
+                      className="rounded-[24px] border border-gray-200 bg-white p-5"
+                    >
+                      <div className="flex items-start gap-4">
+                        {partner.logo ? (
+                          <img
+                            src={buildMediaUrl(partner.logo)}
+                            alt={partner.name || 'Partner logo'}
+                            className="h-16 w-16 rounded-2xl object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F8F8F6] text-green-700">
+                            <Building2 size={24} />
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-xl font-semibold text-gray-900">
+                            {partner.name || 'Unnamed partner'}
+                          </h3>
+
+                          {partner.website && (
+                            <a
+                              href={partner.website}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-block text-sm font-medium text-green-700 hover:underline"
+                            >
+                              Visit website
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {partner.description && (
+                        <p className="mt-4 text-sm leading-7 text-gray-600">
+                          {partner.description}
+                        </p>
+                      )}
+
+                      <div className="mt-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            partner.is_active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {partner.is_active ? 'Active partner' : 'Inactive partner'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="rounded-[28px] p-7">
+              <h2 className="text-3xl font-bold text-gray-900">Beneficiaries and impact stories</h2>
 
               {beneficiaries.length === 0 ? (
                 <div className="mt-6 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
-                  No beneficiary records available for this project yet.
+                  No beneficiary records are available for this project yet.
                 </div>
               ) : (
                 <div className="mt-6 grid gap-5">
                   {beneficiaries.map((beneficiary) => {
-                    const images = getBeneficiaryImages(beneficiary)
+                    const images = extractBeneficiaryImages(beneficiary)
 
                     return (
                       <div
@@ -619,12 +748,14 @@ function ProjectDetailsPage() {
                         className="rounded-[24px] border border-gray-200 bg-white p-5"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div>
+                          <div className="max-w-3xl">
                             <h3 className="text-xl font-semibold text-gray-900">
                               {beneficiary.name || 'Unnamed beneficiary'}
                             </h3>
+
                             <p className="mt-3 text-sm leading-7 text-gray-600">
-                              {beneficiary.description || 'No beneficiary description available.'}
+                              {beneficiary.description ||
+                                'No beneficiary description available.'}
                             </p>
                           </div>
 
@@ -642,12 +773,18 @@ function ProjectDetailsPage() {
                         {images.length > 0 && (
                           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {images.map((image) => (
-                              <div key={image.id} className="overflow-hidden rounded-[18px]">
+                              <div
+                                key={image.id || image.image}
+                                className="overflow-hidden rounded-[20px]"
+                              >
                                 <img
-                                  src={buildAbsoluteUrl(image.image)}
+                                  src={buildMediaUrl(image.image)}
                                   alt={image.caption || beneficiary.name || 'Beneficiary image'}
-                                  className="h-48 w-full object-cover"
+                                  className="h-52 w-full object-cover"
                                 />
+                                {image.caption && (
+                                  <p className="mt-2 text-xs text-gray-500">{image.caption}</p>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -660,16 +797,16 @@ function ProjectDetailsPage() {
             </Card>
 
             <Card className="rounded-[28px] p-7">
-              <h2 className="text-3xl font-bold text-gray-900">Latest updates</h2>
+              <h2 className="text-3xl font-bold text-gray-900">Latest project updates</h2>
 
               {updates.length === 0 ? (
                 <div className="mt-6 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
-                  No project updates have been published yet.
+                  No public project updates have been published yet.
                 </div>
               ) : (
                 <div className="mt-8 space-y-6">
                   {updates.map((update, index) => {
-                    const images = getUpdateImages(update)
+                    const images = extractUpdateImages(update)
 
                     return (
                       <div key={update.id || index} className="flex gap-4">
@@ -677,7 +814,7 @@ function ProjectDetailsPage() {
                           <div className="mt-1 h-4 w-4 rounded-full bg-green-700" />
                         </div>
 
-                        <div className="flex-1 border-l border-gray-200 pl-5 pb-6">
+                        <div className="flex-1 border-l border-gray-200 pb-6 pl-5">
                           <p className="text-sm font-medium text-green-800">
                             {formatDate(update.created_at || update.date)}
                           </p>
@@ -687,17 +824,22 @@ function ProjectDetailsPage() {
                           </h3>
 
                           <p className="mt-3 text-sm leading-7 text-gray-600">
-                            {update.description || update.text || 'No update details available.'}
+                            {update.description ||
+                              update.text ||
+                              'No update description available.'}
                           </p>
 
                           {images.length > 0 && (
                             <div className="mt-5 grid gap-4 sm:grid-cols-2">
                               {images.map((image) => (
-                                <div key={image.id} className="overflow-hidden rounded-[18px]">
+                                <div
+                                  key={image.id || image.image}
+                                  className="overflow-hidden rounded-[20px]"
+                                >
                                   <img
-                                    src={buildAbsoluteUrl(image.image)}
-                                    alt={image.caption || update.title || 'Project update image'}
-                                    className="h-52 w-full object-cover"
+                                    src={buildMediaUrl(image.image)}
+                                    alt={image.caption || update.title || 'Update image'}
+                                    className="h-56 w-full object-cover"
                                   />
                                   {image.caption && (
                                     <p className="mt-2 text-xs text-gray-500">{image.caption}</p>
@@ -721,71 +863,74 @@ function ProjectDetailsPage() {
 
               <div className="mt-6 grid gap-4">
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Project budget</p>
+                  <p className="text-sm text-gray-500">Partners</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {formatCurrency(project.budget)}
+                    {derived.partnerCount}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Target amount</p>
+                  <p className="text-sm text-gray-500">Beneficiaries</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {formatCurrency(project.target_amount)}
+                    {derived.beneficiariesCount}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Beneficiary entries</p>
+                  <p className="text-sm text-gray-500">Updates</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {beneficiaries.length}
+                    {derived.updatesCount}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Published updates</p>
+                  <p className="text-sm text-gray-500">Funding progress</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {updates.length}
+                    {Math.round(derived.fundingPercentage)}%
                   </p>
                 </div>
               </div>
             </Card>
 
             <Card className="rounded-[28px] p-6">
-              <h3 className="text-2xl font-bold text-gray-900">Project organization</h3>
+              <h3 className="text-2xl font-bold text-gray-900">Available public data</h3>
 
-              <div className="mt-6 space-y-5">
-                <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                  <p className="text-sm text-gray-500">Location</p>
-                  <p className="mt-2 font-semibold text-gray-900">{derived.location}</p>
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <FileText size={17} className="mt-0.5 text-green-700" />
+                  <span>Project profile, status, location, budget, target, and dates</span>
                 </div>
 
-                {derived.partners.length > 0 && (
-                  <div className="rounded-2xl bg-[#F8F8F6] p-4">
-                    <p className="text-sm text-gray-500">Partners</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {derived.partners.map((partner) => (
-                        <span
-                          key={partner}
-                          className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-gray-800"
-                        >
-                          <Building2 size={14} className="text-green-700" />
-                          {partner}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <HandCoins size={17} className="mt-0.5 text-green-700" />
+                  <span>Funding totals and computed fundraising progress</span>
+                </div>
 
-                <div className="flex items-center gap-3 text-sm text-gray-700">
-                  <Clock3 size={17} className="text-green-700" />
-                  <span>Public project details and impact updates are available here.</span>
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <Building2 size={17} className="mt-0.5 text-green-700" />
+                  <span>Partner information attached to the project</span>
+                </div>
+
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <Users size={17} className="mt-0.5 text-green-700" />
+                  <span>Beneficiary records and narrative impact stories</span>
+                </div>
+
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <ImageIcon size={17} className="mt-0.5 text-green-700" />
+                  <span>Beneficiary and update images when available</span>
+                </div>
+
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <Clock3 size={17} className="mt-0.5 text-green-700" />
+                  <span>Public progress updates over time</span>
                 </div>
               </div>
             </Card>
 
             <Card
               id="subscribe-section"
-              className="rounded-[28px] overflow-hidden bg-black text-white"
+              className="overflow-hidden rounded-[28px] bg-black text-white"
             >
               <div className="relative overflow-hidden p-6">
                 <AnimatedBackground variant="dark" />
@@ -800,35 +945,31 @@ function ProjectDetailsPage() {
                   </h3>
 
                   <p className="mt-3 text-sm leading-7 text-white/70">
-                    Get notified when this project publishes new progress updates.
+                    Receive future progress updates for this project by email.
                   </p>
 
                   <form onSubmit={handleSubscribe} className="mt-6 space-y-3">
-                    <div>
-                      <input
-                        type="text"
-                        value={subscriberName}
-                        onChange={(e) => setSubscriberName(e.target.value)}
-                        placeholder="Your name"
-                        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none backdrop-blur"
-                        required
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={subscriberName}
+                      onChange={(e) => setSubscriberName(e.target.value)}
+                      placeholder="Your name"
+                      className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none backdrop-blur"
+                      required
+                    />
 
-                    <div>
-                      <input
-                        type="email"
-                        value={subscriberEmail}
-                        onChange={(e) => setSubscriberEmail(e.target.value)}
-                        placeholder="Your email"
-                        className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none backdrop-blur"
-                        required
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      value={subscriberEmail}
+                      onChange={(e) => setSubscriberEmail(e.target.value)}
+                      placeholder="Your email"
+                      className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none backdrop-blur"
+                      required
+                    />
 
-                    {subscribeMessage && (
+                    {subscribeSuccess && (
                       <div className="rounded-2xl bg-emerald-500/15 p-3 text-sm text-emerald-200">
-                        {subscribeMessage}
+                        {subscribeSuccess}
                       </div>
                     )}
 
@@ -850,9 +991,9 @@ function ProjectDetailsPage() {
                         </Button>
                       </Link>
 
-                      <Link to="/contact">
+                      <Link to="/projects">
                         <Button variant="darkOutline" className="w-full">
-                          Contact Us
+                          Explore More Projects
                         </Button>
                       </Link>
                     </div>
