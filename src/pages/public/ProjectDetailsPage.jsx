@@ -49,9 +49,22 @@ function formatDate(value) {
   })
 }
 
-function normalizeListResponse(payload) {
+function unwrapPayload(payload) {
+  if (!payload) return payload
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.results)) return payload.results
+  if (Array.isArray(payload?.data)) return payload.data
+  if (payload?.data && typeof payload.data === 'object') return payload.data
+  return payload
+}
+
+function normalizeListResponse(payload) {
+  const unwrapped = unwrapPayload(payload)
+
+  if (Array.isArray(unwrapped)) return unwrapped
+  if (Array.isArray(unwrapped?.results)) return unwrapped.results
+  if (Array.isArray(payload?.results)) return payload.results
+
   return []
 }
 
@@ -143,7 +156,8 @@ function extractUpdateImages(update) {
 }
 
 function ProjectDetailsPage() {
-  const { projectId } = useParams()
+  const params = useParams()
+  const routeProjectId = params.projectId ?? params.id ?? ''
 
   const [project, setProject] = useState(null)
   const [partners, setPartners] = useState([])
@@ -169,41 +183,68 @@ function ProjectDetailsPage() {
         setError('')
         setNotFound(false)
 
-        const [projectRes, beneficiariesRes, updatesRes] = await Promise.all([
-          api.get(endpoints.projectDetails(projectId)),
+        console.log('---------------- PROJECT DETAILS DEBUG ----------------')
+        console.log('useParams():', params)
+        console.log('Resolved routeProjectId:', routeProjectId)
+        console.log('Project details endpoint:', endpoints.projectDetails(routeProjectId))
+
+        // 1) Fetch project first. Only this request can decide notFound.
+        const projectRes = await api.get(endpoints.projectDetails(routeProjectId))
+
+        if (!active) return
+
+        console.log('Project details raw response:', projectRes)
+        console.log('Project details data:', projectRes.data)
+
+        const projectData = unwrapPayload(projectRes.data)
+
+        console.log('Unwrapped project data:', projectData)
+
+        setProject(projectData)
+
+        // partners are already nested objects in the project response
+        if (Array.isArray(projectData?.partners)) {
+          setPartners(projectData.partners)
+        } else if (Array.isArray(projectData?.partner_details)) {
+          setPartners(projectData.partner_details)
+        } else {
+          setPartners([])
+        }
+
+        // 2) Fetch secondary project-related data separately and fail softly
+        const [beneficiariesRes, updatesRes] = await Promise.allSettled([
           api.get(endpoints.beneficiaries, {
-            params: { project: projectId },
+            params: { project: routeProjectId },
           }),
           api.get(endpoints.projectUpdates, {
-            params: { project: projectId },
+            params: { project: routeProjectId },
           }),
         ])
 
         if (!active) return
 
-        const projectData = projectRes.data
-        const beneficiariesData = normalizeListResponse(beneficiariesRes.data)
-        const updatesData = normalizeListResponse(updatesRes.data)
-
-        setProject(projectData)
-        setBeneficiaries(beneficiariesData)
-        setUpdates(updatesData)
-
-        if (Array.isArray(projectData?.partner_details)) {
-          setPartners(projectData.partner_details)
-        } else if (Array.isArray(projectData?.partners) && projectData.partners.length > 0) {
-          const partnerResponses = await Promise.all(
-            projectData.partners.map((partnerId) =>
-              api.get(endpoints.partnerDetails(partnerId))
-            )
-          )
-
-          if (!active) return
-          setPartners(partnerResponses.map((response) => response.data))
+        if (beneficiariesRes.status === 'fulfilled') {
+          console.log('Beneficiaries raw response:', beneficiariesRes.value)
+          console.log('Beneficiaries data:', beneficiariesRes.value.data)
+          setBeneficiaries(normalizeListResponse(beneficiariesRes.value.data))
         } else {
-          setPartners([])
+          console.log('Beneficiaries request failed:', beneficiariesRes.reason)
+          setBeneficiaries([])
+        }
+
+        if (updatesRes.status === 'fulfilled') {
+          console.log('Updates raw response:', updatesRes.value)
+          console.log('Updates data:', updatesRes.value.data)
+          setUpdates(normalizeListResponse(updatesRes.value.data))
+        } else {
+          console.log('Updates request failed:', updatesRes.reason)
+          setUpdates([])
         }
       } catch (err) {
+        console.log('Project details page error:', err)
+        console.log('Project details page error response:', err?.response)
+        console.log('Project details page error response data:', err?.response?.data)
+
         if (!active) return
 
         if (err?.response?.status === 404) {
@@ -211,6 +252,7 @@ function ProjectDetailsPage() {
         } else {
           setError(
             err?.response?.data?.detail ||
+              err?.response?.data?.message ||
               'Failed to load project details. Please try again.'
           )
         }
@@ -224,7 +266,7 @@ function ProjectDetailsPage() {
     return () => {
       active = false
     }
-  }, [projectId])
+  }, [routeProjectId])
 
   const derived = useMemo(() => {
     if (!project) return null
@@ -315,9 +357,6 @@ function ProjectDetailsPage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <Card className="rounded-[28px] p-10">
             <p className="text-3xl font-bold text-gray-900">Loading project...</p>
-            <p className="mt-3 text-sm leading-7 text-gray-600">
-              Fetching project details, partners, beneficiaries, and public updates.
-            </p>
           </Card>
         </section>
       </div>
@@ -330,9 +369,6 @@ function ProjectDetailsPage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <Card className="rounded-[28px] p-10 text-center">
             <p className="text-3xl font-bold text-gray-900">Project not found</p>
-            <p className="mt-3 text-sm leading-7 text-gray-600">
-              The requested project does not exist or is no longer available.
-            </p>
             <div className="mt-6">
               <Link to="/projects">
                 <Button>Back to Projects</Button>
@@ -460,23 +496,17 @@ function ProjectDetailsPage() {
               <div className="mt-6 grid grid-cols-2 gap-4">
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Raised</p>
-                  <p className="mt-2 text-xl font-bold">
-                    {formatCurrency(derived.totalDonated)}
-                  </p>
+                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.totalDonated)}</p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Target</p>
-                  <p className="mt-2 text-xl font-bold">
-                    {formatCurrency(derived.targetAmount)}
-                  </p>
+                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.targetAmount)}</p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
                   <p className="text-sm text-white/65">Remaining</p>
-                  <p className="mt-2 text-xl font-bold">
-                    {formatCurrency(derived.remainingAmount)}
-                  </p>
+                  <p className="mt-2 text-xl font-bold">{formatCurrency(derived.remainingAmount)}</p>
                 </div>
 
                 <div className="rounded-2xl bg-white/5 p-4">
@@ -484,15 +514,6 @@ function ProjectDetailsPage() {
                   <p className="mt-2 text-xl font-bold">{derived.updatesCount}</p>
                 </div>
               </div>
-
-              {derived.exceededAmount > 0 && (
-                <div className="mt-4 rounded-2xl bg-emerald-500/15 p-4 text-emerald-100">
-                  <p className="text-sm font-medium">Exceeded target by</p>
-                  <p className="mt-1 text-xl font-bold">
-                    {formatCurrency(derived.exceededAmount)}
-                  </p>
-                </div>
-              )}
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <Link to={`/donate/${project.id}`}>
@@ -517,7 +538,7 @@ function ProjectDetailsPage() {
               <SectionTitle
                 badge="Project overview"
                 title="Everything about this project"
-                text="This page combines all public project information available from the backend."
+                text={derived.description}
               />
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -541,13 +562,6 @@ function ProjectDetailsPage() {
                   <p className="mt-2 font-semibold text-gray-900">{derived.location}</p>
                 </div>
               </div>
-
-              <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-5">
-                <h3 className="text-xl font-semibold text-gray-900">Description</h3>
-                <p className="mt-3 text-sm leading-7 text-gray-700">
-                  {project.description || 'No project description available yet.'}
-                </p>
-              </div>
             </Card>
 
             <Card className="rounded-[28px] p-7">
@@ -558,9 +572,7 @@ function ProjectDetailsPage() {
                   <Landmark size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Budget</p>
-                    <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(derived.budget)}
-                    </p>
+                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.budget)}</p>
                   </div>
                 </div>
 
@@ -568,9 +580,7 @@ function ProjectDetailsPage() {
                   <Target size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Target amount</p>
-                    <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(derived.targetAmount)}
-                    </p>
+                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.targetAmount)}</p>
                   </div>
                 </div>
 
@@ -578,9 +588,7 @@ function ProjectDetailsPage() {
                   <HandCoins size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Total donated</p>
-                    <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(derived.totalDonated)}
-                    </p>
+                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.totalDonated)}</p>
                   </div>
                 </div>
 
@@ -608,56 +616,8 @@ function ProjectDetailsPage() {
                   <AlertCircle size={20} className="mt-0.5 shrink-0 text-green-700" />
                   <div>
                     <p className="text-sm text-gray-500">Exceeded amount</p>
-                    <p className="mt-1 font-semibold text-gray-900">
-                      {formatCurrency(derived.exceededAmount)}
-                    </p>
+                    <p className="mt-1 font-semibold text-gray-900">{formatCurrency(derived.exceededAmount)}</p>
                   </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="rounded-[28px] p-7">
-              <h2 className="text-3xl font-bold text-gray-900">Project timeline and records</h2>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">Start date</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {formatDate(project.start_date)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">End date</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {formatDate(project.end_date)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">Beneficiary records</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {derived.beneficiariesCount}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">Public updates</p>
-                  <p className="mt-2 font-semibold text-gray-900">{derived.updatesCount}</p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">Beneficiary images</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {derived.beneficiaryImageCount}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                  <p className="text-sm text-gray-500">Update images</p>
-                  <p className="mt-2 font-semibold text-gray-900">
-                    {derived.updateImageCount}
-                  </p>
                 </div>
               </div>
             </Card>
@@ -708,22 +668,8 @@ function ProjectDetailsPage() {
                       </div>
 
                       {partner.description && (
-                        <p className="mt-4 text-sm leading-7 text-gray-600">
-                          {partner.description}
-                        </p>
+                        <p className="mt-4 text-sm leading-7 text-gray-600">{partner.description}</p>
                       )}
-
-                      <div className="mt-4">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            partner.is_active
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {partner.is_active ? 'Active partner' : 'Inactive partner'}
-                        </span>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -754,20 +700,9 @@ function ProjectDetailsPage() {
                             </h3>
 
                             <p className="mt-3 text-sm leading-7 text-gray-600">
-                              {beneficiary.description ||
-                                'No beneficiary description available.'}
+                              {beneficiary.description || 'No beneficiary description available.'}
                             </p>
                           </div>
-
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              beneficiary.is_active
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {beneficiary.is_active ? 'Active' : 'Inactive'}
-                          </span>
                         </div>
 
                         {images.length > 0 && (
@@ -782,9 +717,6 @@ function ProjectDetailsPage() {
                                   alt={image.caption || beneficiary.name || 'Beneficiary image'}
                                   className="h-52 w-full object-cover"
                                 />
-                                {image.caption && (
-                                  <p className="mt-2 text-xs text-gray-500">{image.caption}</p>
-                                )}
                               </div>
                             ))}
                           </div>
@@ -824,9 +756,7 @@ function ProjectDetailsPage() {
                           </h3>
 
                           <p className="mt-3 text-sm leading-7 text-gray-600">
-                            {update.description ||
-                              update.text ||
-                              'No update description available.'}
+                            {update.description || 'No update description available.'}
                           </p>
 
                           {images.length > 0 && (
@@ -841,9 +771,6 @@ function ProjectDetailsPage() {
                                     alt={image.caption || update.title || 'Update image'}
                                     className="h-56 w-full object-cover"
                                   />
-                                  {image.caption && (
-                                    <p className="mt-2 text-xs text-gray-500">{image.caption}</p>
-                                  )}
                                 </div>
                               ))}
                             </div>
@@ -864,23 +791,17 @@ function ProjectDetailsPage() {
               <div className="mt-6 grid gap-4">
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
                   <p className="text-sm text-gray-500">Partners</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {derived.partnerCount}
-                  </p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{derived.partnerCount}</p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
                   <p className="text-sm text-gray-500">Beneficiaries</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {derived.beneficiariesCount}
-                  </p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{derived.beneficiariesCount}</p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
                   <p className="text-sm text-gray-500">Updates</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {derived.updatesCount}
-                  </p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{derived.updatesCount}</p>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8F8F6] p-4">
@@ -888,42 +809,6 @@ function ProjectDetailsPage() {
                   <p className="mt-2 text-2xl font-bold text-gray-900">
                     {Math.round(derived.fundingPercentage)}%
                   </p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="rounded-[28px] p-6">
-              <h3 className="text-2xl font-bold text-gray-900">Available public data</h3>
-
-              <div className="mt-6 space-y-4">
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <FileText size={17} className="mt-0.5 text-green-700" />
-                  <span>Project profile, status, location, budget, target, and dates</span>
-                </div>
-
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <HandCoins size={17} className="mt-0.5 text-green-700" />
-                  <span>Funding totals and computed fundraising progress</span>
-                </div>
-
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <Building2 size={17} className="mt-0.5 text-green-700" />
-                  <span>Partner information attached to the project</span>
-                </div>
-
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <Users size={17} className="mt-0.5 text-green-700" />
-                  <span>Beneficiary records and narrative impact stories</span>
-                </div>
-
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <ImageIcon size={17} className="mt-0.5 text-green-700" />
-                  <span>Beneficiary and update images when available</span>
-                </div>
-
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <Clock3 size={17} className="mt-0.5 text-green-700" />
-                  <span>Public progress updates over time</span>
                 </div>
               </div>
             </Card>
@@ -940,9 +825,7 @@ function ProjectDetailsPage() {
                     Stay informed
                   </p>
 
-                  <h3 className="mt-3 text-2xl font-bold">
-                    Subscribe for project updates
-                  </h3>
+                  <h3 className="mt-3 text-2xl font-bold">Subscribe for project updates</h3>
 
                   <p className="mt-3 text-sm leading-7 text-white/70">
                     Receive future progress updates for this project by email.
@@ -988,12 +871,6 @@ function ProjectDetailsPage() {
                       <Link to={`/donate/${project.id}`}>
                         <Button variant="darkOutline" className="w-full">
                           Donate Now <ArrowRight size={16} className="ml-2" />
-                        </Button>
-                      </Link>
-
-                      <Link to="/projects">
-                        <Button variant="darkOutline" className="w-full">
-                          Explore More Projects
                         </Button>
                       </Link>
                     </div>
