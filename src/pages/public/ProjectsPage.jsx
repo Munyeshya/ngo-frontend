@@ -230,8 +230,8 @@ function ProjectsPage() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${selectedCategory === category
-                    ? 'bg-green-800 text-white'
-                    : 'bg-green-50 text-green-800 hover:bg-green-100'
+                  ? 'bg-green-800 text-white'
+                  : 'bg-green-50 text-green-800 hover:bg-green-100'
                   }`}
               >
                 {category}
@@ -285,8 +285,8 @@ function ProjectsPage() {
                       </span>
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${project.status === 'Almost Funded'
-                            ? 'bg-amber-100/90 text-amber-800'
-                            : 'bg-green-100/90 text-green-800'
+                          ? 'bg-amber-100/90 text-amber-800'
+                          : 'bg-green-100/90 text-green-800'
                           }`}
                       >
                         {project.status}
@@ -343,14 +343,17 @@ function ProjectsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex gap-3">
-                      <Link to={`/projects/${project.slug || project.id}`} className="flex-1">
-                        <Button className="w-full">
-                          View Project <ArrowRight size={16} className="ml-2" />
+                    <div className="mt-6 flex items-center gap-3">
+                      <Link to={`/projects/${project.slug || project.id}`} className="flex-1 min-w-0">
+                        <Button className="w-full whitespace-nowrap">
+                          View Project <ArrowRight size={16} className="ml-2 shrink-0" />
                         </Button>
                       </Link>
 
-                      <Button variant="outline" className="flex-1">
+                      <Button
+                        variant="outline"
+                        className="whitespace-nowrap"
+                      >
                         Donate
                       </Button>
                     </div>
