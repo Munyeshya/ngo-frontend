@@ -8,11 +8,14 @@ import {
   Instagram,
 } from 'lucide-react'
 import Button from '../../components/ui/Button'
+import AnimatedBackground from '../../components/common/AnimatedBackground'
 
 function ContactPage() {
   return (
-    <div className="bg-[#F6F6F4]">
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+    <div className="relative overflow-hidden bg-[#F6F6F4]">
+      <AnimatedBackground variant="light" />
+
+      <section className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <div className="overflow-hidden rounded-[26px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
           <div className="grid lg:grid-cols-[320px_1fr]">
             <div className="bg-black px-6 py-8 text-white sm:px-8 sm:py-9">
@@ -128,9 +131,7 @@ function ContactPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-800">
-                    Subject
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-800">Subject</label>
                   <input
                     type="text"
                     placeholder="Subject"
@@ -139,9 +140,7 @@ function ContactPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-800">
-                    Message
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-800">Message</label>
                   <textarea
                     rows="5"
                     placeholder="Message"
@@ -160,7 +159,7 @@ function ContactPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-14">
+      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-14">
         <div className="grid gap-6 lg:grid-cols-[0.42fr_1fr]">
           <div className="rounded-[24px] bg-black p-6 text-white shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
             <div className="flex items-center gap-3">
@@ -182,7 +181,8 @@ function ContactPage() {
                 8:00am – 6:00pm
               </p>
               <p>
-                <span className="font-semibold text-white">Nearby:</span> Central Kigali business area
+                <span className="font-semibold text-white">Nearby:</span> Central Kigali business
+                area
               </p>
             </div>
           </div>

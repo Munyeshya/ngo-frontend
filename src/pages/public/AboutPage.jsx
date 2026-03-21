@@ -1,5 +1,6 @@
 import { HeartHandshake, Eye, ShieldCheck } from 'lucide-react'
 import SectionTitle from '../../components/common/SectionTitle'
+import AnimatedBackground from '../../components/common/AnimatedBackground'
 
 const items = [
   {
@@ -22,8 +23,10 @@ const items = [
 function AboutPage() {
   return (
     <div className="bg-[#F8F8F6]">
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+      <section className="relative overflow-hidden bg-white">
+        <AnimatedBackground variant="light" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionTitle
             badge="About us"
             title="About our organization"
@@ -82,8 +85,10 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-black">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 text-white sm:px-6 lg:grid-cols-2 lg:px-8">
+      <section className="relative overflow-hidden bg-black">
+        <AnimatedBackground variant="dark" />
+
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 text-white sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
               Why this matters
@@ -94,7 +99,9 @@ function AboutPage() {
           </div>
 
           <p className="text-base leading-8 text-white/70">
-            This platform is not just about collecting donations. It is about helping NGOs communicate real progress, helping donors understand where support goes, and building a public digital space where impact can be followed with confidence.
+            This platform is not just about collecting donations. It is about helping NGOs
+            communicate real progress, helping donors understand where support goes, and building a
+            public digital space where impact can be followed with confidence.
           </p>
         </div>
       </section>

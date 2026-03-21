@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Twitter, HeartHandshake } from 'lucide-react'
+import AnimatedBackground from '../common/AnimatedBackground'
 
 const aboutLinks = [
   { name: 'About Us', to: '/about' },
@@ -27,8 +28,10 @@ const causeImages = [
 
 function Footer() {
   return (
-    <footer className="bg-black text-white">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+    <footer className="relative overflow-hidden bg-black text-white">
+      <AnimatedBackground variant="dark" />
+
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div>
           <div className="flex items-center gap-2">
             <HeartHandshake size={18} className="text-white" />
@@ -36,7 +39,8 @@ function Footer() {
           </div>
 
           <p className="mt-5 max-w-xs text-sm leading-7 text-white/70">
-            Building trust between donors, communities, and organizations through better project visibility, transparent giving, and measurable impact.
+            Building trust between donors, communities, and organizations through better project
+            visibility, transparent giving, and measurable impact.
           </p>
 
           <div className="mt-6 space-y-3 text-sm">
@@ -116,7 +120,7 @@ function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="relative z-10 border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm text-white/50 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <p>© 2026 NGO Platform. All rights reserved.</p>
           <p>Designed for transparency, accountability, and community impact.</p>

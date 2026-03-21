@@ -1,9 +1,18 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, HeartHandshake, ShieldCheck, HandCoins, Users, HeartPulse, Play } from 'lucide-react'
+import {
+  ArrowRight,
+  HeartHandshake,
+  ShieldCheck,
+  HandCoins,
+  Users,
+  HeartPulse,
+  Play,
+} from 'lucide-react'
 import HeroSlider from '../../components/home/HeroSlider'
 import SectionTitle from '../../components/common/SectionTitle'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import AnimatedBackground from '../../components/common/AnimatedBackground'
 
 const features = [
   {
@@ -50,7 +59,8 @@ function HomePage() {
               </h2>
 
               <p className="mt-6 text-base leading-8 text-gray-600">
-                The platform is designed to help donors, communities, and NGOs connect through transparent project visibility, trusted giving, and impact-focused communication.
+                The platform is designed to help donors, communities, and NGOs connect through
+                transparent project visibility, trusted giving, and impact-focused communication.
               </p>
 
               <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -83,7 +93,9 @@ function HomePage() {
               Together, we can change lives for the better
             </h3>
             <p className="mt-5 max-w-md text-sm leading-8 text-gray-600">
-              Transparent digital experiences help people trust what they support. By making project progress, updates, and outcomes clearer, NGOs can build stronger and more lasting relationships with donors and communities.
+              Transparent digital experiences help people trust what they support. By making
+              project progress, updates, and outcomes clearer, NGOs can build stronger and more
+              lasting relationships with donors and communities.
             </p>
 
             <div className="mt-6">
@@ -166,8 +178,10 @@ function HomePage() {
         </div>
       </section>
 
-      <section className="bg-black">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-16 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
+      <section className="relative overflow-hidden bg-black">
+        <AnimatedBackground variant="dark" />
+
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-16 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
           <div className="max-w-2xl">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
               Support transparent change
@@ -176,7 +190,8 @@ function HomePage() {
               Help fund projects that deliver visible community impact
             </h2>
             <p className="mt-4 text-base leading-8 text-white/70">
-              Explore causes, follow updates, and contribute to meaningful initiatives with confidence.
+              Explore causes, follow updates, and contribute to meaningful initiatives with
+              confidence.
             </p>
           </div>
 
