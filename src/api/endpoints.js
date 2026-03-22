@@ -15,6 +15,14 @@ const endpoints = {
 
   subscribeToProject: '/projects/interests/subscribe/',
   unsubscribeFromProject: '/projects/interests/unsubscribe/',
+  
+  login: '/users/login/',
+  register: '/users/register/',
+  refreshToken: '/users/token/refresh/',
+  logout: '/users/logout/',
+  profile: '/users/profile/',
+  me: '/users/me/',
+  claimDonorAccount: '/users/claim-donor-account/',
 }
 
 export default endpoints
