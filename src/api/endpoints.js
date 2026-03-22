@@ -23,6 +23,9 @@ const endpoints = {
   profile: '/users/profile/',
   me: '/users/me/',
   claimDonorAccount: '/users/claim-donor-account/',
+   
+  myDonations: '/donations/my/',
+  myInterests: '/projects/interests/my/',
 }
 
 export default endpoints
