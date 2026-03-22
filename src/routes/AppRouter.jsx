@@ -11,6 +11,9 @@ import AboutPage from '../pages/public/AboutPage'
 import ContactPage from '../pages/public/ContactPage'
 import LoginPage from '../pages/auth/LoginPage'
 import DonorProfilePage from '../pages/donor/DonorProfilePage'
+import DonorDashboardPage from '../pages/donor/DonorDashboardPage'
+import DonorDonationHistoryPage from '../pages/donor/DonorDonationHistoryPage'
+import DonorSubscriptionsPage from '../pages/donor/DonorSubscriptionsPage'
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
@@ -36,6 +39,9 @@ function AppRouter() {
 
         <Route element={<ProtectedRoute allowedRoles={['donor']} />}>
           <Route element={<DonorLayout />}>
+            <Route path="/donor/dashboard" element={<DonorDashboardPage />} />
+            <Route path="/donor/donations" element={<DonorDonationHistoryPage />} />
+            <Route path="/donor/subscriptions" element={<DonorSubscriptionsPage />} />
             <Route path="/donor/profile" element={<DonorProfilePage />} />
           </Route>
         </Route>
