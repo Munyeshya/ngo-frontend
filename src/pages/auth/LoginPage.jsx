@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Loader2, LogIn, ShieldCheck } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
@@ -98,9 +98,7 @@ function LoginPage() {
       }
 
       setSuccess('Login successful. Redirecting...')
-
-      const redirectTo = getRoleRedirect(user?.role)
-      navigate(redirectTo, { replace: true })
+      navigate(getRoleRedirect(user?.role), { replace: true })
     } catch (err) {
       const message =
         err?.response?.data?.detail ||
@@ -117,53 +115,57 @@ function LoginPage() {
 
   return (
     <Card className="overflow-hidden rounded-[28px] p-0">
-      <div className="grid lg:grid-cols-[1fr_420px]">
-        <div className="hidden bg-gradient-to-br from-green-900 via-green-800 to-green-700 p-8 text-white lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
-              <ShieldCheck size={14} />
-              NGO Platform Access
-            </div>
+      <div className="grid lg:grid-cols-[1fr_430px]">
+        <div className="relative hidden min-h-[640px] overflow-hidden lg:block">
+          <img
+            src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1400&q=80"
+            alt="Community support"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
 
-            <h2 className="mt-6 text-4xl font-bold leading-tight">
-              Welcome back to your NGO account
-            </h2>
+          <div className="absolute inset-0 bg-green-950/55" />
 
-            <p className="mt-4 max-w-md text-sm leading-7 text-white/75">
-              Sign in as donor, staff, or admin to access the right dashboard and continue your
-              work securely.
-            </p>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-green-950/35 to-black/60" />
 
-          <div className="grid gap-4">
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-              <p className="text-sm font-semibold">Donors</p>
-              <p className="mt-1 text-sm text-white/75">
-                Track your donations, history, and supported projects.
+          <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
+            <div>
+              <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur">
+                Together for impact
+              </span>
+
+              <h2 className="mt-6 max-w-xl text-4xl font-bold leading-tight">
+                Support meaningful causes and help communities thrive
+              </h2>
+
+              <p className="mt-5 max-w-lg text-sm leading-8 text-white/80">
+                This platform connects people, projects, and support systems to make giving more
+                transparent, impactful, and accessible. Every contribution helps strengthen lives,
+                expand opportunities, and build lasting change.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-              <p className="text-sm font-semibold">Staff</p>
-              <p className="mt-1 text-sm text-white/75">
-                Manage project operations, updates, beneficiaries, and progress.
-              </p>
-            </div>
+            <div className="grid gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <p className="text-sm font-semibold">Transparent giving</p>
+                <p className="mt-1 text-sm leading-7 text-white/75">
+                  Follow real projects, see progress, and support verified impact.
+                </p>
+              </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-              <p className="text-sm font-semibold">Admins</p>
-              <p className="mt-1 text-sm text-white/75">
-                Access platform-wide management, users, reports, and controls.
-              </p>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <p className="text-sm font-semibold">Community-centered action</p>
+                <p className="mt-1 text-sm leading-7 text-white/75">
+                  From education and health to livelihoods and sustainability, every project serves
+                  a meaningful cause.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="p-6 sm:p-8 lg:p-10">
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Login to continue to your account.
-          </p>
+          <p className="mt-2 text-sm text-gray-600">Login to continue to your account.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
