@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
@@ -114,18 +114,18 @@ function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0B0F0C] px-4 py-8 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden bg-[#F6F8F4] px-4 py-8 sm:px-6 lg:px-8">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute left-10 top-10 h-56 w-56 rounded-full bg-green-700/15 blur-3xl" />
-        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="absolute left-10 top-10 h-56 w-56 rounded-full bg-green-200/50 blur-3xl" />
+        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-emerald-100/70 blur-3xl" />
 
-        <div className="absolute inset-0 opacity-[0.05]">
+        <div className="absolute inset-0 opacity-[0.045]">
           <div
             className="h-full w-full"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)
+                linear-gradient(rgba(22,101,52,0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(22,101,52,0.12) 1px, transparent 1px)
               `,
               backgroundSize: '38px 38px',
             }}
@@ -134,7 +134,7 @@ function LoginPage() {
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
-        <Card className="w-full overflow-hidden rounded-[28px] border border-white/10 bg-[#F3F4F1] p-0 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
+        <Card className="w-full overflow-hidden rounded-[28px] border border-[#DDE5DB] bg-[#F3F4F1] p-0 shadow-[0_24px_80px_rgba(16,24,40,0.12)]">
           <div className="grid min-h-[640px] lg:grid-cols-[1.05fr_0.95fr]">
             <div className="relative hidden min-h-[640px] overflow-hidden lg:block">
               <img
@@ -143,8 +143,8 @@ function LoginPage() {
                 className="absolute inset-0 h-full w-full object-cover"
               />
 
-              <div className="absolute inset-0 bg-green-950/55" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-green-950/35 to-black/60" />
+              <div className="absolute inset-0 bg-green-950/50" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-green-950/30 to-black/45" />
 
               <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
                 <div>
@@ -184,6 +184,14 @@ function LoginPage() {
 
             <div className="flex items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-14">
               <div className="w-full max-w-[380px]">
+                <Link
+                  to="/"
+                  className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-700 transition hover:text-green-700"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Home
+                </Link>
+
                 <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
                 <p className="mt-2 text-sm text-gray-600">
                   Login to continue to your account.
