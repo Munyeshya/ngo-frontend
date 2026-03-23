@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, X, ChevronRight } from 'lucide-react'
+import { Menu, X, ChevronRight, UserCircle2 } from 'lucide-react'
 import Logo from '../common/Logo'
 import Button from '../ui/Button'
+import { getToken, getUser } from '../../utils/storage'
 
 const navLinks = [
   { name: 'Home', to: '/' },
@@ -13,6 +14,19 @@ const navLinks = [
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+
+  const token = getToken()
+  const user = getUser()
+  const isLoggedIn = Boolean(token && user)
+
+  const accountLink = useMemo(() => {
+    const role = String(user?.role || '').toLowerCase()
+
+    if (role === 'donor') return '/donor/dashboard'
+    if (role === 'admin' || role === 'staff') return '/dashboard'
+
+    return '/login'
+  }, [user])
 
   const linkClass = ({ isActive }) =>
     `text-sm font-medium transition ${
@@ -35,9 +49,23 @@ function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link to="/login">
-            <Button variant="outline">Login</Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link to={accountLink}>
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-green-200 bg-green-50 text-green-800 transition hover:border-green-300 hover:bg-green-100"
+                aria-label="My account"
+                title="My account"
+              >
+                <UserCircle2 size={22} />
+              </button>
+            </Link>
+          ) : (
+            <Link to="/login">
+              <Button variant="outline">Login</Button>
+            </Link>
+          )}
+
           <Link to="/projects">
             <Button>
               Donate Now <ChevronRight size={16} className="ml-1" />
@@ -80,11 +108,24 @@ function Navbar() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Link to="/login" onClick={() => setIsOpen(false)}>
-              <Button variant="outline" className="w-full">
-                Login
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link to={accountLink} onClick={() => setIsOpen(false)}>
+                <button
+                  type="button"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 text-sm font-medium text-green-800 transition hover:border-green-300 hover:bg-green-100"
+                >
+                  <UserCircle2 size={18} />
+                  My Account
+                </button>
+              </Link>
+            ) : (
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  Login
+                </Button>
+              </Link>
+            )}
+
             <Link to="/projects" onClick={() => setIsOpen(false)}>
               <Button className="w-full">Donate Now</Button>
             </Link>
