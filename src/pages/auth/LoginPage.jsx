@@ -6,6 +6,7 @@ import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import { setAuth } from '../../utils/storage'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -33,7 +34,7 @@ function LoginPage() {
     const normalizedRole = String(role || '').toLowerCase()
 
     if (normalizedRole === 'admin') return '/admin/dashboard'
-    if (normalizedRole === 'staff') return '/staff/dashboard'
+    if (normalizedRole === 'staff') return '/dashboard'
     if (normalizedRole === 'donor') return '/donor/dashboard'
 
     return '/'
@@ -72,30 +73,33 @@ function LoginPage() {
         loginResponse?.data?.data?.refresh ||
         loginResponse?.data?.token?.refresh
 
+      let user =
+        loginResponse?.data?.user ||
+        loginResponse?.data?.data?.user ||
+        null
+
       if (!access) {
         throw new Error('Access token was not returned by the server.')
       }
 
-      localStorage.setItem('ngo_access_token', access)
-
-      if (refresh) {
-        localStorage.setItem('ngo_refresh_token', refresh)
-      }
-
       api.defaults.headers.common.Authorization = `Bearer ${access}`
 
-      const profileResponse = await api.get(
-        endpoints.profile || endpoints.me || '/users/profile/'
-      )
+      if (!user) {
+        const profileResponse = await api.get(
+          endpoints.profile || endpoints.me || '/users/profile/'
+        )
 
-      const user =
-        profileResponse?.data?.data ||
-        profileResponse?.data?.user ||
-        profileResponse?.data
-
-      if (user) {
-        localStorage.setItem('ngo_user', JSON.stringify(user))
+        user =
+          profileResponse?.data?.data ||
+          profileResponse?.data?.user ||
+          profileResponse?.data
       }
+
+      setAuth({
+        access,
+        refresh,
+        user,
+      })
 
       setSuccess('Login successful. Redirecting...')
       navigate(getRoleRedirect(user?.role), { replace: true })
