@@ -16,7 +16,7 @@ const slides = [
   {
     id: 2,
     image:
-      'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1600&q=80',
+      'https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Together We Can Change Lives For The Better',
     text: 'Discover active causes, follow project updates, and support organizations making measurable change.',
     amount: '$938,200',
@@ -25,7 +25,7 @@ const slides = [
   {
     id: 3,
     image:
-      'https://images.unsplash.com/photo-1593113598332-cd59a93d7c2b?auto=format&fit=crop&w=1600&q=80',
+      'https://www.borgenmagazine.com/wp-content/uploads/2020/11/Water-for-Good-fighting-for-accessible-water-in-Central-Africa-Republic-1-e1606664321290.jpg',
     title: 'Transforming Good Intentions Into Real Action',
     text: 'A better public NGO platform for trust, visibility, and impact-focused giving.',
     amount: '$1,762,310',
