@@ -20,6 +20,7 @@ import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
 import ProjectDetailsPage from '../pages/public/ProjectDetailsPage'
 import DonatePage from '../pages/public/DonatePage'
+import DashboardBeneficiariesPage from '../pages/dashboard/BeneficiariesPage'
 
 function AppRouter() {
   return (
@@ -51,6 +52,7 @@ function AppRouter() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
             <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
+            <Route path="/dashboard/beneficiaries" element={<DashboardBeneficiariesPage />} />
           </Route>
         </Route>
 
