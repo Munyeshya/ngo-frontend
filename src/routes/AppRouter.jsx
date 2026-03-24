@@ -14,10 +14,13 @@ import DonorProfilePage from '../pages/donor/DonorProfilePage'
 import DonorDashboardPage from '../pages/donor/DonorDashboardPage'
 import DonorDonationHistoryPage from '../pages/donor/DonorDonationHistoryPage'
 import DonorSubscriptionsPage from '../pages/donor/DonorSubscriptionsPage'
+
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
-import DashboardProjectsPage from '../pages/dashboard/ProjectsPage'
-import DashboardBeneficiariesPage from '../pages/dashboard/BeneficiariesPage'
+import DashboardProjectsPage from '../pages/dashboard/DashboardProjectsPage'
+import DashboardBeneficiariesPage from '../pages/dashboard/DashboardBeneficiariesPage'
 import DashboardDonationsPage from '../pages/dashboard/DonationsPage'
+import DashboardUpdatesPage from '../pages/dashboard/UpdatesPage'
+
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
 import ProjectDetailsPage from '../pages/public/ProjectDetailsPage'
@@ -55,6 +58,7 @@ function AppRouter() {
             <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
             <Route path="/dashboard/beneficiaries" element={<DashboardBeneficiariesPage />} />
             <Route path="/dashboard/donations" element={<DashboardDonationsPage />} />
+            <Route path="/dashboard/updates" element={<DashboardUpdatesPage />} />
           </Route>
         </Route>
 

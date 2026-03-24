@@ -67,7 +67,7 @@ function formatDate(value) {
   })
 }
 
-function BeneficiariesPage() {
+function DashboardBeneficiariesPage() {
   const [beneficiaries, setBeneficiaries] = useState([])
   const [beneficiariesCount, setBeneficiariesCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -418,4 +418,4 @@ function BeneficiariesPage() {
   )
 }
 
-export default BeneficiariesPage
+export default DashboardBeneficiariesPage

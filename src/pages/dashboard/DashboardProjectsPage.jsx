@@ -85,7 +85,7 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
-function ProjectsPage() {
+function DashboardProjectsPage() {
   const [projects, setProjects] = useState([])
   const [projectsCount, setProjectsCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -503,4 +503,4 @@ function FilterIcon() {
   )
 }
 
-export default ProjectsPage
+export default DashboardProjectsPage
