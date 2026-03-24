@@ -16,11 +16,12 @@ import DonorDonationHistoryPage from '../pages/donor/DonorDonationHistoryPage'
 import DonorSubscriptionsPage from '../pages/donor/DonorSubscriptionsPage'
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import DashboardProjectsPage from '../pages/dashboard/ProjectsPage'
+import DashboardBeneficiariesPage from '../pages/dashboard/BeneficiariesPage'
+import DashboardDonationsPage from '../pages/dashboard/DonationsPage'
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
 import ProjectDetailsPage from '../pages/public/ProjectDetailsPage'
 import DonatePage from '../pages/public/DonatePage'
-import DashboardBeneficiariesPage from '../pages/dashboard/BeneficiariesPage'
 
 function AppRouter() {
   return (
@@ -53,6 +54,7 @@ function AppRouter() {
             <Route path="/dashboard" element={<DashboardHomePage />} />
             <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
             <Route path="/dashboard/beneficiaries" element={<DashboardBeneficiariesPage />} />
+            <Route path="/dashboard/donations" element={<DashboardDonationsPage />} />
           </Route>
         </Route>
 
