@@ -12,6 +12,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { getUser, setUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -55,15 +56,6 @@ function formatDate(value) {
   })
 }
 
-function getStoredUser() {
-  try {
-    const raw = localStorage.getItem('ngo_user')
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
 function buildDisplayName(user) {
   if (!user) return 'Donor'
 
@@ -91,7 +83,7 @@ function getProjectIdFromInterest(item) {
 }
 
 function DonorDashboardPage() {
-  const [profile, setProfile] = useState(getStoredUser())
+  const [profile, setProfile] = useState(getUser())
   const [donations, setDonations] = useState([])
   const [interests, setInterests] = useState([])
   const [loading, setLoading] = useState(true)
@@ -106,7 +98,7 @@ function DonorDashboardPage() {
         setError('')
 
         const [profileRes, donationsRes, interestsRes] = await Promise.allSettled([
-          api.get(endpoints.profile || endpoints.me),
+          api.get(endpoints.profile),
           api.get(endpoints.myDonations),
           api.get(endpoints.myInterests),
         ])
@@ -118,7 +110,7 @@ function DonorDashboardPage() {
           setProfile(profileData)
 
           if (profileData) {
-            localStorage.setItem('ngo_user', JSON.stringify(profileData))
+            setUser(profileData)
           }
         }
 
