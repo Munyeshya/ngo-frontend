@@ -64,36 +64,39 @@ function DashboardSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-[272px] flex-col bg-[#0F172A] text-white">
+    <aside className="flex h-full w-[272px] flex-col bg-[#08111f] text-white">
       <div className="border-b border-white/10 px-5 py-5">
         <Link to="/" className="inline-flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-100 ring-1 ring-emerald-400/25">
             <BriefcaseBusiness size={18} />
           </div>
 
           <div>
-            <p className="text-sm font-semibold">NGO Platform</p>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-white/55">Admin / Staff Portal</p>
+            <p className="text-sm font-semibold text-white">NGO Platform</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300">Admin / Staff Portal</p>
           </div>
         </Link>
       </div>
 
       <div className="px-4 py-4">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-3.5">
+        <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-3.5 ring-1 ring-white/5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-500/20 text-sm font-bold text-green-200">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/20 text-sm font-bold text-emerald-100 ring-1 ring-emerald-400/20">
               {initials}
             </div>
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-              <p className="truncate text-[11px] capitalize tracking-[0.08em] text-white/60">{role}</p>
+              <p className="truncate text-[11px] capitalize tracking-[0.08em] text-slate-300">{role}</p>
             </div>
           </div>
         </div>
       </div>
 
       <nav className="flex-1 px-3 pb-3">
+        <p className="px-3.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+          Navigation
+        </p>
         <div className="space-y-1">
           {items.map((item) => {
             const Icon = item.icon
@@ -103,15 +106,15 @@ function DashboardSidebar() {
                 key={item.name}
                 to={item.href}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium transition ${
+                  `group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                     isActive
-                      ? 'bg-white text-[#14532d] shadow-sm'
-                      : 'text-slate-200 hover:bg-slate-800 hover:text-white focus-visible:bg-slate-800 focus-visible:text-white'
+                      ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-100 shadow-[0_10px_24px_rgba(15,23,42,0.22)]'
+                      : 'text-white hover:bg-slate-800 hover:text-white focus-visible:bg-slate-800 focus-visible:text-white'
                   }`
                 }
               >
                 <Icon size={17} className="shrink-0" />
-                <span>{item.name}</span>
+                <span className="tracking-[0.01em]">{item.name}</span>
               </NavLink>
             )
           })}
@@ -120,7 +123,7 @@ function DashboardSidebar() {
         <div className="mt-5 border-t border-white/10 pt-5">
           <Link
             to="/projects"
-            className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-800 hover:text-white"
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-slate-800 hover:text-white"
           >
             <ArrowLeft size={17} />
             <span>Back to Public Site</span>
@@ -132,7 +135,7 @@ function DashboardSidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-slate-800"
         >
           <LogOut size={17} />
           Logout
