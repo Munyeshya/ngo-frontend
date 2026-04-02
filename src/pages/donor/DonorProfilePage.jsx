@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, Mail, Save, ShieldCheck, UserCircle2 } from 
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { getUser, setUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -11,15 +12,6 @@ function unwrapPayload(payload) {
   if (Array.isArray(payload?.data)) return payload.data
   if (payload?.data && typeof payload.data === 'object') return payload.data
   return payload
-}
-
-function getStoredUser() {
-  try {
-    const raw = localStorage.getItem('ngo_user')
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
 }
 
 function getInitials(name) {
@@ -44,18 +36,18 @@ function buildDisplayName(user) {
 }
 
 function DonorProfilePage() {
-  const [profile, setProfile] = useState(getStoredUser())
+  const [profile, setProfile] = useState(getUser())
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
   const [formData, setFormData] = useState({
-    full_name: '',
     first_name: '',
     last_name: '',
     username: '',
     email: '',
+    phone_number: '',
   })
 
   useEffect(() => {
@@ -66,20 +58,20 @@ function DonorProfilePage() {
         setLoading(true)
         setError('')
 
-        const response = await api.get(endpoints.profile || endpoints.me)
+        const response = await api.get(endpoints.profile)
         const profileData = unwrapPayload(response.data)
 
         if (!active) return
 
         setProfile(profileData)
-        localStorage.setItem('ngo_user', JSON.stringify(profileData))
+        setUser(profileData)
 
         setFormData({
-          full_name: profileData?.full_name || '',
           first_name: profileData?.first_name || '',
           last_name: profileData?.last_name || '',
           username: profileData?.username || '',
           email: profileData?.email || '',
+          phone_number: profileData?.phone_number || '',
         })
       } catch (err) {
         if (!active) return
@@ -120,29 +112,34 @@ function DonorProfilePage() {
     setError('')
     setSuccess('')
 
+    if (!profile?.id) {
+      setError('Your profile record could not be identified. Please reload and try again.')
+      return
+    }
+
     try {
       setSaving(true)
 
       const payload = {
-        full_name: formData.full_name.trim(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         username: formData.username.trim(),
         email: formData.email.trim(),
+        phone_number: formData.phone_number.trim(),
       }
 
-      const response = await api.patch(endpoints.profile || endpoints.me, payload)
+      const response = await api.patch(endpoints.userDetails(profile.id), payload)
       const updatedProfile = unwrapPayload(response.data)
 
       setProfile(updatedProfile)
-      localStorage.setItem('ngo_user', JSON.stringify(updatedProfile))
+      setUser(updatedProfile)
 
       setFormData({
-        full_name: updatedProfile?.full_name || '',
         first_name: updatedProfile?.first_name || '',
         last_name: updatedProfile?.last_name || '',
         username: updatedProfile?.username || '',
         email: updatedProfile?.email || '',
+        phone_number: updatedProfile?.phone_number || '',
       })
 
       setSuccess('Profile updated successfully.')
@@ -277,20 +274,6 @@ function DonorProfilePage() {
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="mb-2.5 block text-sm font-semibold text-gray-900">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  placeholder="Enter your full name"
-                  className="h-12 w-full rounded-[16px] border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                />
-              </div>
-
               <div>
                 <label className="mb-2.5 block text-sm font-semibold text-gray-900">
                   First Name
@@ -343,6 +326,20 @@ function DonorProfilePage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter email address"
+                  className="h-12 w-full rounded-[16px] border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="mb-2.5 block text-sm font-semibold text-gray-900">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
                   className="h-12 w-full rounded-[16px] border border-gray-300 bg-white px-4 text-sm text-gray-900 outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                 />
               </div>
