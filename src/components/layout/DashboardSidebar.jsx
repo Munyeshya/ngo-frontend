@@ -106,15 +106,25 @@ function DashboardSidebar() {
                 key={item.name}
                 to={item.href}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-colors duration-200 ${
+                  `flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                     isActive
                       ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-100 shadow-[0_10px_24px_rgba(15,23,42,0.22)]'
                       : 'text-white hover:bg-[#0f4d27] hover:text-white focus-visible:bg-[#0f4d27] focus-visible:text-white'
                   }`
                 }
               >
-                <Icon size={17} className="shrink-0" />
-                <span className="tracking-[0.01em]">{item.name}</span>
+                {({ isActive }) => (
+                  <>
+                    <Icon size={17} className="shrink-0" />
+                    <span
+                      className={`tracking-[0.01em] ${
+                        isActive ? 'text-emerald-900' : 'text-white'
+                      }`}
+                    >
+                      {item.name}
+                    </span>
+                  </>
+                )}
               </NavLink>
             )
           })}
@@ -126,7 +136,7 @@ function DashboardSidebar() {
             className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27] hover:text-white"
           >
             <ArrowLeft size={17} />
-            <span>Back to Public Site</span>
+            <span className="text-white">Back to Public Site</span>
           </Link>
         </div>
       </nav>
