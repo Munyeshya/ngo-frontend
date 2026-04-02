@@ -99,35 +99,35 @@ function DonorLayout() {
   function SidebarContent() {
     return (
       <div className="flex h-full flex-col">
-        <div className="border-b border-white/10 px-6 py-6">
+        <div className="border-b border-white/10 px-5 py-5">
           <Link to="/" className="inline-flex items-center gap-2 text-white">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-lg font-bold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-base font-bold">
               N
             </div>
             <div>
               <p className="text-sm font-semibold">NGO Platform</p>
-              <p className="text-xs text-white/65">Donor Portal</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-white/60">Donor Portal</p>
             </div>
           </Link>
         </div>
 
-        <div className="px-4 py-5">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+        <div className="px-4 py-4">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-3.5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/20 text-sm font-bold text-green-200">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-500/20 text-sm font-bold text-green-200">
                 {initials}
               </div>
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-                <p className="truncate text-xs text-white/60">{email}</p>
+                <p className="truncate text-[11px] text-white/60">{email}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-3 pb-4">
-          <div className="space-y-1.5">
+        <nav className="flex-1 px-3 pb-3">
+          <div className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon
 
@@ -137,27 +137,27 @@ function DonorLayout() {
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                    `flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium transition ${
                       isActive
-                        ? 'bg-white text-[#166534] shadow-sm'
-                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                        ? 'bg-white text-[#14532d] shadow-sm'
+                        : 'text-slate-200 hover:bg-slate-800 hover:text-white'
                     }`
                   }
                 >
-                  <Icon size={18} />
+                  <Icon size={17} className="shrink-0" />
                   <span>{item.label}</span>
                 </NavLink>
               )
             })}
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-6">
+          <div className="mt-5 border-t border-white/10 pt-5">
             <Link
               to="/projects"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-800 hover:text-white"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={17} />
               <span>Browse Projects</span>
             </Link>
           </div>
@@ -167,7 +167,7 @@ function DonorLayout() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
           >
             <LogOut size={17} />
             Logout
@@ -178,10 +178,10 @@ function DonorLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8F4]">
+    <div className="donor-app bg-[#F6F8F4]">
       <div className="lg:hidden">
         <div className="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur">
-          <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center justify-between px-4 py-3.5">
             <Link to="/" className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#166534] text-sm font-bold text-white">
                 N
@@ -209,17 +209,17 @@ function DonorLayout() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="hidden w-[290px] shrink-0 bg-[#0F172A] lg:block">
+      <div className="mx-auto flex h-screen max-w-[1600px] overflow-hidden">
+        <aside className="hidden h-screen w-[272px] shrink-0 bg-[#0F172A] lg:block">
           <SidebarContent />
         </aside>
 
-        <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/85 backdrop-blur">
-            <div className="flex items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
+        <div className="donor-content min-w-0 flex-1">
+          <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur">
+            <div className="flex items-center justify-between px-4 py-3 sm:px-5 lg:px-6">
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Donor Portal</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-base font-bold text-gray-900">Donor Portal</h1>
+                <p className="text-xs text-gray-500 sm:text-sm">
                   Track your donations, interests, and project engagement.
                 </p>
               </div>
@@ -230,14 +230,14 @@ function DonorLayout() {
                   <p className="text-xs text-gray-500">{email}</p>
                 </div>
 
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#166534] text-sm font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#166534] text-sm font-bold text-white">
                   {initials}
                 </div>
               </div>
             </div>
           </header>
 
-          <main className="px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+          <main className="px-4 py-4 sm:px-5 lg:px-6 lg:py-5">
             <Outlet />
           </main>
         </div>
