@@ -64,37 +64,37 @@ function DashboardSidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-[290px] flex-col bg-[#0F172A] text-white">
-      <div className="border-b border-white/10 px-6 py-6">
+    <aside className="flex h-full w-[272px] flex-col bg-[#0F172A] text-white">
+      <div className="border-b border-white/10 px-5 py-5">
         <Link to="/" className="inline-flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
-            <BriefcaseBusiness size={20} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
+            <BriefcaseBusiness size={18} />
           </div>
 
           <div>
             <p className="text-sm font-semibold">NGO Platform</p>
-            <p className="text-xs text-white/60">Admin / Staff Portal</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-white/55">Admin / Staff Portal</p>
           </div>
         </Link>
       </div>
 
-      <div className="px-4 py-5">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+      <div className="px-4 py-4">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/20 text-sm font-bold text-green-200">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-500/20 text-sm font-bold text-green-200">
               {initials}
             </div>
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-              <p className="truncate text-xs capitalize text-white/60">{role}</p>
+              <p className="truncate text-[11px] capitalize tracking-[0.08em] text-white/60">{role}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 pb-4">
-        <div className="space-y-1.5">
+      <nav className="flex-1 px-3 pb-3">
+        <div className="space-y-1">
           {items.map((item) => {
             const Icon = item.icon
 
@@ -103,26 +103,26 @@ function DashboardSidebar() {
                 key={item.name}
                 to={item.href}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                  `group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-white text-[#166534] shadow-sm'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                      ? 'bg-white text-[#14532d] shadow-sm'
+                      : 'text-slate-200 hover:bg-slate-800 hover:text-white focus-visible:bg-slate-800 focus-visible:text-white'
                   }`
                 }
               >
-                <Icon size={18} />
+                <Icon size={17} className="shrink-0" />
                 <span>{item.name}</span>
               </NavLink>
             )
           })}
         </div>
 
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-5 border-t border-white/10 pt-5">
           <Link
             to="/projects"
-            className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-800 hover:text-white"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={17} />
             <span>Back to Public Site</span>
           </Link>
         </div>
@@ -132,7 +132,7 @@ function DashboardSidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
         >
           <LogOut size={17} />
           Logout
