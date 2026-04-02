@@ -147,8 +147,18 @@ function DonorLayout() {
                     }`
                   }
                 >
-                  <Icon size={17} className="shrink-0" />
-                  <span className="tracking-[0.01em]">{item.label}</span>
+                  {({ isActive }) => (
+                    <>
+                      <Icon size={17} className="shrink-0" />
+                      <span
+                        className={`tracking-[0.01em] ${
+                          isActive ? 'text-emerald-900' : 'text-white'
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </>
+                  )}
                 </NavLink>
               )
             })}
@@ -161,7 +171,7 @@ function DonorLayout() {
               className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27] hover:text-white"
             >
               <ArrowLeft size={17} />
-              <span>Browse Projects</span>
+              <span className="text-white">Browse Projects</span>
             </Link>
           </div>
         </nav>
