@@ -5,7 +5,7 @@ function DashboardLayout() {
   return (
     <div className="dashboard-app bg-[#F6F8F4]">
       <div className="mx-auto flex h-screen max-w-[1600px] overflow-hidden">
-        <aside className="hidden h-screen w-[272px] shrink-0 bg-[#0F172A] lg:block">
+        <aside className="hidden h-screen w-[272px] shrink-0 bg-[#166534] lg:block">
           <DashboardSidebar />
         </aside>
 
