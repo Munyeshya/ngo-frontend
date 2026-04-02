@@ -84,9 +84,9 @@ function DashboardLayout() {
                 <button
                   type="button"
                   onClick={() => setAccountOpen((prev) => !prev)}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-800"
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-[#166534] transition hover:bg-green-50 hover:text-[#0f4d27]"
                 >
-                  <Settings size={18} />
+                  <Settings size={24} />
                 </button>
 
                 {accountOpen && (
