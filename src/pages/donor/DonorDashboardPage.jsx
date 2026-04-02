@@ -198,10 +198,10 @@ function DonorDashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="rounded-[28px] border border-gray-200 bg-white p-6 sm:p-8">
-          <p className="text-2xl font-bold text-gray-900">Loading dashboard...</p>
-          <p className="mt-2 text-sm text-gray-500">
+      <div className="space-y-5">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-6">
+          <p className="text-xl font-bold text-gray-900">Loading dashboard...</p>
+          <p className="mt-1.5 text-sm text-gray-500">
             We are preparing your donation summary and project interests.
           </p>
         </div>
@@ -211,24 +211,24 @@ function DonorDashboardPage() {
 
   if (error) {
     return (
-      <div className="rounded-[28px] border border-red-200 bg-white p-6 sm:p-8">
-        <p className="text-2xl font-bold text-gray-900">Unable to load dashboard</p>
+      <div className="rounded-[28px] border border-red-200 bg-white p-5 sm:p-6">
+        <p className="text-xl font-bold text-gray-900">Unable to load dashboard</p>
         <p className="mt-3 text-sm leading-7 text-red-600">{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <section className="overflow-hidden rounded-[30px] bg-[#166534] text-white">
-        <div className="relative px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <div className="relative px-5 py-6 sm:px-6 lg:px-8 lg:py-7">
           <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
           <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-emerald-300/10 blur-3xl" />
 
           <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-medium text-white/75">Donor Dashboard</p>
-              <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+              <h2 className="mt-2 text-[1.9rem] font-bold sm:text-[2.2rem]">
                 Welcome back, {displayName}
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-white/80">
@@ -257,7 +257,7 @@ function DonorDashboardPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-[#166534]">
               <HandCoins size={20} />
@@ -265,10 +265,10 @@ function DonorDashboardPage() {
             <span className="text-xs font-medium text-gray-400">Summary</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Donations</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalDonations}</p>
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">{stats.totalDonations}</p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-[#166534]">
               <TrendingUp size={20} />
@@ -276,12 +276,12 @@ function DonorDashboardPage() {
             <span className="text-xs font-medium text-gray-400">Amount</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Given</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">
             {formatCurrency(stats.totalAmount)}
           </p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-[#166534]">
               <BriefcaseBusiness size={20} />
@@ -289,10 +289,10 @@ function DonorDashboardPage() {
             <span className="text-xs font-medium text-gray-400">Projects</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Supported Projects</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{stats.supportedProjects}</p>
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">{stats.supportedProjects}</p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-[#166534]">
               <Bell size={20} />
@@ -300,15 +300,15 @@ function DonorDashboardPage() {
             <span className="text-xs font-medium text-gray-400">Updates</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Active Subscriptions</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{stats.activeSubscriptions}</p>
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">{stats.activeSubscriptions}</p>
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[28px] border border-gray-200 bg-white p-6">
+      <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">Recent Donations</h3>
+              <h3 className="text-xl font-bold text-gray-900">Recent Donations</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Your latest contributions and supported causes.
               </p>
@@ -324,7 +324,7 @@ function DonorDashboardPage() {
           </div>
 
           {recentDonations.length === 0 ? (
-            <div className="mt-6 rounded-[22px] bg-[#F6F8F4] p-6 text-center">
+            <div className="mt-5 rounded-[22px] bg-[#F6F8F4] p-5 text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#166534] shadow-sm">
                 <HeartHandshake size={24} />
               </div>
@@ -340,7 +340,7 @@ function DonorDashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="mt-6 overflow-hidden rounded-[22px] border border-gray-200">
+            <div className="mt-5 overflow-hidden rounded-[22px] border border-gray-200">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-[#F8F8F6]">
@@ -396,11 +396,11 @@ function DonorDashboardPage() {
           )}
         </div>
 
-        <div className="space-y-6">
-          <div className="rounded-[28px] border border-gray-200 bg-white p-6">
+        <div className="space-y-5">
+          <div className="rounded-[28px] border border-gray-200 bg-white p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">Subscribed Projects</h3>
+                <h3 className="text-xl font-bold text-gray-900">Subscribed Projects</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Projects you follow for progress updates.
                 </p>
@@ -416,7 +416,7 @@ function DonorDashboardPage() {
             </div>
 
             {recentInterests.length === 0 ? (
-              <div className="mt-6 rounded-[22px] bg-[#F6F8F4] p-6 text-center">
+              <div className="mt-5 rounded-[22px] bg-[#F6F8F4] p-5 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#166534] shadow-sm">
                   <Bell size={24} />
                 </div>
@@ -428,7 +428,7 @@ function DonorDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="mt-6 space-y-3">
+              <div className="mt-5 space-y-3">
                 {recentInterests.map((interest) => {
                   const projectId = getProjectIdFromInterest(interest)
                   const projectName = getProjectNameFromInterest(interest)
@@ -459,8 +459,8 @@ function DonorDashboardPage() {
             )}
           </div>
 
-          <div className="rounded-[28px] border border-gray-200 bg-white p-6">
-            <h3 className="text-2xl font-bold text-gray-900">Profile Snapshot</h3>
+          <div className="rounded-[28px] border border-gray-200 bg-white p-5">
+            <h3 className="text-xl font-bold text-gray-900">Profile Snapshot</h3>
             <p className="mt-1 text-sm text-gray-500">
               Your current donor account details.
             </p>
