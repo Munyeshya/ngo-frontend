@@ -181,15 +181,15 @@ function DashboardBeneficiariesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Beneficiaries</h1>
-          <p className="mt-2 text-gray-600">Loading beneficiary records...</p>
+          <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Loading beneficiary records...</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="p-5">
+            <Card key={index} className="p-4">
               <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
               <div className="mt-4 h-8 w-20 animate-pulse rounded bg-gray-200" />
             </Card>
@@ -201,14 +201,14 @@ function DashboardBeneficiariesPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Beneficiaries</h1>
-          <p className="mt-2 text-gray-600">Manage and review beneficiary records.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Manage and review beneficiary records.</p>
         </div>
 
-        <Card className="border border-red-200 p-6">
-          <p className="text-lg font-semibold text-gray-900">Unable to load beneficiaries</p>
+        <Card className="border border-red-200 p-5">
+          <p className="text-base font-semibold text-gray-900">Unable to load beneficiaries</p>
           <p className="mt-2 text-sm leading-7 text-red-600">{error}</p>
         </Card>
       </div>
@@ -216,23 +216,23 @@ function DashboardBeneficiariesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Beneficiaries</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
+          <p className="mt-1.5 text-sm text-gray-600">
             Review beneficiary stories, linked projects, and supporting media.
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-4 py-2 text-sm font-medium text-green-800">
+        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <Users size={16} className="mr-2" />
           Total Records: {beneficiariesCount}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-[24px] p-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <Users size={20} />
@@ -240,10 +240,10 @@ function DashboardBeneficiariesPage() {
             <span className="text-xs font-medium text-gray-400">Records</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">All Beneficiaries</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{beneficiariesCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{beneficiariesCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-green-800">
               <ImageIcon size={20} />
@@ -251,10 +251,10 @@ function DashboardBeneficiariesPage() {
             <span className="text-xs font-medium text-gray-400">Media</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">With Images</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.withImages}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.withImages}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-green-800">
               <HeartHandshake size={20} />
@@ -262,10 +262,10 @@ function DashboardBeneficiariesPage() {
             <span className="text-xs font-medium text-gray-400">Projects</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Linked Projects</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.linkedProjects}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.linkedProjects}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <ImageIcon size={20} />
@@ -273,14 +273,14 @@ function DashboardBeneficiariesPage() {
             <span className="text-xs font-medium text-gray-400">Gallery</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Images</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.totalImages}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.totalImages}</p>
         </Card>
       </div>
 
-      <Card className="rounded-[24px] p-6">
+      <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Beneficiary Directory</h2>
+            <h2 className="text-lg font-bold text-gray-900">Beneficiary Directory</h2>
             <p className="mt-1 text-sm text-gray-500">
               Search and review beneficiary records linked to projects.
             </p>
@@ -322,7 +322,7 @@ function DashboardBeneficiariesPage() {
         </div>
 
         {filteredBeneficiaries.length === 0 ? (
-          <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-8 text-center">
+          <div className="mt-6 rounded-[24px] bg-[#F8F8F6] p-6 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-green-800 shadow-sm">
               <Users size={24} />
             </div>
@@ -332,7 +332,7 @@ function DashboardBeneficiariesPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 xl:grid-cols-2">
+          <div className="mt-6 grid gap-4 xl:grid-cols-2">
             {filteredBeneficiaries.map((beneficiary) => {
               const images = getBeneficiaryImages(beneficiary)
               const projectId = getProjectId(beneficiary)
