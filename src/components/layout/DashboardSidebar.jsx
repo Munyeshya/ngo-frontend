@@ -5,14 +5,9 @@ import {
   HandCoins,
   Bell,
   BriefcaseBusiness,
-  LogOut,
   ArrowLeft,
 } from 'lucide-react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-
-import api from '../../api/axios'
-import endpoints from '../../api/endpoints'
-import { clearAuth, getUser } from '../../utils/storage'
+import { Link, NavLink } from 'react-router-dom'
 
 const items = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -22,47 +17,7 @@ const items = [
   { name: 'Updates', href: '/dashboard/updates', icon: Bell },
 ]
 
-function getDisplayName(user) {
-  if (!user) return 'Staff User'
-
-  return (
-    user.full_name ||
-    [user.first_name, user.last_name].filter(Boolean).join(' ').trim() ||
-    user.username ||
-    user.email ||
-    'Staff User'
-  )
-}
-
-function getInitials(name) {
-  if (!name) return 'S'
-  const parts = String(name).trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase()
-  return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase()
-}
-
 function DashboardSidebar() {
-  const navigate = useNavigate()
-  const user = getUser()
-
-  const displayName = getDisplayName(user)
-  const initials = getInitials(displayName)
-  const role = user?.role || 'staff'
-
-  async function handleLogout() {
-    try {
-      const refresh = localStorage.getItem('ngo_refresh_token')
-
-      if (refresh) {
-        await api.post(endpoints.logout, { refresh })
-      }
-    } catch {
-    } finally {
-      clearAuth()
-      navigate('/login', { replace: true })
-    }
-  }
-
   return (
     <aside className="flex h-full w-[272px] flex-col bg-[#166534] text-white">
       <div className="border-b border-white/10 px-5 py-5">
@@ -78,22 +33,7 @@ function DashboardSidebar() {
         </Link>
       </div>
 
-      <div className="px-4 py-4">
-        <div className="rounded-3xl border border-white/12 bg-[#14532d] p-3.5 ring-1 ring-white/6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-sm font-bold text-white ring-1 ring-white/15">
-              {initials}
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-              <p className="truncate text-[11px] capitalize tracking-[0.08em] text-white/75">{role}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <nav className="flex-1 px-3 pb-3">
+      <nav className="flex-1 px-3 py-4">
         <p className="px-3.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
           Navigation
         </p>
@@ -145,17 +85,6 @@ function DashboardSidebar() {
           </Link>
         </div>
       </nav>
-
-      <div className="border-t border-white/10 p-4">
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/12 bg-[#14532d] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27]"
-        >
-          <LogOut size={17} />
-          Logout
-        </button>
-      </div>
     </aside>
   )
 }
