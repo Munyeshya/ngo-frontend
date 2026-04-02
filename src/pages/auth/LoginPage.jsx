@@ -33,7 +33,7 @@ function LoginPage() {
   function getRoleRedirect(role) {
     const normalizedRole = String(role || '').toLowerCase()
 
-    if (normalizedRole === 'admin') return '/admin/dashboard'
+    if (normalizedRole === 'admin') return '/dashboard'
     if (normalizedRole === 'staff') return '/dashboard'
     if (normalizedRole === 'donor') return '/donor/dashboard'
 
@@ -104,14 +104,23 @@ function LoginPage() {
       setSuccess('Login successful. Redirecting...')
       navigate(getRoleRedirect(user?.role), { replace: true })
     } catch (err) {
-      const message =
+      const backendMessage =
         err?.response?.data?.detail ||
         err?.response?.data?.message ||
         err?.response?.data?.non_field_errors?.[0] ||
         err?.message ||
         'Login failed. Please check your credentials and try again.'
 
-      setError(message)
+      if (
+        String(backendMessage).toLowerCase().includes('pending admin approval')
+      ) {
+        setError(
+          'Your staff account is pending admin approval. Watch your email for approval updates, or review the staff guide below.'
+        )
+        return
+      }
+
+      setError(backendMessage)
     } finally {
       setLoading(false)
     }
@@ -276,6 +285,13 @@ function LoginPage() {
 
                   <Link to="/register" className="font-medium text-green-700 hover:underline">
                     Create account
+                  </Link>
+                </div>
+
+                <div className="mt-3 text-sm text-gray-600">
+                  Staff applicant?{' '}
+                  <Link to="/staff-guide" className="font-medium text-green-700 hover:underline">
+                    Review how approval works
                   </Link>
                 </div>
               </div>
