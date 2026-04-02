@@ -101,33 +101,33 @@ function DonorLayout() {
       <div className="flex h-full flex-col">
         <div className="border-b border-white/10 px-5 py-5">
           <Link to="/" className="inline-flex items-center gap-2 text-white">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-base font-bold text-emerald-100 ring-1 ring-emerald-400/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/12 text-base font-bold text-white ring-1 ring-white/15">
               N
             </div>
             <div>
               <p className="text-sm font-semibold text-white">NGO Platform</p>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-300">Donor Portal</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-white/75">Donor Portal</p>
             </div>
           </Link>
         </div>
 
         <div className="px-4 py-4">
-          <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-3.5 ring-1 ring-white/5">
+          <div className="rounded-3xl border border-white/12 bg-[#14532d] p-3.5 ring-1 ring-white/6">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/20 text-sm font-bold text-emerald-100 ring-1 ring-emerald-400/20">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-sm font-bold text-white ring-1 ring-white/15">
                 {initials}
               </div>
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-                <p className="truncate text-[11px] text-slate-300">{email}</p>
+                <p className="truncate text-[11px] text-white/75">{email}</p>
               </div>
             </div>
           </div>
         </div>
 
         <nav className="flex-1 px-3 pb-3">
-          <p className="px-3.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+          <p className="px-3.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
             Navigation
           </p>
           <div className="space-y-1">
@@ -143,7 +143,7 @@ function DonorLayout() {
                     `flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                       isActive
                         ? 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-100 shadow-[0_10px_24px_rgba(15,23,42,0.22)]'
-                        : 'text-white hover:bg-slate-800 hover:text-white'
+                        : 'text-white hover:bg-[#0f4d27] hover:text-white'
                     }`
                   }
                 >
@@ -158,7 +158,7 @@ function DonorLayout() {
             <Link
               to="/projects"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-slate-800 hover:text-white"
+              className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27] hover:text-white"
             >
               <ArrowLeft size={17} />
               <span>Browse Projects</span>
@@ -170,7 +170,7 @@ function DonorLayout() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-slate-800"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/12 bg-[#14532d] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27]"
           >
             <LogOut size={17} />
             Logout
@@ -213,7 +213,7 @@ function DonorLayout() {
       </div>
 
       <div className="mx-auto flex h-screen max-w-[1600px] overflow-hidden">
-        <aside className="hidden h-screen w-[272px] shrink-0 bg-[#08111f] lg:block">
+        <aside className="hidden h-screen w-[272px] shrink-0 bg-[#166534] lg:block">
           <SidebarContent />
         </aside>
 
