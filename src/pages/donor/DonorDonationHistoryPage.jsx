@@ -180,9 +180,9 @@ function DonorDonationHistoryPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="rounded-[28px] border border-gray-200 bg-white p-6 sm:p-8">
-          <p className="text-2xl font-bold text-gray-900">Loading donation history...</p>
+      <div className="space-y-5">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-6">
+          <p className="text-xl font-bold text-gray-900">Loading donation history...</p>
           <p className="mt-2 text-sm text-gray-500">
             We are preparing your personal contribution records.
           </p>
@@ -193,20 +193,20 @@ function DonorDonationHistoryPage() {
 
   if (error) {
     return (
-      <div className="rounded-[28px] border border-red-200 bg-white p-6 sm:p-8">
-        <p className="text-2xl font-bold text-gray-900">Unable to load donations</p>
+      <div className="rounded-[28px] border border-red-200 bg-white p-5 sm:p-6">
+        <p className="text-xl font-bold text-gray-900">Unable to load donations</p>
         <p className="mt-3 text-sm leading-7 text-red-600">{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
+    <div className="space-y-5">
+      <section className="rounded-[30px] bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-medium text-[#166534]">My Donations</p>
-            <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="mt-2 text-[1.9rem] font-bold text-gray-900 sm:text-[2.2rem]">
               Donation History
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-500">
@@ -225,7 +225,7 @@ function DonorDonationHistoryPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-[#166534]">
               <HandCoins size={20} />
@@ -233,10 +233,10 @@ function DonorDonationHistoryPage() {
             <span className="text-xs font-medium text-gray-400">Count</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Donations</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalCount}</p>
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">{stats.totalCount}</p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-[#166534]">
               <HandCoins size={20} />
@@ -244,12 +244,12 @@ function DonorDonationHistoryPage() {
             <span className="text-xs font-medium text-gray-400">Value</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Amount</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">
             {formatCurrency(stats.totalAmount)}
           </p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-[#166534]">
               <CalendarDays size={20} />
@@ -257,12 +257,12 @@ function DonorDonationHistoryPage() {
             <span className="text-xs font-medium text-gray-400">Average</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Average Donation</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">
             {formatCurrency(stats.averageAmount)}
           </p>
         </div>
 
-        <div className="rounded-[26px] border border-gray-200 bg-white p-5">
+        <div className="rounded-[26px] border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-[#166534]">
               <ArrowRight size={20} />
@@ -270,14 +270,14 @@ function DonorDonationHistoryPage() {
             <span className="text-xs font-medium text-gray-400">Projects</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Supported Projects</p>
-          <p className="mt-1 text-3xl font-bold text-gray-900">{stats.supportedProjects}</p>
+          <p className="mt-1 text-[1.7rem] font-bold text-gray-900">{stats.supportedProjects}</p>
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-gray-200 bg-white p-6 sm:p-7">
+      <section className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">All Contributions</h3>
+            <h3 className="text-xl font-bold text-gray-900">All Contributions</h3>
             <p className="mt-1 text-sm text-gray-500">
               Search, filter, and review your full donation history.
             </p>
@@ -337,7 +337,7 @@ function DonorDonationHistoryPage() {
         </div>
 
         {filteredDonations.length === 0 ? (
-          <div className="mt-8 rounded-[24px] bg-[#F6F8F4] p-8 text-center">
+          <div className="mt-6 rounded-[24px] bg-[#F6F8F4] p-6 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#166534] shadow-sm">
               <HandCoins size={24} />
             </div>
@@ -353,7 +353,7 @@ function DonorDonationHistoryPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 overflow-hidden rounded-[24px] border border-gray-200">
+          <div className="mt-6 overflow-hidden rounded-[24px] border border-gray-200">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-[#F8F8F6]">
