@@ -22,6 +22,7 @@ const endpoints = {
   logout: '/users/logout/',
   profile: '/users/profile/',
   me: '/users/me/',
+  userDetails: (id) => `/users/${id}/`,
   claimDonorAccount: '/users/claim-donor-account/',
   claimDonorAccountVerify: '/users/claim-donor-account/verify/',
    
