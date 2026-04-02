@@ -145,12 +145,28 @@ function RegisterPage() {
                   const Icon = option.value === 'staff' ? ShieldCheck : Users
 
                   return (
-                    <div
+                    <label
                       key={option.value}
-                      className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
+                      className={`block cursor-pointer rounded-2xl border p-4 backdrop-blur transition ${
+                        formData.role === option.value
+                          ? 'border-green-300 bg-white/18'
+                          : 'border-white/10 bg-white/10 hover:border-white/20 hover:bg-white/14'
+                      }`}
                     >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={option.value}
+                        checked={formData.role === option.value}
+                        onChange={handleChange}
+                        className="sr-only"
+                      />
                       <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-white/10 p-3">
+                        <div
+                          className={`rounded-2xl p-3 ${
+                            formData.role === option.value ? 'bg-white text-[#166534]' : 'bg-white/10'
+                          }`}
+                        >
                           <Icon size={18} />
                         </div>
                         <div>
@@ -160,7 +176,7 @@ function RegisterPage() {
                           </p>
                         </div>
                       </div>
-                    </div>
+                    </label>
                   )
                 })}
               </div>
@@ -176,54 +192,7 @@ function RegisterPage() {
                   Back to Login
                 </Link>
 
-                <h1 className="text-3xl font-bold text-gray-900">Create an account</h1>
-
                 <form onSubmit={handleSubmit} className="mt-7 space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {roleOptions.map((option) => {
-                      const Icon = option.value === 'staff' ? ShieldCheck : Users
-
-                      return (
-                        <label
-                          key={option.value}
-                          className={`cursor-pointer rounded-2xl border px-4 py-4 transition ${
-                            formData.role === option.value
-                              ? 'border-green-700 bg-green-50'
-                              : 'border-gray-200 bg-white hover:border-green-300'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="role"
-                            value={option.value}
-                            checked={formData.role === option.value}
-                            onChange={handleChange}
-                            className="sr-only"
-                          />
-
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`rounded-2xl p-3 ${
-                                formData.role === option.value
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-[#F6F8F4] text-gray-700'
-                              }`}
-                            >
-                              <Icon size={18} />
-                            </div>
-
-                            <div>
-                              <p className="text-sm font-semibold text-gray-900">{option.title}</p>
-                              <p className="mt-1 text-xs leading-6 text-gray-600">
-                                {option.description}
-                              </p>
-                            </div>
-                          </div>
-                        </label>
-                      )
-                    })}
-                  </div>
-
                   <div>
                     <label className="mb-2 block text-sm font-medium text-gray-700">
                       Username
