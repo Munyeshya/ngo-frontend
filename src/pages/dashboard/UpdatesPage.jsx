@@ -178,15 +178,15 @@ function UpdatesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Updates</h1>
-          <p className="mt-2 text-gray-600">Loading update records...</p>
+          <h1 className="text-2xl font-bold text-gray-900">Project Updates</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Loading update records...</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="p-5">
+            <Card key={index} className="p-4">
               <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
               <div className="mt-4 h-8 w-20 animate-pulse rounded bg-gray-200" />
             </Card>
@@ -198,14 +198,14 @@ function UpdatesPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Updates</h1>
-          <p className="mt-2 text-gray-600">Manage progress communications and update records.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Project Updates</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Manage progress communications and update records.</p>
         </div>
 
-        <Card className="border border-red-200 p-6">
-          <p className="text-lg font-semibold text-gray-900">Unable to load updates</p>
+        <Card className="border border-red-200 p-5">
+          <p className="text-base font-semibold text-gray-900">Unable to load updates</p>
           <p className="mt-2 text-sm leading-7 text-red-600">{error}</p>
         </Card>
       </div>
@@ -213,23 +213,23 @@ function UpdatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Updates</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900">Project Updates</h1>
+          <p className="mt-1.5 text-sm text-gray-600">
             Review published progress updates across all projects.
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-4 py-2 text-sm font-medium text-green-800">
+        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <Megaphone size={16} className="mr-2" />
           Total Records: {updatesCount}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-[24px] p-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <Megaphone size={20} />
@@ -237,10 +237,10 @@ function UpdatesPage() {
             <span className="text-xs font-medium text-gray-400">Records</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">All Updates</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{updatesCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{updatesCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-green-800">
               <FolderKanban size={20} />
@@ -248,10 +248,10 @@ function UpdatesPage() {
             <span className="text-xs font-medium text-gray-400">Projects</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Linked Projects</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.linkedProjects}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.linkedProjects}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-green-800">
               <CalendarDays size={20} />
@@ -259,10 +259,10 @@ function UpdatesPage() {
             <span className="text-xs font-medium text-gray-400">Media</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Updates With Images</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.withImages}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.withImages}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <CalendarDays size={20} />
@@ -270,14 +270,14 @@ function UpdatesPage() {
             <span className="text-xs font-medium text-gray-400">Gallery</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Total Images</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.totalImages}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.totalImages}</p>
         </Card>
       </div>
 
-      <Card className="rounded-[24px] p-6">
+      <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Update Directory</h2>
+            <h2 className="text-lg font-bold text-gray-900">Update Directory</h2>
             <p className="mt-1 text-sm text-gray-500">
               Search and review all project updates.
             </p>
@@ -319,7 +319,7 @@ function UpdatesPage() {
         </div>
 
         {filteredUpdates.length === 0 ? (
-          <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-8 text-center">
+          <div className="mt-6 rounded-[24px] bg-[#F8F8F6] p-6 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-green-800 shadow-sm">
               <Megaphone size={24} />
             </div>
@@ -329,7 +329,7 @@ function UpdatesPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 xl:grid-cols-2">
+          <div className="mt-6 grid gap-4 xl:grid-cols-2">
             {filteredUpdates.map((update) => {
               const images = getUpdateImages(update)
               const projectId = getProjectId(update)
