@@ -23,6 +23,7 @@ const endpoints = {
   profile: '/users/profile/',
   me: '/users/me/',
   claimDonorAccount: '/users/claim-donor-account/',
+  claimDonorAccountVerify: '/users/claim-donor-account/verify/',
    
   myDonations: '/donations/my/',
   myInterests: '/projects/interests/my/',
