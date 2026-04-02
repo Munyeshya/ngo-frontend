@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -9,20 +9,13 @@ import {
   ArrowLeft,
   Menu,
   X,
+  ChevronDown,
 } from 'lucide-react'
 import { useState } from 'react'
 
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
-
-function getStoredUser() {
-  try {
-    const raw = localStorage.getItem('ngo_user')
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
+import { clearAuth, getRefreshToken, getUser } from '../utils/storage'
 
 function getInitials(name) {
   if (!name) return 'U'
@@ -50,8 +43,10 @@ function DonorLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const accountRef = useRef(null)
 
-  const user = useMemo(() => getStoredUser(), [location.pathname])
+  const user = useMemo(() => getUser(), [location.pathname, accountOpen])
   const displayName = buildDisplayName(user)
   const email = user?.email || 'No email available'
   const initials = getInitials(displayName)
@@ -72,15 +67,23 @@ function DonorLayout() {
       to: '/donor/subscriptions',
       icon: Bell,
     },
-    {
-      label: 'Profile',
-      to: '/donor/profile',
-      icon: UserCircle2,
-    },
   ]
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setAccountOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
   async function handleLogout() {
-    const refresh = localStorage.getItem('ngo_refresh_token')
+    const refresh = getRefreshToken()
 
     try {
       if (refresh) {
@@ -88,10 +91,7 @@ function DonorLayout() {
       }
     } catch {
     } finally {
-      localStorage.removeItem('ngo_access_token')
-      localStorage.removeItem('ngo_refresh_token')
-      localStorage.removeItem('ngo_user')
-      delete api.defaults.headers.common.Authorization
+      clearAuth()
       navigate('/login', { replace: true })
     }
   }
@@ -111,22 +111,7 @@ function DonorLayout() {
           </Link>
         </div>
 
-        <div className="px-4 py-4">
-          <div className="rounded-3xl border border-white/12 bg-[#14532d] p-3.5 ring-1 ring-white/6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-sm font-bold text-white ring-1 ring-white/15">
-                {initials}
-              </div>
-
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-                <p className="truncate text-[11px] text-white/75">{email}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-3 pb-3">
+        <nav className="flex-1 px-3 py-4">
           <p className="px-3.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
             Navigation
           </p>
@@ -180,17 +165,6 @@ function DonorLayout() {
             </Link>
           </div>
         </nav>
-
-        <div className="border-t border-white/10 p-4">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/12 bg-[#14532d] px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27]"
-          >
-            <LogOut size={17} />
-            Logout
-          </button>
-        </div>
       </div>
     )
   }
@@ -242,15 +216,63 @@ function DonorLayout() {
                 </p>
               </div>
 
-              <div className="hidden items-center gap-3 sm:flex">
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">{displayName}</p>
-                  <p className="text-xs text-gray-500">{email}</p>
-                </div>
+              <div className="relative" ref={accountRef}>
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((prev) => !prev)}
+                  className="inline-flex h-11 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 text-gray-900 shadow-sm transition hover:border-green-200 hover:bg-green-50"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#166534] text-xs font-bold text-white">
+                    {initials}
+                  </div>
+                  <div className="hidden text-right sm:block">
+                    <p className="max-w-[140px] truncate text-sm font-semibold">
+                      {displayName}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-gray-500">
+                      Donor
+                    </p>
+                  </div>
+                  <ChevronDown size={16} className="text-gray-500" />
+                </button>
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#166534] text-sm font-bold text-white">
-                  {initials}
-                </div>
+                {accountOpen && (
+                  <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_20px_60px_rgba(16,24,40,0.12)]">
+                    <div className="border-b border-gray-100 px-4 py-4">
+                      <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
+                      <p className="truncate text-xs text-gray-500">{email}</p>
+                    </div>
+
+                    <div className="p-2">
+                      <Link
+                        to="/donor/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                      >
+                        <UserCircle2 size={18} />
+                        Profile
+                      </Link>
+
+                      <Link
+                        to="/projects"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                      >
+                        <ArrowLeft size={18} />
+                        Browse projects
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                      >
+                        <LogOut size={18} />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </header>
