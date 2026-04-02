@@ -175,7 +175,7 @@ function DonorLayout() {
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#0f4d27] hover:text-white"
             >
-              <ArrowLeft size={17} />
+              <ArrowLeft size={17} className="text-white" />
               <span className="text-white">Browse Projects</span>
             </Link>
           </div>
