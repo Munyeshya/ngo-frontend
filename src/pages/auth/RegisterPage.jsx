@@ -123,51 +123,8 @@ function RegisterPage() {
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
         <Card className="w-full overflow-hidden rounded-[28px] border border-[#DDE5DB] bg-[#F3F4F1] p-0 shadow-[0_24px_80px_rgba(16,24,40,0.12)]">
-          <div className="grid min-h-[640px] lg:grid-cols-[1.02fr_0.98fr]">
-            <div className="hidden min-h-[640px] bg-[#0b1a13] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-              <div>
-                <span className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/85">
-                  Join the platform
-                </span>
-
-                <h2 className="mt-6 max-w-xl text-4xl font-bold leading-tight">
-                  Choose how you want to participate in the NGO ecosystem
-                </h2>
-
-                <p className="mt-5 max-w-lg text-sm leading-8 text-white/80">
-                  Donors can create accounts right away. Staff members can apply for access and
-                  start working after admin approval.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {roleOptions.map((option) => {
-                  const Icon = option.value === 'staff' ? ShieldCheck : Users
-
-                  return (
-                    <div
-                      key={option.value}
-                      className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-white/10 p-3">
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{option.title}</p>
-                          <p className="mt-1 text-sm leading-7 text-white/75">
-                            {option.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-14">
-              <div className="w-full max-w-[420px]">
+          <div className="flex min-h-[640px] items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-14">
+            <div className="w-full max-w-[520px]">
                 <Link
                   to="/login"
                   className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-700 transition hover:text-green-700"
@@ -183,27 +140,48 @@ function RegisterPage() {
 
                 <form onSubmit={handleSubmit} className="mt-7 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {roleOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`cursor-pointer rounded-2xl border px-4 py-4 transition ${
-                          formData.role === option.value
-                            ? 'border-green-700 bg-green-50'
-                            : 'border-gray-200 bg-white hover:border-green-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="role"
-                          value={option.value}
-                          checked={formData.role === option.value}
-                          onChange={handleChange}
-                          className="sr-only"
-                        />
-                        <p className="text-sm font-semibold text-gray-900">{option.title}</p>
-                        <p className="mt-1 text-xs leading-6 text-gray-600">{option.description}</p>
-                      </label>
-                    ))}
+                    {roleOptions.map((option) => {
+                      const Icon = option.value === 'staff' ? ShieldCheck : Users
+
+                      return (
+                        <label
+                          key={option.value}
+                          className={`cursor-pointer rounded-2xl border px-4 py-4 transition ${
+                            formData.role === option.value
+                              ? 'border-green-700 bg-green-50'
+                              : 'border-gray-200 bg-white hover:border-green-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="role"
+                            value={option.value}
+                            checked={formData.role === option.value}
+                            onChange={handleChange}
+                            className="sr-only"
+                          />
+
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`rounded-2xl p-3 ${
+                                formData.role === option.value
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-[#F6F8F4] text-gray-700'
+                              }`}
+                            >
+                              <Icon size={18} />
+                            </div>
+
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{option.title}</p>
+                              <p className="mt-1 text-xs leading-6 text-gray-600">
+                                {option.description}
+                              </p>
+                            </div>
+                          </div>
+                        </label>
+                      )
+                    })}
                   </div>
 
                   <div>
@@ -317,7 +295,6 @@ function RegisterPage() {
                     Claim donor account
                   </Link>
                 </div>
-              </div>
             </div>
           </div>
         </Card>
