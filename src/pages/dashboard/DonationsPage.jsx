@@ -204,15 +204,15 @@ function DonationsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Donations</h1>
-          <p className="mt-2 text-gray-600">Loading donation records...</p>
+          <h1 className="text-2xl font-bold text-gray-900">Donations</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Loading donation records...</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="p-5">
+            <Card key={index} className="p-4">
               <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
               <div className="mt-4 h-8 w-20 animate-pulse rounded bg-gray-200" />
             </Card>
@@ -224,14 +224,14 @@ function DonationsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Donations</h1>
-          <p className="mt-2 text-gray-600">Review and monitor donation activity.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Donations</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Review and monitor donation activity.</p>
         </div>
 
-        <Card className="border border-red-200 p-6">
-          <p className="text-lg font-semibold text-gray-900">Unable to load donations</p>
+        <Card className="border border-red-200 p-5">
+          <p className="text-base font-semibold text-gray-900">Unable to load donations</p>
           <p className="mt-2 text-sm leading-7 text-red-600">{error}</p>
         </Card>
       </div>
@@ -239,23 +239,23 @@ function DonationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Donations</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900">Donations</h1>
+          <p className="mt-1.5 text-sm text-gray-600">
             Review donor activity, contribution amounts, and project funding support.
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-4 py-2 text-sm font-medium text-green-800">
+        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <HandCoins size={16} className="mr-2" />
           Total Records: {donationsCount}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-[24px] p-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <HandCoins size={20} />
@@ -263,10 +263,10 @@ function DonationsPage() {
             <span className="text-xs font-medium text-gray-400">Count</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">All Donations</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{donationsCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{donationsCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-green-800">
               <TrendingUp size={20} />
@@ -279,7 +279,7 @@ function DonationsPage() {
           </p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-green-800">
               <UserRound size={20} />
@@ -287,10 +287,10 @@ function DonationsPage() {
             <span className="text-xs font-medium text-gray-400">Private</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Anonymous Donations</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.anonymousCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.anonymousCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <CalendarDays size={20} />
@@ -298,14 +298,14 @@ function DonationsPage() {
             <span className="text-xs font-medium text-gray-400">Coverage</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Supported Projects</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.uniqueProjects}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.uniqueProjects}</p>
         </Card>
       </div>
 
-      <Card className="rounded-[24px] p-6">
+      <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Donation Directory</h2>
+            <h2 className="text-lg font-bold text-gray-900">Donation Directory</h2>
             <p className="mt-1 text-sm text-gray-500">
               Search and review all donation records visible to your role.
             </p>
@@ -365,7 +365,7 @@ function DonationsPage() {
         </div>
 
         {filteredDonations.length === 0 ? (
-          <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-8 text-center">
+          <div className="mt-6 rounded-[24px] bg-[#F8F8F6] p-6 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-green-800 shadow-sm">
               <HandCoins size={24} />
             </div>
@@ -375,7 +375,7 @@ function DonationsPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-8 overflow-x-auto">
+          <div className="mt-6 overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr className="text-left">
