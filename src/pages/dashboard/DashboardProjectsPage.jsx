@@ -226,15 +226,15 @@ function DashboardProjectsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-          <p className="mt-2 text-gray-600">Loading project records...</p>
+          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Loading project records...</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="p-5">
+            <Card key={index} className="p-4">
               <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
               <div className="mt-4 h-8 w-20 animate-pulse rounded bg-gray-200" />
             </Card>
@@ -246,14 +246,14 @@ function DashboardProjectsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-          <p className="mt-2 text-gray-600">Manage and monitor platform projects.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <p className="mt-1.5 text-sm text-gray-600">Manage and monitor platform projects.</p>
         </div>
 
-        <Card className="border border-red-200 p-6">
-          <p className="text-lg font-semibold text-gray-900">Unable to load projects</p>
+        <Card className="border border-red-200 p-5">
+          <p className="text-base font-semibold text-gray-900">Unable to load projects</p>
           <p className="mt-2 text-sm leading-7 text-red-600">{error}</p>
         </Card>
       </div>
@@ -261,23 +261,23 @@ function DashboardProjectsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <p className="mt-1.5 text-sm text-gray-600">
             Review project performance, funding progress, and operational status.
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-4 py-2 text-sm font-medium text-green-800">
+        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <FolderKanban size={16} className="mr-2" />
           Total Records: {projectsCount}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-[24px] p-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <FolderKanban size={20} />
@@ -285,10 +285,10 @@ function DashboardProjectsPage() {
             <span className="text-xs font-medium text-gray-400">Projects</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">All Projects</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{projectsCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{projectsCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-emerald-100 p-3 text-green-800">
               <TrendingUp size={20} />
@@ -296,10 +296,10 @@ function DashboardProjectsPage() {
             <span className="text-xs font-medium text-gray-400">Active</span>
           </div>
           <p className="mt-4 text-sm text-gray-500">Active Projects</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.activeCount}</p>
+          <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.activeCount}</p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-lime-100 p-3 text-green-800">
               <Target size={20} />
@@ -312,7 +312,7 @@ function DashboardProjectsPage() {
           </p>
         </Card>
 
-        <Card className="rounded-[24px] p-5">
+        <Card className="rounded-[24px] p-4">
           <div className="flex items-start justify-between">
             <div className="rounded-2xl bg-green-100 p-3 text-green-800">
               <TrendingUp size={20} />
@@ -326,10 +326,10 @@ function DashboardProjectsPage() {
         </Card>
       </div>
 
-      <Card className="rounded-[24px] p-6">
+      <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Project Directory</h2>
+            <h2 className="text-lg font-bold text-gray-900">Project Directory</h2>
             <p className="mt-1 text-sm text-gray-500">
               Search, filter, and review project records.
             </p>
@@ -388,7 +388,7 @@ function DashboardProjectsPage() {
         </div>
 
         {filteredProjects.length === 0 ? (
-          <div className="mt-8 rounded-[24px] bg-[#F8F8F6] p-8 text-center">
+          <div className="mt-6 rounded-[24px] bg-[#F8F8F6] p-6 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-green-800 shadow-sm">
               <FolderKanban size={24} />
             </div>
@@ -398,7 +398,7 @@ function DashboardProjectsPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 xl:grid-cols-2">
+          <div className="mt-6 grid gap-4 xl:grid-cols-2">
             {filteredProjects.map((project) => (
               <div
                 key={project.id}
