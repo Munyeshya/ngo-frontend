@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { ChevronDown, LogOut, Settings, UserCircle2 } from 'lucide-react'
+import { LogOut, Settings, UserCircle2 } from 'lucide-react'
 
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
@@ -84,20 +84,9 @@ function DashboardLayout() {
                 <button
                   type="button"
                   onClick={() => setAccountOpen((prev) => !prev)}
-                  className="inline-flex h-11 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 text-gray-900 shadow-sm transition hover:border-green-200 hover:bg-green-50"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-800"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#166534] text-xs font-bold text-white">
-                    {initials}
-                  </div>
-                  <div className="hidden text-right sm:block">
-                    <p className="max-w-[140px] truncate text-sm font-semibold">
-                      {displayName}
-                    </p>
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-gray-500">
-                      {role}
-                    </p>
-                  </div>
-                  <ChevronDown size={16} className="text-gray-500" />
+                  <Settings size={18} />
                 </button>
 
                 {accountOpen && (
