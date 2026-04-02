@@ -112,10 +112,15 @@ function DashboardSidebar() {
                       : 'text-white hover:bg-[#0f4d27] hover:text-white focus-visible:bg-[#0f4d27] focus-visible:text-white'
                   }`
                 }
-              >
+                >
                 {({ isActive }) => (
                   <>
-                    <Icon size={17} className="shrink-0" />
+                    <Icon
+                      size={17}
+                      className={`shrink-0 ${
+                        isActive ? 'text-emerald-900' : 'text-white'
+                      }`}
+                    />
                     <span
                       className={`tracking-[0.01em] ${
                         isActive ? 'text-emerald-900' : 'text-white'
