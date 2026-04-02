@@ -159,9 +159,9 @@ function DonorProfilePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="rounded-[28px] border border-gray-200 bg-white p-6 sm:p-8">
-          <p className="text-2xl font-bold text-gray-900">Loading profile...</p>
+      <div className="space-y-5">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-6">
+          <p className="text-xl font-bold text-gray-900">Loading profile...</p>
           <p className="mt-2 text-sm text-gray-500">
             We are preparing your donor account details.
           </p>
@@ -172,20 +172,20 @@ function DonorProfilePage() {
 
   if (error && !profile) {
     return (
-      <div className="rounded-[28px] border border-red-200 bg-white p-6 sm:p-8">
-        <p className="text-2xl font-bold text-gray-900">Unable to load profile</p>
+      <div className="rounded-[28px] border border-red-200 bg-white p-5 sm:p-6">
+        <p className="text-xl font-bold text-gray-900">Unable to load profile</p>
         <p className="mt-3 text-sm leading-7 text-red-600">{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
+    <div className="space-y-5">
+      <section className="rounded-[30px] bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-medium text-[#166534]">My Profile</p>
-            <h2 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="mt-2 text-[1.9rem] font-bold text-gray-900 sm:text-[2.2rem]">
               Account Information
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-500">
@@ -195,16 +195,16 @@ function DonorProfilePage() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-6">
-          <div className="rounded-[28px] border border-gray-200 bg-white p-6">
+      <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-5">
+          <div className="rounded-[28px] border border-gray-200 bg-white p-5">
             <div className="flex items-center gap-4">
               <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#166534] text-2xl font-bold text-white">
                 {initials}
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-2xl font-bold text-gray-900">{displayName}</p>
+                  <p className="truncate text-xl font-bold text-gray-900">{displayName}</p>
                 <p className="truncate text-sm text-gray-500">
                   {profile?.email || 'No email available'}
                 </p>
@@ -256,8 +256,8 @@ function DonorProfilePage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-gray-200 bg-white p-6">
-            <h3 className="text-xl font-bold text-gray-900">Account Notes</h3>
+          <div className="rounded-[28px] border border-gray-200 bg-white p-5">
+            <h3 className="text-lg font-bold text-gray-900">Account Notes</h3>
             <div className="mt-4 rounded-[22px] bg-[#F6F8F4] p-5">
               <p className="text-sm leading-7 text-gray-600">
                 Keep your donor information up to date so your account remains consistent across
@@ -267,9 +267,9 @@ function DonorProfilePage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-gray-200 bg-white p-6 sm:p-7">
+        <div className="rounded-[28px] border border-gray-200 bg-white p-5 sm:p-6">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Edit Profile</h3>
+            <h3 className="text-xl font-bold text-gray-900">Edit Profile</h3>
             <p className="mt-1 text-sm text-gray-500">
               Update your donor account information below.
             </p>
