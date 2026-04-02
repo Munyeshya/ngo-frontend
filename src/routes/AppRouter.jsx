@@ -10,6 +10,10 @@ import ProjectsPage from '../pages/public/ProjectsPage'
 import AboutPage from '../pages/public/AboutPage'
 import ContactPage from '../pages/public/ContactPage'
 import LoginPage from '../pages/auth/LoginPage'
+import RegisterPage from '../pages/auth/RegisterPage'
+import ClaimDonorAccountPage from '../pages/auth/ClaimDonorAccountPage'
+import ClaimDonorAccountVerifyPage from '../pages/auth/ClaimDonorAccountVerifyPage'
+import StaffGuidePage from '../pages/auth/StaffGuidePage'
 import DonorProfilePage from '../pages/donor/DonorProfilePage'
 import DonorDashboardPage from '../pages/donor/DonorDashboardPage'
 import DonorDonationHistoryPage from '../pages/donor/DonorDonationHistoryPage'
@@ -41,6 +45,13 @@ function AppRouter() {
 
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/claim-donor-account" element={<ClaimDonorAccountPage />} />
+          <Route
+            path="/claim-donor-account/verify"
+            element={<ClaimDonorAccountVerifyPage />}
+          />
+          <Route path="/staff-guide" element={<StaffGuidePage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['donor']} />}>
