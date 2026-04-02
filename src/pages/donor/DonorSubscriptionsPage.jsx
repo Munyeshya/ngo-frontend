@@ -11,6 +11,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { getUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -81,6 +82,7 @@ function getProjectImage(item) {
 }
 
 function DonorSubscriptionsPage() {
+  const currentUser = getUser()
   const [subscriptions, setSubscriptions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -142,7 +144,18 @@ function DonorSubscriptionsPage() {
 
   async function handleUnsubscribe(item) {
     const projectId = getProjectId(item)
+    const email =
+      item?.email ||
+      item?.subscriber_email ||
+      item?.user?.email ||
+      currentUser?.email ||
+      ''
+
     if (!projectId) return
+    if (!email) {
+      setActionMessage('We could not determine the subscription email for this project.')
+      return
+    }
 
     try {
       setRemovingId(item.id || projectId)
@@ -150,6 +163,7 @@ function DonorSubscriptionsPage() {
 
       await api.post(endpoints.unsubscribeFromProject, {
         project: projectId,
+        email,
       })
 
       setSubscriptions((prev) =>
