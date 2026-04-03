@@ -9,6 +9,7 @@ import HomePage from '../pages/public/HomePage'
 import ProjectsPage from '../pages/public/ProjectsPage'
 import AboutPage from '../pages/public/AboutPage'
 import ContactPage from '../pages/public/ContactPage'
+import ApiGuidePage from '../pages/public/ApiGuidePage'
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
 import ClaimDonorAccountPage from '../pages/auth/ClaimDonorAccountPage'
@@ -43,6 +44,7 @@ function AppRouter() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/api/" element={<ApiGuidePage />} />
           <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
           <Route path="/donate/:projectId" element={<DonatePage />} />
         </Route>
