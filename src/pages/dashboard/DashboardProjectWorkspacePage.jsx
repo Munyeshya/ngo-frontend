@@ -105,6 +105,8 @@ function getStatusTone(status) {
 }
 
 const DONATIONS_PER_PAGE = 10
+const BENEFICIARIES_PER_PAGE = 5
+const UPDATES_PER_PAGE = 5
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: FolderKanban },
@@ -121,6 +123,11 @@ function DashboardProjectWorkspacePage() {
     : 'overview'
   const donationPageParam = Number(searchParams.get('donationPage') || 1)
   const donationPage = Number.isFinite(donationPageParam) && donationPageParam > 0 ? donationPageParam : 1
+  const beneficiaryPageParam = Number(searchParams.get('beneficiaryPage') || 1)
+  const beneficiaryPage =
+    Number.isFinite(beneficiaryPageParam) && beneficiaryPageParam > 0 ? beneficiaryPageParam : 1
+  const updatePageParam = Number(searchParams.get('updatePage') || 1)
+  const updatePage = Number.isFinite(updatePageParam) && updatePageParam > 0 ? updatePageParam : 1
 
   const [project, setProject] = useState(null)
   const [beneficiaries, setBeneficiaries] = useState([])
@@ -256,9 +263,19 @@ function DashboardProjectWorkspacePage() {
     )
   }, [donations])
 
+  const sortedBeneficiaries = useMemo(() => {
+    return [...beneficiaries].sort(
+      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+    )
+  }, [beneficiaries])
+
   const donationPageCount = Math.max(
     1,
     Math.ceil(sortedDonations.length / DONATIONS_PER_PAGE)
+  )
+  const beneficiaryPageCount = Math.max(
+    1,
+    Math.ceil(sortedBeneficiaries.length / BENEFICIARIES_PER_PAGE)
   )
 
   const paginatedDonations = useMemo(() => {
@@ -272,12 +289,45 @@ function DashboardProjectWorkspacePage() {
     )
   }, [updates])
 
+  const updatePageCount = Math.max(1, Math.ceil(sortedUpdates.length / UPDATES_PER_PAGE))
+
+  const paginatedBeneficiaries = useMemo(() => {
+    const startIndex =
+      (Math.min(beneficiaryPage, beneficiaryPageCount) - 1) * BENEFICIARIES_PER_PAGE
+    return sortedBeneficiaries.slice(startIndex, startIndex + BENEFICIARIES_PER_PAGE)
+  }, [sortedBeneficiaries, beneficiaryPage, beneficiaryPageCount])
+
+  const paginatedUpdates = useMemo(() => {
+    const startIndex = (Math.min(updatePage, updatePageCount) - 1) * UPDATES_PER_PAGE
+    return sortedUpdates.slice(startIndex, startIndex + UPDATES_PER_PAGE)
+  }, [sortedUpdates, updatePage, updatePageCount])
+
+  const donationTrend = useMemo(() => {
+    const target = Number(project?.target_amount || 0)
+    const ordered = [...sortedDonations].reverse()
+    let runningTotal = 0
+
+    const points = ordered.map((donation, index) => {
+      runningTotal += Number(donation?.amount || 0)
+      return {
+        id: donation.id || index,
+        label: formatDate(getDonationDate(donation)),
+        cumulative: runningTotal,
+      }
+    })
+
+    const maxValue = Math.max(target, runningTotal, 1)
+    return { points, target, maxValue, latestTotal: runningTotal }
+  }, [project?.target_amount, sortedDonations])
+
   const selectedTab = tabs.find((tab) => tab.id === activeTab) || tabs[0]
 
   function switchTab(tabId) {
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('tab', tabId)
     nextParams.delete('donationPage')
+    nextParams.delete('beneficiaryPage')
+    nextParams.delete('updatePage')
     setSearchParams(nextParams)
   }
 
@@ -285,6 +335,20 @@ function DashboardProjectWorkspacePage() {
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('tab', 'donations')
     nextParams.set('donationPage', String(pageNumber))
+    setSearchParams(nextParams)
+  }
+
+  function setBeneficiaryPage(pageNumber) {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('tab', 'beneficiaries')
+    nextParams.set('beneficiaryPage', String(pageNumber))
+    setSearchParams(nextParams)
+  }
+
+  function setUpdatePage(pageNumber) {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('tab', 'updates')
+    nextParams.set('updatePage', String(pageNumber))
     setSearchParams(nextParams)
   }
 
@@ -798,6 +862,120 @@ function DashboardProjectWorkspacePage() {
                 </p>
               </div>
             </div>
+
+            <div className="mt-5 rounded-[22px] border border-gray-200 bg-[#FCFCFB] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Donation Progress Over Time</h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Cumulative donations compared with the target amount.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] text-gray-500">Current total</p>
+                  <p className="text-sm font-semibold text-green-800">
+                    {formatCurrency(donationTrend.latestTotal)}
+                  </p>
+                </div>
+              </div>
+
+              {donationTrend.points.length === 0 ? (
+                <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-sm text-gray-600">
+                  No donations yet to chart against the target.
+                </div>
+              ) : (
+                <>
+                  <div className="mt-4 overflow-x-auto">
+                    <svg
+                      viewBox="0 0 520 220"
+                      className="h-[220px] min-w-[520px] w-full"
+                      role="img"
+                      aria-label="Donation progress chart"
+                    >
+                      <line x1="40" y1="20" x2="40" y2="180" stroke="#d1d5db" strokeWidth="1.5" />
+                      <line x1="40" y1="180" x2="500" y2="180" stroke="#d1d5db" strokeWidth="1.5" />
+                      <line
+                        x1="40"
+                        x2="500"
+                        y1={180 - (donationTrend.target / donationTrend.maxValue) * 140}
+                        y2={180 - (donationTrend.target / donationTrend.maxValue) * 140}
+                        stroke="#f59e0b"
+                        strokeWidth="2"
+                        strokeDasharray="6 6"
+                      />
+                      <text
+                        x="500"
+                        y={174 - (donationTrend.target / donationTrend.maxValue) * 140}
+                        textAnchor="end"
+                        fontSize="11"
+                        fill="#92400e"
+                      >
+                        Target
+                      </text>
+                      {donationTrend.points.length === 1 ? (
+                        <circle
+                          cx="270"
+                          cy={180 - (donationTrend.points[0].cumulative / donationTrend.maxValue) * 140}
+                          r="5"
+                          fill="#166534"
+                        />
+                      ) : (
+                        <>
+                          <polyline
+                            fill="none"
+                            stroke="#166534"
+                            strokeWidth="3"
+                            points={donationTrend.points
+                              .map((point, index) => {
+                                const x = 40 + (index / (donationTrend.points.length - 1)) * 460
+                                const y = 180 - (point.cumulative / donationTrend.maxValue) * 140
+                                return `${x},${y}`
+                              })
+                              .join(' ')}
+                          />
+                          {donationTrend.points.map((point, index) => {
+                            const x = 40 + (index / (donationTrend.points.length - 1)) * 460
+                            const y = 180 - (point.cumulative / donationTrend.maxValue) * 140
+
+                            return (
+                              <g key={point.id}>
+                                <circle cx={x} cy={y} r="4" fill="#166534" />
+                                <text x={x} y="198" textAnchor="middle" fontSize="10" fill="#6b7280">
+                                  {index === 0 || index === donationTrend.points.length - 1
+                                    ? point.label
+                                    : ''}
+                                </text>
+                              </g>
+                            )
+                          })}
+                        </>
+                      )}
+                    </svg>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    <div className="rounded-2xl bg-[#F8F8F6] px-3 py-2.5">
+                      <p className="text-[11px] text-gray-500">Target</p>
+                      <p className="mt-1 text-sm font-semibold text-gray-900">
+                        {formatCurrency(donationTrend.target)}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-[#F8F8F6] px-3 py-2.5">
+                      <p className="text-[11px] text-gray-500">Latest Total</p>
+                      <p className="mt-1 text-sm font-semibold text-gray-900">
+                        {formatCurrency(donationTrend.latestTotal)}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-[#F8F8F6] px-3 py-2.5">
+                      <p className="text-[11px] text-gray-500">Donations Count</p>
+                      <p className="mt-1 text-sm font-semibold text-gray-900">
+                        {donationTrend.points.length}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </Card>
 
           <Card className="rounded-[24px] p-5">
@@ -871,81 +1049,109 @@ function DashboardProjectWorkspacePage() {
               No beneficiaries linked to this project yet.
             </div>
           ) : (
-            <div className="mt-5 grid gap-4 xl:grid-cols-2">
-              {beneficiaries.map((beneficiary) => {
-                const images = getBeneficiaryImages(beneficiary)
+            <div className="mt-5 space-y-4">
+              <div className="grid gap-4 xl:grid-cols-2">
+                {paginatedBeneficiaries.map((beneficiary) => {
+                  const images = getBeneficiaryImages(beneficiary)
 
-                return (
-                  <div
-                    key={beneficiary.id}
-                    className="rounded-[22px] border border-gray-200 bg-[#FCFCFB] p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-gray-900">{beneficiary.name}</p>
-                      <div className="flex items-center gap-2">
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
-                          <Upload size={12} />
-                          {uploadingBeneficiaryImageFor === beneficiary.id ? 'Uploading...' : 'Image'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(event) => {
-                              handleBeneficiaryImageUpload(
-                                beneficiary.id,
-                                event.target.files?.[0]
-                              )
-                              event.target.value = ''
-                            }}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => openBeneficiaryForm(beneficiary)}
-                          className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
-                        >
-                          <Pencil size={12} />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteBeneficiary(beneficiary)}
-                          disabled={deletingBeneficiaryId === beneficiary.id}
-                          className="inline-flex items-center gap-1 rounded-full border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-70"
-                        >
-                          <Trash2 size={12} />
-                          {deletingBeneficiaryId === beneficiary.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                      {beneficiary.description || 'No beneficiary description available.'}
-                    </p>
-
-                    {images.length > 0 && (
-                      <div className="mt-4 grid grid-cols-3 gap-2.5">
-                        {images.slice(0, 3).map((image) => (
-                          <div key={image?.id || image?.image} className="group relative">
-                            <img
-                              src={image?.image}
-                              alt={image?.caption || beneficiary?.name || 'Beneficiary image'}
-                              className="h-20 w-full rounded-xl object-cover"
+                  return (
+                    <div
+                      key={beneficiary.id}
+                      className="rounded-[22px] border border-gray-200 bg-[#FCFCFB] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold text-gray-900">{beneficiary.name}</p>
+                        <div className="flex items-center gap-2">
+                          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
+                            <Upload size={12} />
+                            {uploadingBeneficiaryImageFor === beneficiary.id ? 'Uploading...' : 'Image'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(event) => {
+                                handleBeneficiaryImageUpload(
+                                  beneficiary.id,
+                                  event.target.files?.[0]
+                                )
+                                event.target.value = ''
+                              }}
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteBeneficiaryImage(image.id)}
-                              disabled={deletingImageId === image.id}
-                              className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-700 opacity-0 transition group-hover:opacity-100 disabled:opacity-100"
-                            >
-                              <Trash2 size={11} />
-                            </button>
-                          </div>
-                        ))}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => openBeneficiaryForm(beneficiary)}
+                            className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+                          >
+                            <Pencil size={12} />
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBeneficiary(beneficiary)}
+                            disabled={deletingBeneficiaryId === beneficiary.id}
+                            className="inline-flex items-center gap-1 rounded-full border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-70"
+                          >
+                            <Trash2 size={12} />
+                            {deletingBeneficiaryId === beneficiary.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </div>
                       </div>
-                    )}
+                      <p className="mt-2 text-sm leading-6 text-gray-600">
+                        {beneficiary.description || 'No beneficiary description available.'}
+                      </p>
+
+                      {images.length > 0 && (
+                        <div className="mt-4 grid grid-cols-3 gap-2.5">
+                          {images.slice(0, 3).map((image) => (
+                            <div key={image?.id || image?.image} className="group relative">
+                              <img
+                                src={image?.image}
+                                alt={image?.caption || beneficiary?.name || 'Beneficiary image'}
+                                className="h-20 w-full rounded-xl object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteBeneficiaryImage(image.id)}
+                                disabled={deletingImageId === image.id}
+                                className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-700 opacity-0 transition group-hover:opacity-100 disabled:opacity-100"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {beneficiaryPageCount > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                  <p className="text-xs text-gray-500">
+                    Page {Math.min(beneficiaryPage, beneficiaryPageCount)} of {beneficiaryPageCount}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setBeneficiaryPage(Math.max(1, beneficiaryPage - 1))}
+                      disabled={beneficiaryPage <= 1}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBeneficiaryPage(Math.min(beneficiaryPageCount, beneficiaryPage + 1))}
+                      disabled={beneficiaryPage >= beneficiaryPageCount}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Next
+                    </button>
                   </div>
-                )
-              })}
+                </div>
+              )}
             </div>
           )}
         </Card>
@@ -1055,7 +1261,7 @@ function DashboardProjectWorkspacePage() {
             </div>
           ) : (
             <div className="mt-5 space-y-4">
-              {sortedUpdates.map((update) => {
+              {paginatedUpdates.map((update) => {
                 const images = getUpdateImages(update)
 
                 return (
@@ -1132,6 +1338,32 @@ function DashboardProjectWorkspacePage() {
                   </div>
                 )
               })}
+
+              {updatePageCount > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                  <p className="text-xs text-gray-500">
+                    Page {Math.min(updatePage, updatePageCount)} of {updatePageCount}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUpdatePage(Math.max(1, updatePage - 1))}
+                      disabled={updatePage <= 1}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUpdatePage(Math.min(updatePageCount, updatePage + 1))}
+                      disabled={updatePage >= updatePageCount}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Card>
