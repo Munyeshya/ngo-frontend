@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, Search, ShieldCheck, UserCheck, UserCog } from 'lucide-react'
+import { AlertCircle, FileBadge2, Search, ShieldCheck, UserCheck, UserCog } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
+
+const REVIEW_REASON_OPTIONS = [
+  { value: '', label: 'No reason selected' },
+  { value: 'missing_document', label: 'Missing required document' },
+  { value: 'unclear_scan', label: 'Document is unclear or unreadable' },
+  { value: 'expired_document', label: 'Document appears expired' },
+  { value: 'information_mismatch', label: 'Details do not match the application' },
+  { value: 'unauthorized_representative', label: 'Representative proof is insufficient' },
+  { value: 'other', label: 'Other' },
+]
+
+function fileNameFromUrl(value) {
+  if (!value) return 'No file uploaded'
+  return String(value).split('/').pop()
+}
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -41,9 +56,18 @@ function getDisplayName(user) {
   )
 }
 
+function getStatusTone(status) {
+  if (status === 'approved') return 'bg-green-100 text-green-800'
+  if (status === 'changes_requested') return 'bg-amber-100 text-amber-800'
+  if (status === 'rejected') return 'bg-red-100 text-red-700'
+  if (status === 'under_review') return 'bg-sky-100 text-sky-700'
+  return 'bg-[#F3F5F0] text-gray-700'
+}
+
 function AdminUsersPage() {
   const [activeTab, setActiveTab] = useState('applications')
   const [users, setUsers] = useState([])
+  const [staffApplications, setStaffApplications] = useState([])
   const [usersCount, setUsersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -51,12 +75,18 @@ function AdminUsersPage() {
   const [adminActionSuccess, setAdminActionSuccess] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState(null)
   const [userSearch, setUserSearch] = useState('')
+  const [applicationReviews, setApplicationReviews] = useState({})
 
   async function loadUsers() {
-    const response = await api.get(endpoints.users)
-    const list = normalizeListResponse(response.data)
-    setUsers(list)
-    setUsersCount(getCountFromResponse(response.data, list))
+    const [usersResponse, applicationsResponse] = await Promise.all([
+      api.get(endpoints.users),
+      api.get(endpoints.staffApplications),
+    ])
+    const userList = normalizeListResponse(usersResponse.data)
+    const applicationList = normalizeListResponse(applicationsResponse.data)
+    setUsers(userList)
+    setUsersCount(getCountFromResponse(usersResponse.data, userList))
+    setStaffApplications(applicationList)
   }
 
   useEffect(() => {
@@ -66,11 +96,16 @@ function AdminUsersPage() {
       try {
         setLoading(true)
         setError('')
-        const response = await api.get(endpoints.users)
+        const [usersResponse, applicationsResponse] = await Promise.all([
+          api.get(endpoints.users),
+          api.get(endpoints.staffApplications),
+        ])
         if (!active) return
-        const list = normalizeListResponse(response.data)
-        setUsers(list)
-        setUsersCount(getCountFromResponse(response.data, list))
+        const userList = normalizeListResponse(usersResponse.data)
+        const applicationList = normalizeListResponse(applicationsResponse.data)
+        setUsers(userList)
+        setUsersCount(getCountFromResponse(usersResponse.data, userList))
+        setStaffApplications(applicationList)
       } catch (err) {
         if (!active) return
         setError(
@@ -92,10 +127,10 @@ function AdminUsersPage() {
   }, [])
 
   const pendingStaff = useMemo(() => {
-    return users.filter(
-      (user) => String(user?.role || '').toLowerCase() === 'staff' && !user?.is_active
+    return staffApplications.filter((application) =>
+      ['under_review', 'changes_requested', 'draft'].includes(String(application?.status || '').toLowerCase())
     )
-  }, [users])
+  }, [staffApplications])
 
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase()
@@ -126,6 +161,31 @@ function AdminUsersPage() {
     { key: 'directory', label: 'User Directory', count: usersCount },
   ]
 
+  function getReviewState(application) {
+    return (
+      applicationReviews[application.id] || {
+        status: application.status || 'under_review',
+        individual_id_status: application.individual_id_status || 'not_required',
+        group_legal_document_status: application.group_legal_document_status || 'not_required',
+        representative_id_status: application.representative_id_status || 'not_required',
+        individual_id_reason: application.individual_id_reason || '',
+        group_legal_document_reason: application.group_legal_document_reason || '',
+        representative_id_reason: application.representative_id_reason || '',
+        admin_message: application.admin_message || '',
+      }
+    )
+  }
+
+  function handleApplicationReviewChange(applicationId, field, value) {
+    setApplicationReviews((current) => ({
+      ...current,
+      [applicationId]: {
+        ...(current[applicationId] || {}),
+        [field]: value,
+      },
+    }))
+  }
+
   async function handleUserStatusUpdate(user, isActive) {
     try {
       setUpdatingUserId(user.id)
@@ -143,6 +203,36 @@ function AdminUsersPage() {
         err?.response?.data?.message ||
           err?.response?.data?.detail ||
           'Failed to update user account.'
+      )
+    } finally {
+      setUpdatingUserId(null)
+    }
+  }
+
+  async function handleApplicationReviewSubmit(application, nextStatus) {
+    try {
+      setUpdatingUserId(application.id)
+      setAdminActionError('')
+      setAdminActionSuccess('')
+      const review = getReviewState(application)
+
+      await api.patch(endpoints.staffApplicationDetails(application.id), {
+        ...review,
+        status: nextStatus,
+      })
+      await loadUsers()
+      setApplicationReviews((current) => {
+        const updated = { ...current }
+        delete updated[application.id]
+        return updated
+      })
+      setAdminActionSuccess('Staff application reviewed successfully.')
+    } catch (err) {
+      setAdminActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          JSON.stringify(err?.response?.data?.errors || err?.response?.data?.data || {}) ||
+          'Failed to review staff application.'
       )
     } finally {
       setUpdatingUserId(null)
@@ -239,19 +329,19 @@ function AdminUsersPage() {
         <Card className="rounded-[22px] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-gray-900">Pending Staff Approval</h2>
+              <h2 className="text-sm font-bold text-gray-900">Staff Applications</h2>
               <p className="mt-1 text-xs text-gray-500">
-                Staff accounts waiting for admin action.
+                Review uploaded documents, request changes, or approve completed staff applications.
               </p>
             </div>
 
             <div className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-green-100 text-green-800">
-              <UserCheck size={16} />
+              <FileBadge2 size={16} />
             </div>
           </div>
 
           <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4">
-            <p className="text-[11px] text-gray-500">Pending Accounts</p>
+            <p className="text-[11px] text-gray-500">Applications Requiring Attention</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">{pendingStaff.length}</p>
           </div>
 
@@ -260,34 +350,198 @@ function AdminUsersPage() {
               No staff applications are pending right now.
             </div>
           ) : (
-            <div className="mt-4 space-y-2.5">
-              {pendingStaff.map((user) => (
+            <div className="mt-4 space-y-3">
+              {pendingStaff.map((application) => {
+                const user = application.user
+                const review = getReviewState(application)
+                const isIndividual = application.applicant_type === 'individual'
+
+                return (
                 <div
-                  key={user.id}
+                  key={application.id}
                   className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-900">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-gray-900">
                         {getDisplayName(user)}
-                      </p>
+                        </p>
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${getStatusTone(application.status)}`}>
+                          {String(application.status || '').replace(/_/g, ' ')}
+                        </span>
+                        <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold capitalize text-gray-700">
+                          {application.applicant_type}
+                        </span>
+                      </div>
                       <p className="mt-1 truncate text-[11px] text-gray-500">
                         {user?.email || user?.username || 'No email'}
                       </p>
+                      <p className="mt-1 text-[11px] text-gray-500">
+                        {application.location || 'No location provided'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                    <div className="space-y-3">
+                      {isIndividual ? (
+                        <div className="rounded-2xl border border-gray-200 bg-white p-3">
+                          <p className="text-[11px] font-semibold text-gray-900">Individual ID document</p>
+                          <p className="mt-1 text-[10px] text-gray-500">
+                            {fileNameFromUrl(application.individual_id_document)}
+                          </p>
+                          <div className="mt-3 grid gap-3 md:grid-cols-2">
+                            <select
+                              value={review.individual_id_status}
+                              onChange={(event) =>
+                                handleApplicationReviewChange(application.id, 'individual_id_status', event.target.value)
+                              }
+                              className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="approved">Approve document</option>
+                              <option value="rejected">Reject document</option>
+                            </select>
+                            <select
+                              value={review.individual_id_reason}
+                              onChange={(event) =>
+                                handleApplicationReviewChange(application.id, 'individual_id_reason', event.target.value)
+                              }
+                              className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                            >
+                              {REVIEW_REASON_OPTIONS.map((option) => (
+                                <option key={option.value || 'none'} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="rounded-2xl border border-gray-200 bg-white p-3">
+                            <p className="text-[11px] font-semibold text-gray-900">Group legal document</p>
+                            <p className="mt-1 text-[10px] text-gray-500">
+                              {fileNameFromUrl(application.group_legal_document)}
+                            </p>
+                            <div className="mt-3 grid gap-3 md:grid-cols-2">
+                              <select
+                                value={review.group_legal_document_status}
+                                onChange={(event) =>
+                                  handleApplicationReviewChange(application.id, 'group_legal_document_status', event.target.value)
+                                }
+                                className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approve document</option>
+                                <option value="rejected">Reject document</option>
+                              </select>
+                              <select
+                                value={review.group_legal_document_reason}
+                                onChange={(event) =>
+                                  handleApplicationReviewChange(application.id, 'group_legal_document_reason', event.target.value)
+                                }
+                                className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                              >
+                                {REVIEW_REASON_OPTIONS.map((option) => (
+                                  <option key={option.value || 'none'} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-gray-200 bg-white p-3">
+                            <p className="text-[11px] font-semibold text-gray-900">Representative ID document</p>
+                            <p className="mt-1 text-[10px] text-gray-500">
+                              {fileNameFromUrl(application.representative_id_document)}
+                            </p>
+                            <div className="mt-3 grid gap-3 md:grid-cols-2">
+                              <select
+                                value={review.representative_id_status}
+                                onChange={(event) =>
+                                  handleApplicationReviewChange(application.id, 'representative_id_status', event.target.value)
+                                }
+                                className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approve document</option>
+                                <option value="rejected">Reject document</option>
+                              </select>
+                              <select
+                                value={review.representative_id_reason}
+                                onChange={(event) =>
+                                  handleApplicationReviewChange(application.id, 'representative_id_reason', event.target.value)
+                                }
+                                className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                              >
+                                {REVIEW_REASON_OPTIONS.map((option) => (
+                                  <option key={option.value || 'none'} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleUserStatusUpdate(user, true)}
-                      disabled={updatingUserId === user.id}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-green-800 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#0f4d27] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <ShieldCheck size={12} />
-                      {updatingUserId === user.id ? 'Approving...' : 'Approve'}
-                    </button>
+                    <div className="space-y-3">
+                      <div className="rounded-2xl border border-gray-200 bg-white p-3">
+                        <p className="text-[11px] font-semibold text-gray-900">Application Summary</p>
+                        <p className="mt-2 text-[11px] leading-6 text-gray-600">
+                          {application.mission_summary || 'No mission summary provided.'}
+                        </p>
+                      </div>
+
+                      <label className="block space-y-1.5">
+                        <span className="text-[11px] font-semibold text-gray-700">Admin message</span>
+                        <textarea
+                          rows="4"
+                          value={review.admin_message}
+                          onChange={(event) =>
+                            handleApplicationReviewChange(application.id, 'admin_message', event.target.value)
+                          }
+                          className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                          placeholder="Add extra requirements or explain what needs to change."
+                        />
+                      </label>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleApplicationReviewSubmit(application, 'approved')}
+                          disabled={updatingUserId === application.id}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-green-800 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#0f4d27] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <ShieldCheck size={12} />
+                          {updatingUserId === application.id ? 'Saving...' : 'Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApplicationReviewSubmit(application, 'changes_requested')}
+                          disabled={updatingUserId === application.id}
+                          className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-semibold text-amber-800 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Request Changes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApplicationReviewSubmit(application, 'rejected')}
+                          disabled={updatingUserId === application.id}
+                          className="rounded-full bg-red-100 px-3 py-1.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Reject Application
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </Card>
