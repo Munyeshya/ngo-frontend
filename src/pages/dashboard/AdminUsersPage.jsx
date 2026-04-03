@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, FileBadge2, Search, ShieldCheck, UserCheck, UserCog } from 'lucide-react'
+import { FileBadge2, Search, ShieldCheck, UserCheck, UserCog } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import DocumentPreviewModal from '../../components/common/DocumentPreviewModal'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 
 const REVIEW_REASON_OPTIONS = [
@@ -66,6 +67,7 @@ function getStatusTone(status) {
 }
 
 function AdminUsersPage() {
+  const { showToast } = useToast()
   const STAFF_APPLICATIONS_PER_PAGE = 6
   const USER_DIRECTORY_PER_PAGE = 8
   const [activeTab, setActiveTab] = useState('applications')
@@ -74,8 +76,6 @@ function AdminUsersPage() {
   const [usersCount, setUsersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [adminActionError, setAdminActionError] = useState('')
-  const [adminActionSuccess, setAdminActionSuccess] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState(null)
   const [userSearch, setUserSearch] = useState('')
   const [applicationPage, setApplicationPage] = useState(1)
@@ -224,21 +224,22 @@ function AdminUsersPage() {
   async function handleUserStatusUpdate(user, isActive) {
     try {
       setUpdatingUserId(user.id)
-      setAdminActionError('')
-      setAdminActionSuccess('')
       await api.patch(endpoints.userDetails(user.id), { is_active: isActive })
       await loadUsers()
-      setAdminActionSuccess(
-        isActive
+      showToast({
+        type: 'success',
+        message: isActive
           ? `${getDisplayName(user)} approved successfully.`
-          : `${getDisplayName(user)} updated successfully.`
-      )
+          : `${getDisplayName(user)} updated successfully.`,
+      })
     } catch (err) {
-      setAdminActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to update user account.'
-      )
+          'Failed to update user account.',
+      })
     } finally {
       setUpdatingUserId(null)
     }
@@ -247,8 +248,6 @@ function AdminUsersPage() {
   async function handleApplicationReviewSubmit(application, nextStatus) {
     try {
       setUpdatingUserId(application.id)
-      setAdminActionError('')
-      setAdminActionSuccess('')
       const review = getReviewState(application)
 
       await api.patch(endpoints.staffApplicationDetails(application.id), {
@@ -261,14 +260,16 @@ function AdminUsersPage() {
         delete updated[application.id]
         return updated
       })
-      setAdminActionSuccess('Staff application reviewed successfully.')
+      showToast({ type: 'success', message: 'Staff application reviewed successfully.' })
     } catch (err) {
-      setAdminActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
           JSON.stringify(err?.response?.data?.errors || err?.response?.data?.data || {}) ||
-          'Failed to review staff application.'
-      )
+          'Failed to review staff application.',
+      })
     } finally {
       setUpdatingUserId(null)
     }
@@ -325,19 +326,6 @@ function AdminUsersPage() {
           Total Users: {usersCount}
         </div>
       </div>
-
-      {(adminActionError || adminActionSuccess) && (
-        <Card className={`p-4 ${adminActionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              adminActionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={16} className="mt-0.5 shrink-0" />
-            <span>{adminActionError || adminActionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       <div className="inline-flex rounded-2xl bg-[#F3F5F0] p-1">
         {tabs.map((tab) => {
