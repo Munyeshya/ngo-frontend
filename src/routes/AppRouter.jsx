@@ -21,6 +21,7 @@ import DonorSubscriptionsPage from '../pages/donor/DonorSubscriptionsPage'
 
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import DashboardProjectsPage from '../pages/dashboard/DashboardProjectsPage'
+import DashboardProjectWorkspacePage from '../pages/dashboard/DashboardProjectWorkspacePage'
 import DashboardBeneficiariesPage from '../pages/dashboard/DashboardBeneficiariesPage'
 import DashboardDonationsPage from '../pages/dashboard/DonationsPage'
 import DashboardUpdatesPage from '../pages/dashboard/UpdatesPage'
@@ -67,6 +68,10 @@ function AppRouter() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
             <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
+            <Route
+              path="/dashboard/projects/:projectId"
+              element={<DashboardProjectWorkspacePage />}
+            />
             <Route path="/dashboard/beneficiaries" element={<DashboardBeneficiariesPage />} />
             <Route path="/dashboard/donations" element={<DashboardDonationsPage />} />
             <Route path="/dashboard/updates" element={<DashboardUpdatesPage />} />
