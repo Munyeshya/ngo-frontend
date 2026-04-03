@@ -4,7 +4,7 @@ import Footer from '../components/layout/Footer'
 
 function PublicLayout() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="public-app min-h-screen bg-white">
       <Navbar />
       <main>
         <Outlet />
