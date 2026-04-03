@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, Mail, Save, ShieldCheck, UserCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Mail, Save, ShieldCheck, Upload, UserCircle2 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
@@ -44,6 +44,7 @@ function StaffProfilePage() {
     username: '',
     email: '',
     phone_number: '',
+    profile_image: null,
   })
 
   useEffect(() => {
@@ -66,6 +67,7 @@ function StaffProfilePage() {
           username: profileData?.username || '',
           email: profileData?.email || '',
           phone_number: profileData?.phone_number || '',
+          profile_image: null,
         })
       } catch (err) {
         if (!active) return
@@ -87,12 +89,18 @@ function StaffProfilePage() {
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
+  const profileImagePreview = useMemo(() => {
+    if (formData.profile_image instanceof File) {
+      return URL.createObjectURL(formData.profile_image)
+    }
+    return profile?.profile_image || ''
+  }, [formData.profile_image, profile?.profile_image])
 
   function handleChange(event) {
-    const { name, value } = event.target
+    const { name, value, files } = event.target
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: files ? files[0] || null : value,
     }))
   }
 
@@ -108,15 +116,19 @@ function StaffProfilePage() {
 
     try {
       setSaving(true)
-      const payload = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        phone_number: formData.phone_number.trim(),
+      const payload = new FormData()
+      payload.append('first_name', formData.first_name.trim())
+      payload.append('last_name', formData.last_name.trim())
+      payload.append('username', formData.username.trim())
+      payload.append('email', formData.email.trim())
+      payload.append('phone_number', formData.phone_number.trim())
+      if (formData.profile_image) {
+        payload.append('profile_image', formData.profile_image)
       }
 
-      const response = await api.patch(endpoints.userDetails(profile.id), payload)
+      const response = await api.patch(endpoints.userDetails(profile.id), payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       const updatedProfile = unwrapPayload(response.data)
       setProfile(updatedProfile)
       setUser(updatedProfile)
@@ -126,6 +138,7 @@ function StaffProfilePage() {
         username: updatedProfile?.username || '',
         email: updatedProfile?.email || '',
         phone_number: updatedProfile?.phone_number || '',
+        profile_image: null,
       })
       setSuccess('Staff profile updated successfully.')
     } catch (err) {
@@ -164,9 +177,17 @@ function StaffProfilePage() {
         <div className="space-y-4">
           <Card className="rounded-[24px] p-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-[#166534] text-xl font-bold text-white">
-                {initials}
-              </div>
+              {profileImagePreview ? (
+                <img
+                  src={profileImagePreview}
+                  alt={displayName}
+                  className="h-18 w-18 rounded-[22px] object-cover"
+                />
+              ) : (
+                <div className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-[#166534] text-xl font-bold text-white">
+                  {initials}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="truncate text-lg font-bold text-gray-900">{displayName}</p>
                 <p className="truncate text-sm text-gray-500">
@@ -238,6 +259,36 @@ function StaffProfilePage() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div className="rounded-[20px] border border-gray-200 bg-[#F8F8F6] p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                {profileImagePreview ? (
+                  <img
+                    src={profileImagePreview}
+                    alt={displayName}
+                    className="h-20 w-20 rounded-[22px] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[22px] bg-[#166534] text-xl font-bold text-white">
+                    {initials}
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900">Profile Image</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Upload a clear profile image for your staff account.
+                  </p>
+                  <input
+                    type="file"
+                    name="profile_image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="mt-3 block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-[11px] file:font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1.5">
                 <span className="text-[11px] font-semibold text-gray-700">First Name</span>
@@ -314,7 +365,7 @@ function StaffProfilePage() {
               disabled={saving}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-[16px] bg-[#166534] px-5 text-sm font-semibold text-white transition hover:bg-[#0F4D27] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <Save size={15} />
+              {saving ? <Upload size={15} /> : <Save size={15} />}
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
