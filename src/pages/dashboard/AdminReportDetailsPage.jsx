@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 
 function normalizeListResponse(payload) {
@@ -46,13 +47,12 @@ function statusTone(status) {
 }
 
 function AdminReportDetailsPage() {
+  const { showToast } = useToast()
   const { projectId } = useParams()
   const [project, setProject] = useState(null)
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [saving, setSaving] = useState(false)
   const [review, setReview] = useState({
     moderation_status: 'under_review',
@@ -104,11 +104,12 @@ function AdminReportDetailsPage() {
         })
       } catch (err) {
         if (!active) return
-        setError(
+        const message =
           err?.response?.data?.detail ||
-            err?.response?.data?.message ||
-            'Failed to load the report details.'
-        )
+          err?.response?.data?.message ||
+          'Failed to load the report details.'
+        setError(message)
+        showToast({ type: 'error', message })
       } finally {
         if (active) setLoading(false)
       }
@@ -131,17 +132,17 @@ function AdminReportDetailsPage() {
   async function handleSave() {
     try {
       setSaving(true)
-      setActionError('')
-      setActionSuccess('')
       await api.patch(endpoints.projectDetails(projectId), review)
       await loadData()
-      setActionSuccess('Project moderation decision saved successfully.')
+      showToast({ type: 'success', message: 'Project moderation decision saved successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.detail ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Failed to save the project decision.'
-      )
+          'Failed to save the project decision.',
+      })
     } finally {
       setSaving(false)
     }
@@ -213,14 +214,6 @@ function AdminReportDetailsPage() {
           </span>
         </div>
       </div>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <p className={`text-sm ${actionError ? 'text-red-700' : 'text-green-700'}`}>
-            {actionError || actionSuccess}
-          </p>
-        </Card>
-      )}
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-4">
