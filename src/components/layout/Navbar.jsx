@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import Logo from '../common/Logo'
 import Button from '../ui/Button'
+import { useToast } from '../feedback/ToastProvider'
 import { clearAuth, getRefreshToken, getToken, getUser } from '../../utils/storage'
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
@@ -47,6 +48,7 @@ function getInitials(name) {
 
 function Navbar() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const accountRef = useRef(null)
@@ -101,6 +103,7 @@ function Navbar() {
       clearAuth()
       setAccountOpen(false)
       setIsOpen(false)
+      showToast({ type: 'success', message: 'Logged out successfully.' })
       navigate('/login', { replace: true })
     }
   }
