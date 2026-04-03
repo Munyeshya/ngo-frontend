@@ -139,6 +139,38 @@ function buildBeneficiaryCountMap(beneficiaries) {
   return map
 }
 
+function getComparableDate(value) {
+  if (!value) return 0
+  const parsed = new Date(value).getTime()
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function sortProjects(items, ordering) {
+  const sorted = [...items]
+
+  sorted.sort((a, b) => {
+    if (ordering === '-created_at') {
+      return getComparableDate(b?.created_at) - getComparableDate(a?.created_at)
+    }
+
+    if (ordering === 'start_date') {
+      return getComparableDate(a?.start_date) - getComparableDate(b?.start_date)
+    }
+
+    if (ordering === '-budget') {
+      return Number(b?.budget || 0) - Number(a?.budget || 0)
+    }
+
+    if (ordering === 'title') {
+      return String(a?.title || '').localeCompare(String(b?.title || ''))
+    }
+
+    return 0
+  })
+
+  return sorted
+}
+
 function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -196,8 +228,9 @@ function ProjectsPage() {
       const normalizedBeneficiaries = normalizeListResponse(beneficiariesResponse.data)
 
       const countsMap = buildBeneficiaryCountMap(normalizedBeneficiaries.results)
+      const sortedProjects = sortProjects(normalizedProjects.results, selectedOrdering)
 
-      setProjects(normalizedProjects.results)
+      setProjects(sortedProjects)
       setCount(normalizedProjects.count)
       setNextPage(normalizedProjects.next)
       setPrevPage(normalizedProjects.previous)
@@ -215,7 +248,7 @@ function ProjectsPage() {
 
   useEffect(() => {
     fetchProjectsAndBeneficiaries()
-  }, [queryObject])
+  }, [queryObject, selectedOrdering])
 
   useEffect(() => {
     const params = {}
