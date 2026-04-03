@@ -42,6 +42,7 @@ function getDisplayName(user) {
 }
 
 function AdminUsersPage() {
+  const [activeTab, setActiveTab] = useState('applications')
   const [users, setUsers] = useState([])
   const [usersCount, setUsersCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -119,6 +120,11 @@ function AdminUsersPage() {
       })
       .slice(0, 10)
   }, [users, userSearch])
+
+  const tabs = [
+    { key: 'applications', label: 'Staff Applications', count: pendingStaff.length },
+    { key: 'directory', label: 'User Directory', count: usersCount },
+  ]
 
   async function handleUserStatusUpdate(user, isActive) {
     try {
@@ -208,7 +214,28 @@ function AdminUsersPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[0.78fr_1.22fr]">
+      <div className="inline-flex rounded-2xl bg-[#F3F5F0] p-1">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-[14px] px-3 py-2 text-[11px] font-semibold transition ${
+                isActive
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1.5 text-[10px] text-gray-400">{tab.count}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {activeTab === 'applications' ? (
         <Card className="rounded-[22px] p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -234,7 +261,7 @@ function AdminUsersPage() {
             </div>
           ) : (
             <div className="mt-4 space-y-2.5">
-              {pendingStaff.slice(0, 6).map((user) => (
+              {pendingStaff.map((user) => (
                 <div
                   key={user.id}
                   className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5"
@@ -264,7 +291,7 @@ function AdminUsersPage() {
             </div>
           )}
         </Card>
-
+      ) : (
         <Card className="rounded-[22px] p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -360,7 +387,7 @@ function AdminUsersPage() {
             </div>
           )}
         </Card>
-      </div>
+      )}
     </div>
   )
 }
