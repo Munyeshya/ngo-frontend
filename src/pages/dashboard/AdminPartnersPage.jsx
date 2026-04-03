@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  AlertCircle,
   ExternalLink,
   Handshake,
   Pencil,
@@ -12,6 +11,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 
@@ -42,12 +42,11 @@ function getCountFromResponse(payload, fallbackArray = []) {
 }
 
 function AdminPartnersPage() {
+  const { showToast } = useToast()
   const [partners, setPartners] = useState([])
   const [partnersCount, setPartnersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [search, setSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
@@ -108,7 +107,6 @@ function AdminPartnersPage() {
       logo: null,
     })
     setEditingPartner(null)
-    setActionError('')
   }
 
   function openCreateForm() {
@@ -118,8 +116,6 @@ function AdminPartnersPage() {
 
   function openEditForm(partner) {
     setEditingPartner(partner)
-    setActionError('')
-    setActionSuccess('')
     setFormData({
       name: partner?.name || '',
       website: partner?.website || '',
@@ -151,8 +147,6 @@ function AdminPartnersPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmitting(true)
@@ -167,12 +161,12 @@ function AdminPartnersPage() {
         await api.patch(endpoints.partnerDetails(editingPartner.id), payload, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        setActionSuccess('Partner updated successfully.')
+        showToast({ type: 'success', message: 'Partner updated successfully.' })
       } else {
         await api.post(endpoints.partners, payload, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        setActionSuccess('Partner added successfully.')
+        showToast({ type: 'success', message: 'Partner added successfully.' })
       }
 
       await refreshPartners()
@@ -184,12 +178,14 @@ function AdminPartnersPage() {
           ? Object.values(data).flat().find(Boolean)
           : null
 
-      setActionError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           flattened ||
-          'Partner action failed. Please review the form and try again.'
-      )
+          'Partner action failed. Please review the form and try again.',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -201,17 +197,17 @@ function AdminPartnersPage() {
 
     try {
       setDeletingId(partner.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.partnerDetails(partner.id))
       await refreshPartners()
-      setActionSuccess('Partner deleted successfully.')
+      showToast({ type: 'success', message: 'Partner deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete partner.'
-      )
+          'Failed to delete partner.',
+      })
     } finally {
       setDeletingId(null)
     }
@@ -285,19 +281,6 @@ function AdminPartnersPage() {
           </Button>
         </div>
       </div>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              actionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={16} className="mt-0.5 shrink-0" />
-            <span>{actionError || actionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       <Card className="rounded-[24px] p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -491,12 +474,6 @@ function AdminPartnersPage() {
                   Active
                 </label>
               </div>
-
-              {actionError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
-                  {actionError}
-                </div>
-              )}
 
               <div className="flex flex-wrap justify-end gap-2.5">
                 <Button type="button" variant="outline" onClick={closeForm}>
