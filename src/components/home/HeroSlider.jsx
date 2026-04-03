@@ -27,7 +27,7 @@ const slides = [
     image:
       'https://www.borgenmagazine.com/wp-content/uploads/2020/11/Water-for-Good-fighting-for-accessible-water-in-Central-Africa-Republic-1-e1606664321290.jpg',
     title: 'Transforming Good Intentions Into Real Action',
-    text: 'A better public NGO platform for trust, visibility, and impact-focused giving.',
+    text: 'A better public NGO transparency platform for trust, visibility, and impact-focused giving.',
     amount: '$1,762,310',
     people: '18,240',
   },
