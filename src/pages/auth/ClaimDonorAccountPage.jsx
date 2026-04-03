@@ -1,25 +1,23 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, MailCheck } from 'lucide-react'
+import { ArrowLeft, Loader2, MailCheck } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 
 function ClaimDonorAccountPage() {
+  const { showToast } = useToast()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
-    setSuccess('')
 
     if (!email.trim()) {
-      setError('Email address is required.')
+      showToast({ type: 'error', message: 'Email address is required.' })
       return
     }
 
@@ -30,16 +28,20 @@ function ClaimDonorAccountPage() {
         email: email.trim(),
       })
 
-      setSuccess(
-        response?.data?.message ||
-          'A donor claim verification email has been sent if the account exists.'
-      )
+      showToast({
+        type: 'success',
+        message:
+          response?.data?.message ||
+          'A donor claim verification email has been sent if the account exists. Check your inbox and spam folder.',
+      })
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'We could not process your request. Please try again.'
-      )
+          'We could not process your request. Please try again.',
+      })
     } finally {
       setLoading(false)
     }
@@ -86,28 +88,6 @@ function ClaimDonorAccountPage() {
                 className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 outline-none transition focus:border-green-700 focus:ring-4 focus:ring-green-100"
               />
             </div>
-
-            {error && (
-              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {success && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                  <div>
-                    <p>{success}</p>
-                    <p className="mt-2 text-sm text-green-800">
-                      Check your inbox and spam folder. The verification token expires after one
-                      hour.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <Button type="submit" className="h-12 w-full" disabled={loading}>
               {loading ? (
