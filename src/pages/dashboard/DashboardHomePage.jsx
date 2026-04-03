@@ -545,29 +545,11 @@ function DashboardHomePage() {
       </div>
 
       <Card className="rounded-[24px] p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Support by Project Type</h2>
-            <p className="mt-1 text-xs text-gray-500">
-              Donation support patterns by project type from January to December.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to="/dashboard/users"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-green-800 px-2.5 py-2 text-[10px] font-semibold text-white transition hover:bg-[#0f4d27]"
-            >
-              <Users size={12} />
-              Users
-            </Link>
-            <Link
-              to="/dashboard/partners"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-green-200 px-2.5 py-2 text-[10px] font-semibold text-green-800 transition hover:bg-green-50"
-            >
-              <Handshake size={12} />
-              Partners
-            </Link>
-          </div>
+        <div>
+          <h2 className="text-base font-bold text-gray-900">Support by Project Type</h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Donation support patterns by project type from January to December.
+          </p>
         </div>
 
         {supportByTypeChart.series.length === 0 ? (
