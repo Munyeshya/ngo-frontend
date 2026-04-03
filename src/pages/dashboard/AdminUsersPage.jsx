@@ -66,6 +66,8 @@ function getStatusTone(status) {
 }
 
 function AdminUsersPage() {
+  const STAFF_APPLICATIONS_PER_PAGE = 6
+  const USER_DIRECTORY_PER_PAGE = 8
   const [activeTab, setActiveTab] = useState('applications')
   const [users, setUsers] = useState([])
   const [staffApplications, setStaffApplications] = useState([])
@@ -76,6 +78,8 @@ function AdminUsersPage() {
   const [adminActionSuccess, setAdminActionSuccess] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState(null)
   const [userSearch, setUserSearch] = useState('')
+  const [applicationPage, setApplicationPage] = useState(1)
+  const [directoryPage, setDirectoryPage] = useState(1)
   const [applicationReviews, setApplicationReviews] = useState({})
   const [previewDocument, setPreviewDocument] = useState(null)
 
@@ -138,7 +142,7 @@ function AdminUsersPage() {
     const query = userSearch.trim().toLowerCase()
 
     if (!query) {
-      return users.slice(0, 10)
+      return users
     }
 
     return users
@@ -155,13 +159,42 @@ function AdminUsersPage() {
           role.includes(query)
         )
       })
-      .slice(0, 10)
   }, [users, userSearch])
+
+  const applicationPageCount = Math.max(
+    1,
+    Math.ceil(pendingStaff.length / STAFF_APPLICATIONS_PER_PAGE)
+  )
+
+  const directoryPageCount = Math.max(
+    1,
+    Math.ceil(filteredUsers.length / USER_DIRECTORY_PER_PAGE)
+  )
+
+  const paginatedApplications = useMemo(() => {
+    const safePage = Math.min(applicationPage, applicationPageCount)
+    const startIndex = (safePage - 1) * STAFF_APPLICATIONS_PER_PAGE
+    return pendingStaff.slice(startIndex, startIndex + STAFF_APPLICATIONS_PER_PAGE)
+  }, [pendingStaff, applicationPage, applicationPageCount])
+
+  const paginatedUsers = useMemo(() => {
+    const safePage = Math.min(directoryPage, directoryPageCount)
+    const startIndex = (safePage - 1) * USER_DIRECTORY_PER_PAGE
+    return filteredUsers.slice(startIndex, startIndex + USER_DIRECTORY_PER_PAGE)
+  }, [filteredUsers, directoryPage, directoryPageCount])
 
   const tabs = [
     { key: 'applications', label: 'Staff Applications', count: pendingStaff.length },
     { key: 'directory', label: 'User Directory', count: usersCount },
   ]
+
+  useEffect(() => {
+    setApplicationPage(1)
+  }, [staffApplications])
+
+  useEffect(() => {
+    setDirectoryPage(1)
+  }, [userSearch])
 
   function getReviewState(application) {
     return (
@@ -353,7 +386,7 @@ function AdminUsersPage() {
             </div>
           ) : (
             <div className="mt-4 space-y-3">
-              {pendingStaff.map((application) => {
+              {paginatedApplications.map((application) => {
                 const user = application.user
                 const review = getReviewState(application)
                 const isIndividual = application.applicant_type === 'individual'
@@ -592,6 +625,31 @@ function AdminUsersPage() {
                 </div>
                 )
               })}
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-2">
+                <p className="text-xs text-gray-500">
+                  Page {Math.min(applicationPage, applicationPageCount)} of {applicationPageCount}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setApplicationPage((prev) => Math.max(1, prev - 1))}
+                    disabled={applicationPage <= 1}
+                    className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setApplicationPage((prev) => Math.min(applicationPageCount, prev + 1))
+                    }
+                    disabled={applicationPage >= applicationPageCount}
+                    className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </Card>
@@ -644,7 +702,7 @@ function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <tr key={user.id}>
                       <td className="py-3 pr-4">
                         <p className="text-[13px] font-semibold text-gray-900">
@@ -688,6 +746,29 @@ function AdminUsersPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-1">
+              <p className="text-xs text-gray-500">
+                Page {Math.min(directoryPage, directoryPageCount)} of {directoryPageCount}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDirectoryPage((prev) => Math.max(1, prev - 1))}
+                  disabled={directoryPage <= 1}
+                  className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDirectoryPage((prev) => Math.min(directoryPageCount, prev + 1))}
+                  disabled={directoryPage >= directoryPageCount}
+                  className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </Card>
