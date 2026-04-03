@@ -36,7 +36,7 @@ const projectStatuses = [
   { label: 'All', value: '' },
   { label: 'Active', value: 'active' },
   { label: 'Completed', value: 'completed' },
-  { label: 'Paused', value: 'paused' },
+  { label: 'On Hold', value: 'on_hold' },
 ]
 
 const projectTypeFilters = [{ label: 'All Types', value: '' }, ...PROJECT_TYPE_OPTIONS]
@@ -297,22 +297,22 @@ function ProjectsPage() {
           >
             <div className="relative">
               <Search
-                size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={15}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 type="text"
                 placeholder="Search projects, descriptions, or locations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-[#F8F8F6] py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-green-700"
+                className="h-10 w-full rounded-xl border border-gray-200 bg-[#F8F8F6] py-2 pl-10 pr-3 text-xs outline-none transition focus:border-green-700"
               />
             </div>
 
             <div className="relative">
               <SlidersHorizontal
-                size={18}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={15}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <select
                 value={selectedStatus}
@@ -320,7 +320,7 @@ function ProjectsPage() {
                   setSelectedStatus(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-[#F8F8F6] py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-green-700"
+                className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-[#F8F8F6] py-2 pl-10 pr-3 text-xs outline-none transition focus:border-green-700"
               >
                 {projectStatuses.map((item) => (
                   <option key={item.label} value={item.value}>
@@ -337,7 +337,7 @@ function ProjectsPage() {
                   setSelectedType(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-[#F8F8F6] px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
+                className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-[#F8F8F6] px-3 py-2 text-xs outline-none transition focus:border-green-700"
               >
                 {projectTypeFilters.map((item) => (
                   <option key={item.value || 'all-types'} value={item.value}>
@@ -354,7 +354,7 @@ function ProjectsPage() {
                   setSelectedOrdering(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="w-full appearance-none rounded-2xl border border-gray-200 bg-[#F8F8F6] px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
+                className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-[#F8F8F6] px-3 py-2 text-xs outline-none transition focus:border-green-700"
               >
                 {orderingOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -364,18 +364,18 @@ function ProjectsPage() {
               </select>
             </div>
 
-              <Button variant="primary" className="w-full px-4 py-2.5 text-sm lg:w-auto">
+              <Button variant="primary" className="h-10 w-full px-3.5 py-2 text-xs lg:w-auto">
                 Search Projects
               </Button>
           </form>
 
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             {projectStatuses.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => handleStatusClick(item.value)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+                className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${
                   selectedStatus === item.value
                     ? 'bg-green-800 text-white'
                     : 'bg-green-50 text-green-800 hover:bg-green-100'
