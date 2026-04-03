@@ -17,7 +17,7 @@ import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
 
-const TYPE_COLORS = ['#166534', '#15803d', '#65a30d', '#0f766e']
+const TYPE_COLORS = ['#2563eb', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#14b8a6']
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -545,28 +545,13 @@ function DashboardHomePage() {
           </div>
         ) : (
           <div className="mt-4 space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {supportByTypeChart.series.map((item) => (
-                <div
-                  key={item.label}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#F8F8F6] px-3 py-1.5 text-[10px] font-semibold text-gray-700"
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_200px]">
+              <div className="overflow-x-auto rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3">
+                <svg
+                  viewBox="0 0 720 240"
+                  className="h-[240px] w-full min-w-[680px]"
+                  aria-label="Support by project type line chart"
                 >
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span>{item.label}</span>
-                  <span className="text-gray-500">- {formatCurrency(item.total)}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="overflow-x-auto rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3">
-              <svg
-                viewBox="0 0 720 240"
-                className="h-[240px] w-full min-w-[680px]"
-                aria-label="Support by project type line chart"
-              >
                 <text x="14" y="24" fontSize="10" fill="#6b7280" fontWeight="600">
                   RWF
                 </text>
@@ -624,60 +609,129 @@ function DashboardHomePage() {
                   )
                 })}
 
-                {supportByTypeChart.series.map((item) => {
-                  const points = item.months.map((value, index) => {
-                    const x =
-                      44 +
-                      (index / Math.max(item.months.length - 1, 1)) * 646
-                    const ratio = supportByTypeChart.maxValue > 0 ? value / supportByTypeChart.maxValue : 0
-                    const y = 200 - ratio * 176
-                    return { x, y, value }
-                  })
+                  {supportByTypeChart.series.map((item) => {
+                    const points = item.months.map((value, index) => {
+                      const x = 44 + (index / Math.max(item.months.length - 1, 1)) * 646
+                      const ratio =
+                        supportByTypeChart.maxValue > 0 ? value / supportByTypeChart.maxValue : 0
+                      const y = 200 - ratio * 176
+                      return { x, y, value }
+                    })
 
-                  const path = points
-                    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
-                    .join(' ')
+                    const path = points
+                      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+                      .join(' ')
 
-                  return (
-                    <g key={item.label}>
-                      <path
-                        d={path}
-                        fill="none"
-                        stroke={item.color}
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                    return (
+                      <g key={item.label}>
+                        <path
+                          d={path}
+                          fill="none"
+                          stroke={item.color}
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        {points.map((point, index) => (
+                          <circle
+                            key={`${item.label}-${index}`}
+                            cx={point.x}
+                            cy={point.y}
+                            r="3.5"
+                            fill={item.color}
+                          >
+                            <title>{`${item.label} - ${supportByTypeChart.months[index] || `Month ${index + 1}`}: ${formatCurrency(point.value)}`}</title>
+                          </circle>
+                        ))}
+                      </g>
+                    )
+                  })}
+
+                  <text
+                    x="367"
+                    y="236"
+                    textAnchor="middle"
+                    fontSize="10"
+                    fill="#6b7280"
+                    fontWeight="600"
+                  >
+                    Months
+                  </text>
+                </svg>
+              </div>
+
+              <div className="rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                  Legend
+                </p>
+                <div className="mt-3 space-y-2.5">
+                  {supportByTypeChart.series.map((item) => (
+                    <div key={item.label} className="flex items-start gap-2.5">
+                      <span
+                        className="mt-1 h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: item.color }}
                       />
-                      {points.map((point, index) => (
-                        <circle
-                          key={`${item.label}-${index}`}
-                          cx={point.x}
-                          cy={point.y}
-                          r="3.5"
-                          fill={item.color}
-                        >
-                          <title>{`${item.label} - ${supportByTypeChart.months[index] || `Month ${index + 1}`}: ${formatCurrency(point.value)}`}</title>
-                        </circle>
-                      ))}
-                    </g>
-                  )
-                })}
-
-                <text x="367" y="236" textAnchor="middle" fontSize="10" fill="#6b7280" fontWeight="600">
-                  Months
-                </text>
-              </svg>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold text-gray-900">{item.label}</p>
+                        <p className="mt-0.5 text-[10px] text-gray-500">
+                          Total: {formatCurrency(item.total)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2">
-              {supportByTypeChart.series.map((item) => (
-                <div key={`${item.label}-total`} className="rounded-[18px] bg-[#F8F8F6] px-3 py-2.5">
-                  <p className="text-[10px] text-gray-500">Total for {item.label}</p>
-                  <p className="mt-1 text-[12px] font-semibold text-gray-900">
-                    {formatCurrency(item.total)}
-                  </p>
-                </div>
-              ))}
+            <div className="overflow-x-auto rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                Monthly Amounts
+              </p>
+              <table className="mt-3 min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="text-left">
+                    <th className="pb-2 pr-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                      Project Type
+                    </th>
+                    {supportByTypeChart.months.map((month) => (
+                      <th
+                        key={month}
+                        className="pb-2 pr-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500"
+                      >
+                        {month}
+                      </th>
+                    ))}
+                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                      Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {supportByTypeChart.series.map((item) => (
+                    <tr key={`${item.label}-row`}>
+                      <td className="py-2.5 pr-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-[11px] font-semibold text-gray-900">
+                            {item.label}
+                          </span>
+                        </div>
+                      </td>
+                      {item.months.map((value, index) => (
+                        <td key={`${item.label}-${index}`} className="py-2.5 pr-3 text-[10px] text-gray-600">
+                          {formatCurrency(value)}
+                        </td>
+                      ))}
+                      <td className="py-2.5 text-[10px] font-semibold text-gray-900">
+                        {formatCurrency(item.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
