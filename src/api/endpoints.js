@@ -17,6 +17,8 @@ const endpoints = {
   projectUpdateDetails: (id) => `/projects/updates/${id}/`,
   projectUpdateImages: '/projects/updates/images/',
   projectUpdateImageDetails: (id) => `/projects/updates/images/${id}/`,
+  projectReports: '/projects/reports/',
+  projectCashouts: '/projects/cashouts/',
 
   subscribeToProject: '/projects/interests/subscribe/',
   unsubscribeFromProject: '/projects/interests/unsubscribe/',
