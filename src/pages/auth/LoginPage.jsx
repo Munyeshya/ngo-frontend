@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { setAuth } from '../../utils/storage'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   const [formData, setFormData] = useState({
     username: '',
@@ -18,8 +20,6 @@ function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -42,16 +42,14 @@ function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
-    setSuccess('')
 
     if (!formData.username.trim()) {
-      setError('Username is required.')
+      showToast({ type: 'error', message: 'Username is required.' })
       return
     }
 
     if (!formData.password.trim()) {
-      setError('Password is required.')
+      showToast({ type: 'error', message: 'Password is required.' })
       return
     }
 
@@ -99,7 +97,7 @@ function LoginPage() {
         user,
       })
 
-      setSuccess('Login successful. Redirecting...')
+      showToast({ type: 'success', message: 'Login successful. Redirecting...' })
       navigate(getRoleRedirect(user?.role), { replace: true })
     } catch (err) {
       const backendMessage =
@@ -112,13 +110,15 @@ function LoginPage() {
       if (
         String(backendMessage).toLowerCase().includes('pending admin approval')
       ) {
-        setError(
-          'Your staff account is pending admin approval. Watch your email for approval updates, or review the staff guide below.'
-        )
+        showToast({
+          type: 'error',
+          message:
+            'Your staff account is pending admin approval. Watch your email for approval updates, or review the staff guide below.',
+        })
         return
       }
 
-      setError(backendMessage)
+      showToast({ type: 'error', message: backendMessage })
     } finally {
       setLoading(false)
     }
@@ -247,19 +247,6 @@ function LoginPage() {
                       </button>
                     </div>
                   </div>
-
-                  {error && (
-                    <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                      {success}
-                    </div>
-                  )}
 
                   <Button type="submit" className="h-12 w-full" disabled={loading}>
                     {loading ? (
