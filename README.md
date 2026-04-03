@@ -44,6 +44,13 @@ Default example:
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
 ```
 
+This value is read once from the shared API config module at `src/api/config.js`.
+
+That shared config is then used by:
+
+- `src/api/axios.js`
+- `src/api/publicApi.js`
+
 ## Run In Development
 
 ```powershell
