@@ -44,7 +44,7 @@ function AppRouter() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/api/" element={<ApiGuidePage />} />
+          <Route path="/frontend-guide" element={<ApiGuidePage />} />
           <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
           <Route path="/donate/:projectId" element={<DonatePage />} />
         </Route>
