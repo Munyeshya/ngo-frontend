@@ -57,10 +57,7 @@ function StaffProfilePage() {
       try {
         setLoading(true)
         setError('')
-        const userId = storedUser?.id
-        const response = userId
-          ? await api.get(endpoints.userDetails(userId))
-          : await api.get(endpoints.profile)
+        const response = await api.get(endpoints.profile)
         const profileData = unwrapPayload(response.data) || {}
         const mergedProfile = {
           ...(storedUser || {}),
@@ -97,7 +94,7 @@ function StaffProfilePage() {
     return () => {
       active = false
     }
-  }, [showToast, storedUser?.id])
+  }, [showToast])
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
