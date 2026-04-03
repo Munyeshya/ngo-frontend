@@ -23,7 +23,7 @@ export function ToastProvider({ children }) {
   }, [])
 
   const showToast = useCallback(
-    ({ type = 'info', message, duration = 5000 }) => {
+    ({ type = 'info', message, duration = 3000 }) => {
       if (!message) return
 
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
