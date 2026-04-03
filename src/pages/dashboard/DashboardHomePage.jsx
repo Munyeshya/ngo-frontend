@@ -65,6 +65,10 @@ function getProjectName(donation) {
   return donation?.project?.title || donation?.project_title || 'Project Donation'
 }
 
+function getDonationDate(donation) {
+  return donation?.donated_at || donation?.created_at || donation?.date || null
+}
+
 function DashboardHomePage() {
   const [projects, setProjects] = useState([])
   const [donations, setDonations] = useState([])
@@ -178,8 +182,7 @@ function DashboardHomePage() {
     return [...donations]
       .sort(
         (a, b) =>
-          new Date(b?.created_at || b?.date || 0) -
-          new Date(a?.created_at || a?.date || 0)
+          new Date(getDonationDate(b) || 0) - new Date(getDonationDate(a) || 0)
       )
       .slice(0, 6)
   }, [donations])
@@ -349,7 +352,7 @@ function DashboardHomePage() {
                         </span>
                       </td>
                       <td className="py-4 text-sm text-gray-600">
-                        {formatDate(donation?.created_at || donation?.date)}
+                        {formatDate(getDonationDate(donation))}
                       </td>
                     </tr>
                   ))}
