@@ -28,14 +28,18 @@ import {
   getProjectRaised,
   getProjectSlugOrId,
   getProjectStatusLabel,
+  getProjectTypeLabel,
+  PROJECT_TYPE_OPTIONS,
 } from '../../utils/projectHelpers'
 
-const projectCategories = [
+const projectStatuses = [
   { label: 'All', value: '' },
   { label: 'Active', value: 'active' },
   { label: 'Completed', value: 'completed' },
   { label: 'Paused', value: 'paused' },
 ]
+
+const projectTypeFilters = [{ label: 'All Types', value: '' }, ...PROJECT_TYPE_OPTIONS]
 
 const orderingOptions = [
   { label: 'Newest', value: '-created_at' },
@@ -45,6 +49,18 @@ const orderingOptions = [
 ]
 
 function inferProjectIcon(project) {
+  const type = String(project.project_type || '').toLowerCase()
+  if (type === 'health') return HeartPulse
+  if (type === 'education') return GraduationCap
+  if (type === 'environment') return Sprout
+  if (
+    type === 'community_development' ||
+    type === 'women_empowerment' ||
+    type === 'youth_empowerment'
+  ) {
+    return Users
+  }
+
   const text = `${project.title || ''} ${project.description || ''}`.toLowerCase()
 
   if (text.includes('health') || text.includes('medical')) return HeartPulse
@@ -128,6 +144,7 @@ function ProjectsPage() {
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '')
+  const [selectedType, setSelectedType] = useState(searchParams.get('project_type') || '')
   const [selectedOrdering, setSelectedOrdering] = useState(
     searchParams.get('ordering') || '-created_at'
   )
@@ -158,8 +175,12 @@ function ProjectsPage() {
       query.status = selectedStatus
     }
 
+    if (selectedType) {
+      query.project_type = selectedType
+    }
+
     return query
-  }, [searchTerm, selectedStatus, selectedOrdering, currentPage])
+  }, [searchTerm, selectedStatus, selectedType, selectedOrdering, currentPage])
 
   const fetchProjectsAndBeneficiaries = async () => {
     try {
@@ -201,11 +222,12 @@ function ProjectsPage() {
 
     if (searchTerm.trim()) params.search = searchTerm.trim()
     if (selectedStatus) params.status = selectedStatus
+    if (selectedType) params.project_type = selectedType
     if (selectedOrdering) params.ordering = selectedOrdering
     if (currentPage > 1) params.page = String(currentPage)
 
     setSearchParams(params)
-  }, [searchTerm, selectedStatus, selectedOrdering, currentPage, setSearchParams])
+  }, [searchTerm, selectedStatus, selectedType, selectedOrdering, currentPage, setSearchParams])
 
   const totalPages = Math.max(1, Math.ceil(count / pageSize))
 
@@ -271,7 +293,7 @@ function ProjectsPage() {
         <div className="rounded-[28px] border border-gray-200 bg-white p-4 shadow-[0_20px_60px_rgba(0,0,0,0.08)] sm:p-5">
           <form
             onSubmit={handleSearchSubmit}
-            className="grid gap-4 lg:grid-cols-[1.1fr_0.7fr_0.7fr_auto]"
+            className="grid gap-4 lg:grid-cols-[1.1fr_0.7fr_0.7fr_0.8fr_auto]"
           >
             <div className="relative">
               <Search
@@ -300,9 +322,26 @@ function ProjectsPage() {
                 }}
                 className="w-full appearance-none rounded-2xl border border-gray-200 bg-[#F8F8F6] py-3 pl-11 pr-4 outline-none transition focus:border-green-700"
               >
-                {projectCategories.map((item) => (
+                {projectStatuses.map((item) => (
                   <option key={item.label} value={item.value}>
                     {item.label === 'All' ? 'All Statuses' : item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative">
+              <select
+                value={selectedType}
+                onChange={(e) => {
+                  setSelectedType(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className="w-full appearance-none rounded-2xl border border-gray-200 bg-[#F8F8F6] px-4 py-3 outline-none transition focus:border-green-700"
+              >
+                {projectTypeFilters.map((item) => (
+                  <option key={item.value || 'all-types'} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>
@@ -331,7 +370,7 @@ function ProjectsPage() {
           </form>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            {projectCategories.map((item) => (
+            {projectStatuses.map((item) => (
               <button
                 key={item.label}
                 type="button"
@@ -404,7 +443,7 @@ function ProjectsPage() {
                       <div className="absolute left-4 top-4 flex items-center gap-2">
                         {project.status ? (
                           <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 backdrop-blur">
-                            {String(project.status).replace(/_/g, ' ')}
+                            {getProjectTypeLabel(project)}
                           </span>
                         ) : null}
 
