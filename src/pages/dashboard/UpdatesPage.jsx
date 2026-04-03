@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowRight,
   CalendarDays,
   FolderKanban,
@@ -17,6 +16,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
@@ -75,14 +75,13 @@ function getUpdateImages(item) {
 }
 
 function UpdatesPage() {
+  const { showToast } = useToast()
   const currentUser = getUser()
   const [updates, setUpdates] = useState([])
   const [projects, setProjects] = useState([])
   const [updatesCount, setUpdatesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingUpdate, setEditingUpdate] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -166,7 +165,6 @@ function UpdatesPage() {
       description: '',
     })
     setEditingUpdate(null)
-    setActionError('')
   }
 
   function openCreateForm() {
@@ -176,8 +174,6 @@ function UpdatesPage() {
 
   function openEditForm(update) {
     setEditingUpdate(update)
-    setActionError('')
-    setActionSuccess('')
     setFormData({
       project: String(getProjectId(update) || ''),
       title: update?.title || '',
@@ -201,8 +197,6 @@ function UpdatesPage() {
 
   async function handleSubmitUpdate(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmitting(true)
@@ -215,10 +209,10 @@ function UpdatesPage() {
 
       if (editingUpdate?.id) {
         await api.patch(endpoints.projectUpdateDetails(editingUpdate.id), payload)
-        setActionSuccess('Project update saved successfully.')
+        showToast({ type: 'success', message: 'Project update saved successfully.' })
       } else {
         await api.post(endpoints.projectUpdates, payload)
-        setActionSuccess('Project update created successfully.')
+        showToast({ type: 'success', message: 'Project update created successfully.' })
       }
 
       await refreshUpdates()
@@ -230,12 +224,14 @@ function UpdatesPage() {
           ? Object.values(data).flat().find(Boolean)
           : null
 
-      setActionError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           flattened ||
-          'Update action failed. Please review your inputs and try again.'
-      )
+          'Update action failed. Please review your inputs and try again.',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -247,17 +243,17 @@ function UpdatesPage() {
 
     try {
       setDeletingId(update.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.projectUpdateDetails(update.id))
       await refreshUpdates()
-      setActionSuccess('Project update deleted successfully.')
+      showToast({ type: 'success', message: 'Project update deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete project update.'
-      )
+          'Failed to delete project update.',
+      })
     } finally {
       setDeletingId(null)
     }
@@ -268,8 +264,6 @@ function UpdatesPage() {
 
     try {
       setUploadingImageFor(updateId)
-      setActionError('')
-      setActionSuccess('')
 
       const payload = new FormData()
       payload.append('project_update', updateId)
@@ -280,13 +274,15 @@ function UpdatesPage() {
       })
 
       await refreshUpdates()
-      setActionSuccess('Project update image uploaded successfully.')
+      showToast({ type: 'success', message: 'Project update image uploaded successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to upload project update image.'
-      )
+          'Failed to upload project update image.',
+      })
     } finally {
       setUploadingImageFor(null)
     }
@@ -298,17 +294,17 @@ function UpdatesPage() {
 
     try {
       setDeletingImageId(imageId)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.projectUpdateImageDetails(imageId))
       await refreshUpdates()
-      setActionSuccess('Project update image deleted successfully.')
+      showToast({ type: 'success', message: 'Project update image deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete project update image.'
-      )
+          'Failed to delete project update image.',
+      })
     } finally {
       setDeletingImageId(null)
     }
@@ -485,19 +481,6 @@ function UpdatesPage() {
           <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.totalImages}</p>
         </Card>
       </div>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              actionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{actionError || actionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -758,12 +741,6 @@ function UpdatesPage() {
                   />
                 </div>
               </div>
-
-              {actionError && (
-                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
-                  {actionError}
-                </div>
-              )}
 
               <div className="mt-5 flex flex-wrap justify-end gap-2.5">
                 <Button type="button" variant="outline" onClick={closeForm}>
