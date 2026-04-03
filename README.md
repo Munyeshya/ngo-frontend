@@ -41,10 +41,16 @@ The frontend currently uses:
 Default example:
 
 ```text
-VITE_API_BASE_URL=http://127.0.0.1:8000/api
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
 This value is read once from the shared API config module at `src/api/config.js`.
+
+The frontend builds the final API root internally as:
+
+```text
+${VITE_API_BASE_URL}/api
+```
 
 That shared config is then used by:
 
