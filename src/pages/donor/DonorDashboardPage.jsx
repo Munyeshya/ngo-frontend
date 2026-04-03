@@ -4,8 +4,11 @@ import {
   ArrowRight,
   Bell,
   BriefcaseBusiness,
+  ChevronLeft,
+  ChevronRight,
   HandCoins,
   HeartHandshake,
+  SlidersHorizontal,
   TrendingUp,
   UserCircle2,
 } from 'lucide-react'
@@ -83,11 +86,14 @@ function getProjectIdFromInterest(item) {
 }
 
 function DonorDashboardPage() {
+  const RECENT_DONATIONS_PER_PAGE = 3
   const [profile, setProfile] = useState(getUser())
   const [donations, setDonations] = useState([])
   const [interests, setInterests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [recentSort, setRecentSort] = useState('latest')
+  const [recentPage, setRecentPage] = useState(1)
 
   useEffect(() => {
     let active = true
@@ -175,16 +181,43 @@ function DonorDashboardPage() {
   }, [donations, interests])
 
   const recentDonations = useMemo(() => {
-    return [...donations]
-      .sort((a, b) => new Date(b?.created_at || b?.date || 0) - new Date(a?.created_at || a?.date || 0))
-      .slice(0, 5)
-  }, [donations])
+    const items = [...donations]
+
+    items.sort((a, b) => {
+      if (recentSort === 'highest') {
+        return Number(b?.amount || 0) - Number(a?.amount || 0)
+      }
+
+      if (recentSort === 'oldest') {
+        return new Date(a?.created_at || a?.date || 0) - new Date(b?.created_at || b?.date || 0)
+      }
+
+      return new Date(b?.created_at || b?.date || 0) - new Date(a?.created_at || a?.date || 0)
+    })
+
+    return items
+  }, [donations, recentSort])
+
+  const recentDonationPageCount = Math.max(
+    1,
+    Math.ceil(recentDonations.length / RECENT_DONATIONS_PER_PAGE)
+  )
+
+  const paginatedRecentDonations = useMemo(() => {
+    const safePage = Math.min(recentPage, recentDonationPageCount)
+    const startIndex = (safePage - 1) * RECENT_DONATIONS_PER_PAGE
+    return recentDonations.slice(startIndex, startIndex + RECENT_DONATIONS_PER_PAGE)
+  }, [recentDonations, recentPage, recentDonationPageCount])
 
   const recentInterests = useMemo(() => {
     return [...interests]
       .sort((a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0))
       .slice(0, 4)
   }, [interests])
+
+  useEffect(() => {
+    setRecentPage(1)
+  }, [recentSort])
 
   const displayName = buildDisplayName(profile)
 
@@ -315,6 +348,48 @@ function DonorDashboardPage() {
             </Link>
           </div>
 
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="relative w-[150px]">
+              <SlidersHorizontal
+                size={12}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <select
+                value={recentSort}
+                onChange={(event) => setRecentSort(event.target.value)}
+                className="h-8 w-full appearance-none rounded-xl border border-gray-300 bg-white pl-8 pr-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+              >
+                <option value="latest">Latest</option>
+                <option value="oldest">Oldest</option>
+                <option value="highest">Highest</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setRecentPage((prev) => Math.max(1, prev - 1))}
+                disabled={recentPage <= 1}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <span className="text-[10px] text-gray-500">
+                {Math.min(recentPage, recentDonationPageCount)}/{recentDonationPageCount}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setRecentPage((prev) => Math.min(recentDonationPageCount, prev + 1))
+                }
+                disabled={recentPage >= recentDonationPageCount}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          </div>
+
           {recentDonations.length === 0 ? (
             <div className="mt-5 rounded-[22px] bg-[#F6F8F4] p-5 text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#166534] shadow-sm">
@@ -353,7 +428,7 @@ function DonorDashboardPage() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-100 bg-white">
-                    {recentDonations.map((donation) => (
+                    {paginatedRecentDonations.map((donation) => (
                       <tr key={donation.id}>
                         <td className="px-5 py-4">
                           <p className="text-sm font-semibold text-gray-900">
