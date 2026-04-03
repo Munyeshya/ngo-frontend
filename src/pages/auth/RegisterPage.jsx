@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowLeft,
-  CheckCircle2,
   Loader2,
   ShieldCheck,
   UserPlus,
@@ -12,6 +10,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 
@@ -29,6 +28,7 @@ const roleOptions = [
 ]
 
 function RegisterPage() {
+  const { showToast } = useToast()
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -37,9 +37,6 @@ function RegisterPage() {
     password: '',
   })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [submittedRole, setSubmittedRole] = useState('')
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -52,21 +49,19 @@ function RegisterPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
-    setSuccess('')
 
     if (!formData.username.trim()) {
-      setError('Username is required.')
+      showToast({ type: 'error', message: 'Username is required.' })
       return
     }
 
     if (!formData.email.trim()) {
-      setError('Email address is required.')
+      showToast({ type: 'error', message: 'Email address is required.' })
       return
     }
 
     if (!formData.password.trim()) {
-      setError('Password is required.')
+      showToast({ type: 'error', message: 'Password is required.' })
       return
     }
 
@@ -81,13 +76,14 @@ function RegisterPage() {
         password: formData.password,
       })
 
-      setSubmittedRole(formData.role)
-      setSuccess(
-        response?.data?.message ||
+      showToast({
+        type: 'success',
+        message:
+          response?.data?.message ||
           (formData.role === 'staff'
-            ? 'Staff application submitted successfully.'
-            : 'Account created successfully.')
-      )
+            ? 'Staff application submitted successfully. Watch your email for approval updates.'
+            : 'Account created successfully. You can now log in.'),
+      })
 
       setFormData({
         username: '',
@@ -103,12 +99,14 @@ function RegisterPage() {
           ? Object.values(data).flat().find(Boolean)
           : null
 
-      setError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           firstFieldError ||
-          'Registration failed. Please review your details and try again.'
-      )
+          'Registration failed. Please review your details and try again.',
+      })
     } finally {
       setLoading(false)
     }
@@ -248,34 +246,6 @@ function RegisterPage() {
                       className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 outline-none transition focus:border-green-700 focus:ring-4 focus:ring-green-100"
                     />
                   </div>
-
-                  {error && (
-                    <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                        <div>
-                          <p>{success}</p>
-                          {submittedRole === 'staff' ? (
-                            <p className="mt-2 text-sm text-green-800">
-                              Watch your email for approval updates. You will only be able to log in
-                              after an admin activates your staff account.
-                            </p>
-                          ) : (
-                            <p className="mt-2 text-sm text-green-800">
-                              Your donor account is ready. You can now log in.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   <Button type="submit" className="h-12 w-full" disabled={loading}>
                     {loading ? (
