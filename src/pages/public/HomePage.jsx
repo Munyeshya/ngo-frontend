@@ -99,7 +99,7 @@ function HomePage() {
             </p>
 
             <div className="mt-6">
-              <p className="font-semibold text-gray-900">NGO Platform</p>
+              <p className="font-semibold text-gray-900">NGO Transparency</p>
               <p className="text-sm text-gray-500">Public impact experience</p>
             </div>
 
