@@ -17,19 +17,20 @@ function unwrapPayload(payload) {
 }
 
 function getInitials(name) {
-  if (!name) return 'S'
+  if (!name) return 'A'
   const parts = String(name).trim().split(/\s+/).filter(Boolean)
   if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase()
   return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase()
 }
 
 function buildDisplayName(user) {
-  if (!user) return 'Staff User'
+  if (!user) return 'Account User'
   return (
     user.full_name ||
     [user.first_name, user.last_name].filter(Boolean).join(' ').trim() ||
     user.username ||
-    'Staff User'
+    user.email ||
+    'Account User'
   )
 }
 
@@ -103,12 +104,19 @@ function StaffProfilePage() {
     String(profile?.role || storedUser?.role || 'staff').toLowerCase() === 'admin'
       ? 'Admin'
       : 'Staff'
-  const profileImagePreview = useMemo(() => {
-    if (formData.profile_image instanceof File) {
-      return URL.createObjectURL(formData.profile_image)
+  const uploadedImagePreview = useMemo(() => {
+    if (!(formData.profile_image instanceof File)) return ''
+    return URL.createObjectURL(formData.profile_image)
+  }, [formData.profile_image])
+  const profileImagePreview = uploadedImagePreview || profile?.profile_image || ''
+
+  useEffect(() => {
+    return () => {
+      if (uploadedImagePreview) {
+        URL.revokeObjectURL(uploadedImagePreview)
+      }
     }
-    return profile?.profile_image || ''
-  }, [formData.profile_image, profile?.profile_image])
+  }, [uploadedImagePreview])
 
   function handleChange(event) {
     const { name, value, files } = event.target
