@@ -570,47 +570,82 @@ function DashboardHomePage() {
               ))}
             </div>
 
-            <div className="grid gap-2">
-              {MONTH_LABELS.map((month, monthIndex) => (
-                <div
-                  key={month}
-                  className="rounded-[18px] border border-gray-200 bg-[#FCFCFB] px-3 py-2.5"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="w-8 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
-                      {month}
-                    </p>
-                    <div className="flex flex-1 items-end gap-1.5">
-                      {supportByTypeChart.series.map((item) => {
-                        const value = item.months[monthIndex] || 0
-                        const height = supportByTypeChart.maxValue
-                          ? Math.max((value / supportByTypeChart.maxValue) * 44, value > 0 ? 8 : 4)
-                          : 4
+            <div className="overflow-x-auto rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3">
+              <svg
+                viewBox="0 0 720 240"
+                className="h-[240px] w-full min-w-[680px]"
+                aria-label="Support by project type line chart"
+              >
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const y = 24 + index * 44
+                  return (
+                    <line
+                      key={`grid-${index}`}
+                      x1="44"
+                      y1={y}
+                      x2="690"
+                      y2={y}
+                      stroke="#e5e7eb"
+                      strokeWidth="1"
+                    />
+                  )
+                })}
 
-                        return (
-                          <div
-                            key={`${item.label}-${month}`}
-                            className="flex min-w-0 flex-1 flex-col items-center gap-1"
-                          >
-                            <div
-                              className="w-full rounded-md"
-                              style={{
-                                height: `${height}px`,
-                                backgroundColor: item.color,
-                                opacity: value > 0 ? 0.95 : 0.18,
-                              }}
-                              title={`${item.label}: ${formatCurrency(value)}`}
-                            />
-                            <span className="text-[9px] text-gray-500">
-                              {value > 0 ? formatCurrency(value) : '-'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                {MONTH_LABELS.map((month, index) => {
+                  const x = 44 + (index / 11) * 646
+                  return (
+                    <g key={month}>
+                      <line x1={x} y1="24" x2={x} y2="200" stroke="#f3f4f6" strokeWidth="1" />
+                      <text
+                        x={x}
+                        y="220"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fill="#6b7280"
+                      >
+                        {month}
+                      </text>
+                    </g>
+                  )
+                })}
+
+                {supportByTypeChart.series.map((item) => {
+                  const points = item.months.map((value, index) => {
+                    const x = 44 + (index / 11) * 646
+                    const ratio = supportByTypeChart.maxValue > 0 ? value / supportByTypeChart.maxValue : 0
+                    const y = 200 - ratio * 176
+                    return { x, y, value }
+                  })
+
+                  const path = points
+                    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+                    .join(' ')
+
+                  return (
+                    <g key={item.label}>
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={item.color}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {points.map((point, index) => (
+                        <circle
+                          key={`${item.label}-${index}`}
+                          cx={point.x}
+                          cy={point.y}
+                          r="3.5"
+                          fill={item.color}
+                        >
+                          <title>{`${item.label} - ${MONTH_LABELS[index]}: ${formatCurrency(point.value)}`}</title>
+                        </circle>
+                      ))}
+                    </g>
+                  )
+                })}
+              </svg>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
