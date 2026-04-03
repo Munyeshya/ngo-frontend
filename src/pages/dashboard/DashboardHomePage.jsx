@@ -6,11 +6,8 @@ import {
   HandCoins,
   Handshake,
   HeartHandshake,
-  ChevronLeft,
-  ChevronRight,
   TrendingUp,
   UserCheck,
-  UserCog,
   Users,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -19,6 +16,10 @@ import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
+import { getProjectTypeLabel } from '../../utils/projectHelpers'
+
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const TYPE_COLORS = ['#166534', '#15803d', '#65a30d', '#0f766e']
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -79,20 +80,6 @@ function getDonationProjectId(donation) {
   return donation?.project?.id ?? null
 }
 
-function getDisplayName(user) {
-  return (
-    user?.full_name ||
-    [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
-    user?.username ||
-    user?.email ||
-    'User'
-  )
-}
-
-function getProjectOwnerName(project) {
-  return String(project?.created_by || '').trim().toLowerCase()
-}
-
 function StatCard({ icon: Icon, label, title, value, accent = 'green', subtext = '' }) {
   const tone =
     accent === 'amber'
@@ -133,7 +120,6 @@ function DashboardHomePage() {
   const [partnersCount, setPartnersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [staffSearch, setStaffSearch] = useState('')
 
   useEffect(() => {
     let active = true
@@ -260,7 +246,7 @@ function DashboardHomePage() {
         .sort(
           (a, b) => new Date(getDonationDate(b) || 0) - new Date(getDonationDate(a) || 0)
         )
-        .slice(0, 6),
+        .slice(0, 5),
     [donations]
   )
 
@@ -274,70 +260,48 @@ function DashboardHomePage() {
 
   const adminMetrics = useMemo(() => {
     const staffUsers = users.filter((user) => String(user?.role || '').toLowerCase() === 'staff')
-    const pendingStaff = staffUsers.filter((user) => !user?.is_active)
-    const activePartners = partners.filter((partner) => partner?.is_active).length
+    return {
+      pendingStaff: staffUsers.filter((user) => !user?.is_active),
+      activePartners: partners.filter((partner) => partner?.is_active).length,
+    }
+  }, [partners, users])
 
-    const metrics = staffUsers.map((user) => {
-      const ownerName = String(user?.username || '').toLowerCase()
-      const ownedProjects = projects.filter((project) => getProjectOwnerName(project) === ownerName)
-      const ownedProjectIds = new Set(ownedProjects.map((project) => project.id))
-      const ownedDonations = donations.filter((donation) =>
-        ownedProjectIds.has(getDonationProjectId(donation))
-      )
-      const ownedBeneficiaries = beneficiaries.filter((beneficiary) =>
-        ownedProjectIds.has(beneficiary?.project)
-      )
-      const ownedUpdates = updates.filter((update) => ownedProjectIds.has(update?.project))
-      const raised = ownedDonations.reduce((sum, donation) => sum + Number(donation?.amount || 0), 0)
+  const supportByTypeChart = useMemo(() => {
+    const projectLookup = new Map(projects.map((project) => [project.id, project]))
+    const grouped = new Map()
 
-      return {
-        id: user.id,
-        name: getDisplayName(user),
-        isActive: Boolean(user?.is_active),
-        projects: ownedProjects.length,
-        donations: ownedDonations.length,
-        beneficiaries: ownedBeneficiaries.length,
-        updates: ownedUpdates.length,
-        raised,
+    donations.forEach((donation) => {
+      const projectId = getDonationProjectId(donation)
+      const project = projectLookup.get(projectId)
+      if (!project) return
+
+      const amount = Number(donation?.amount || 0)
+      const donatedAt = getDonationDate(donation)
+      const date = donatedAt ? new Date(donatedAt) : null
+      if (!date || Number.isNaN(date.getTime())) return
+
+      const label = getProjectTypeLabel(project)
+      if (!grouped.has(label)) {
+        grouped.set(label, { label, months: Array(12).fill(0), total: 0 })
       }
+
+      const entry = grouped.get(label)
+      entry.months[date.getMonth()] += amount
+      entry.total += amount
     })
 
-    return {
-      staffUsers,
-      pendingStaff,
-      activePartners,
-      highestRaised: Math.max(...metrics.map((item) => item.raised), 0),
-      metrics: metrics.sort((a, b) => b.raised - a.raised || b.projects - a.projects),
-    }
-  }, [beneficiaries, donations, partners, projects, updates, users])
+    const series = Array.from(grouped.values())
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 4)
+      .map((item, index) => ({
+        ...item,
+        color: TYPE_COLORS[index % TYPE_COLORS.length],
+      }))
 
-  const filteredStaffMetrics = useMemo(() => {
-    const query = staffSearch.trim().toLowerCase()
-    if (!query) return adminMetrics.metrics
+    const maxValue = Math.max(...series.flatMap((item) => item.months), 0)
 
-    return adminMetrics.metrics.filter((item) =>
-      String(item.name || '').toLowerCase().includes(query)
-    )
-  }, [adminMetrics.metrics, staffSearch])
-
-  const staffPageSize = 2
-  const staffPageCount = Math.max(1, Math.ceil(filteredStaffMetrics.length / staffPageSize))
-  const [staffPage, setStaffPage] = useState(1)
-
-  useEffect(() => {
-    setStaffPage(1)
-  }, [staffSearch])
-
-  useEffect(() => {
-    if (staffPage > staffPageCount) {
-      setStaffPage(staffPageCount)
-    }
-  }, [staffPage, staffPageCount])
-
-  const paginatedStaffMetrics = useMemo(() => {
-    const start = (staffPage - 1) * staffPageSize
-    return filteredStaffMetrics.slice(start, start + staffPageSize)
-  }, [filteredStaffMetrics, staffPage])
+    return { series, maxValue }
+  }, [donations, projects])
 
   if (loading) {
     return (
@@ -383,7 +347,13 @@ function DashboardHomePage() {
         value={donationsCount}
         subtext={formatCurrency(totalDonationAmount)}
       />
-      <StatCard icon={HeartHandshake} label="Impact" title="Beneficiaries" value={beneficiariesCount} accent="lime" />
+      <StatCard
+        icon={HeartHandshake}
+        label="Impact"
+        title="Beneficiaries"
+        value={beneficiariesCount}
+        accent="lime"
+      />
       <StatCard icon={CalendarDays} label="Updates" title="Project Updates" value={updatesCount} />
     </div>
   )
@@ -393,35 +363,55 @@ function DashboardHomePage() {
       <Card className="rounded-[24px] p-4">
         <div>
           <h2 className="text-base font-bold text-gray-900">Recent Donations</h2>
-          <p className="mt-1 text-xs text-gray-500">Latest contribution activity visible to your role.</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Latest contribution activity visible to your role.
+          </p>
         </div>
         {recentDonations.length === 0 ? (
-          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No donation activity available yet.</div>
+          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">
+            No donation activity available yet.
+          </div>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr className="text-left">
-                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Project</th>
-                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Amount</th>
-                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Payment</th>
-                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Date</th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Project
+                  </th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Amount
+                  </th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Payment
+                  </th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Date
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {recentDonations.slice(0, 5).map((donation) => (
+                {recentDonations.map((donation) => (
                   <tr key={donation.id}>
                     <td className="py-3 pr-3">
-                      <p className="text-[12px] font-semibold text-gray-900">{getProjectName(donation)}</p>
-                      <p className="mt-1 text-[10px] text-gray-500">{donation?.donor_name || donation?.donor_username || 'Donor'}</p>
+                      <p className="text-[12px] font-semibold text-gray-900">
+                        {getProjectName(donation)}
+                      </p>
+                      <p className="mt-1 text-[10px] text-gray-500">
+                        {donation?.donor_name || donation?.donor_username || 'Donor'}
+                      </p>
                     </td>
-                    <td className="py-3 pr-3 text-[12px] font-semibold text-green-800">{formatCurrency(donation?.amount)}</td>
+                    <td className="py-3 pr-3 text-[12px] font-semibold text-green-800">
+                      {formatCurrency(donation?.amount)}
+                    </td>
                     <td className="py-3 pr-3">
                       <span className="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold capitalize text-green-800">
                         {donation?.payment_method || 'N/A'}
                       </span>
                     </td>
-                    <td className="py-3 text-[11px] text-gray-600">{formatDate(getDonationDate(donation))}</td>
+                    <td className="py-3 text-[11px] text-gray-600">
+                      {formatDate(getDonationDate(donation))}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -433,18 +423,29 @@ function DashboardHomePage() {
       <Card className="rounded-[24px] p-4">
         <div>
           <h2 className="text-base font-bold text-gray-900">Top Funded Projects</h2>
-          <p className="mt-1 text-xs text-gray-500">Projects with the highest visible funding progress.</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Projects with the highest visible funding progress.
+          </p>
         </div>
         {topFundedProjects.length === 0 ? (
-          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No project funding data available yet.</div>
+          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">
+            No project funding data available yet.
+          </div>
         ) : (
           <div className="mt-4 space-y-3">
             {topFundedProjects.map((project) => (
-              <div key={project.id} className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5">
+              <div
+                key={project.id}
+                className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5"
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[12px] font-semibold text-gray-900">{project?.title || 'Untitled project'}</p>
-                    <p className="mt-1 text-[10px] text-gray-500">{project?.location || 'Location not specified'}</p>
+                    <p className="text-[12px] font-semibold text-gray-900">
+                      {project?.title || 'Untitled project'}
+                    </p>
+                    <p className="mt-1 text-[10px] text-gray-500">
+                      {project?.location || 'Location not specified'}
+                    </p>
                   </div>
                   <div className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold text-green-800">
                     <TrendingUp size={12} className="mr-1" />
@@ -454,17 +455,23 @@ function DashboardHomePage() {
                 <div className="mt-3 h-2 rounded-full bg-gray-200">
                   <div
                     className="h-2 rounded-full bg-green-800"
-                    style={{ width: `${Math.min(Number(project?.funding_percentage || 0), 100)}%` }}
+                    style={{
+                      width: `${Math.min(Number(project?.funding_percentage || 0), 100)}%`,
+                    }}
                   />
                 </div>
                 <div className="mt-3 flex items-center justify-between text-[11px]">
                   <div>
                     <p className="text-gray-500">Raised</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(project?.total_donated)}</p>
+                    <p className="font-semibold text-gray-900">
+                      {formatCurrency(project?.total_donated)}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-500">Target</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(project?.target_amount)}</p>
+                    <p className="font-semibold text-gray-900">
+                      {formatCurrency(project?.target_amount)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -480,7 +487,9 @@ function DashboardHomePage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Overview</h1>
-          <p className="mt-1.5 text-sm text-gray-600">Track approvals, staff performance, partner readiness, and platform-wide activity.</p>
+          <p className="mt-1.5 text-sm text-gray-600">
+            Track approvals, partner readiness, type-based support, and platform-wide activity.
+          </p>
         </div>
         <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <TrendingUp size={16} className="mr-2" />
@@ -490,101 +499,133 @@ function DashboardHomePage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={Users} label="Users" title="Total Accounts" value={usersCount} />
-        <StatCard icon={UserCheck} label="Approvals" title="Pending Staff" value={adminMetrics.pendingStaff.length} accent="amber" />
-        <StatCard icon={Handshake} label="Partners" title="Active Partners" value={adminMetrics.activePartners} subtext={`of ${partnersCount} total`} />
-        <StatCard icon={FolderKanban} label="Projects" title="Active Projects" value={activeProjectsCount} subtext={`${projectsCount} total`} accent="lime" />
+        <StatCard
+          icon={UserCheck}
+          label="Approvals"
+          title="Pending Staff"
+          value={adminMetrics.pendingStaff.length}
+          accent="amber"
+        />
+        <StatCard
+          icon={Handshake}
+          label="Partners"
+          title="Active Partners"
+          value={adminMetrics.activePartners}
+          subtext={`of ${partnersCount} total`}
+        />
+        <StatCard
+          icon={FolderKanban}
+          label="Projects"
+          title="Active Projects"
+          value={activeProjectsCount}
+          subtext={`${projectsCount} total`}
+          accent="lime"
+        />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card className="rounded-[24px] p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-base font-bold text-gray-900">Staff Performance</h2>
-              <p className="mt-1 text-xs text-gray-500">Overall numbers by staff owner across the platform.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={staffSearch}
-                  onChange={(event) => setStaffSearch(event.target.value)}
-                  placeholder="Search staff"
-                  className="h-8 w-[170px] rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                />
-              </div>
-              <Link
-                to="/dashboard/users"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-green-800 px-2.5 py-2 text-[10px] font-semibold text-white transition hover:bg-[#0f4d27]"
-              >
-                <UserCog size={12} />
-                Users
-              </Link>
-              <Link
-                to="/dashboard/partners"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-green-200 px-2.5 py-2 text-[10px] font-semibold text-green-800 transition hover:bg-green-50"
-              >
-                <Handshake size={12} />
-                Partners
-              </Link>
-            </div>
+      <Card className="rounded-[24px] p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Support by Project Type</h2>
+            <p className="mt-1 text-xs text-gray-500">
+              Donation support patterns by project type from January to December.
+            </p>
           </div>
-          {filteredStaffMetrics.length === 0 ? (
-            <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No staff records are available yet.</div>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {paginatedStaffMetrics.map((item) => (
-                <div key={item.id} className="rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3.5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="truncate text-[12px] font-semibold text-gray-900">{item.name}</p>
-                      <p className="mt-1 text-[11px] text-gray-500">{item.isActive ? 'Active staff' : 'Pending / Inactive'}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/dashboard/users"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-green-800 px-2.5 py-2 text-[10px] font-semibold text-white transition hover:bg-[#0f4d27]"
+            >
+              <Users size={12} />
+              Users
+            </Link>
+            <Link
+              to="/dashboard/partners"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-green-200 px-2.5 py-2 text-[10px] font-semibold text-green-800 transition hover:bg-green-50"
+            >
+              <Handshake size={12} />
+              Partners
+            </Link>
+          </div>
+        </div>
+
+        {supportByTypeChart.series.length === 0 ? (
+          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">
+            No typed project donation data is available yet.
+          </div>
+        ) : (
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {supportByTypeChart.series.map((item) => (
+                <div
+                  key={item.label}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#F8F8F6] px-3 py-1.5 text-[10px] font-semibold text-gray-700"
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  {item.label}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-2">
+              {MONTH_LABELS.map((month, monthIndex) => (
+                <div
+                  key={month}
+                  className="rounded-[18px] border border-gray-200 bg-[#FCFCFB] px-3 py-2.5"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="w-8 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                      {month}
+                    </p>
+                    <div className="flex flex-1 items-end gap-1.5">
+                      {supportByTypeChart.series.map((item) => {
+                        const value = item.months[monthIndex] || 0
+                        const height = supportByTypeChart.maxValue
+                          ? Math.max((value / supportByTypeChart.maxValue) * 44, value > 0 ? 8 : 4)
+                          : 4
+
+                        return (
+                          <div
+                            key={`${item.label}-${month}`}
+                            className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                          >
+                            <div
+                              className="w-full rounded-md"
+                              style={{
+                                height: `${height}px`,
+                                backgroundColor: item.color,
+                                opacity: value > 0 ? 0.95 : 0.18,
+                              }}
+                              title={`${item.label}: ${formatCurrency(value)}`}
+                            />
+                            <span className="text-[9px] text-gray-500">
+                              {value > 0 ? formatCurrency(value) : '-'}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-gray-500">Raised</p>
-                      <p className="mt-1 text-[12px] font-semibold text-green-800">{formatCurrency(item.raised)}</p>
-                    </div>
-                  </div>
-                  <div className="mt-2.5 h-1.5 rounded-full bg-gray-200">
-                    <div
-                      className="h-1.5 rounded-full bg-green-800"
-                      style={{ width: `${Math.min(adminMetrics.highestRaised > 0 ? (item.raised / adminMetrics.highestRaised) * 100 : 0, 100)}%` }}
-                    />
-                  </div>
-                  <div className="mt-2.5 grid gap-2.5 sm:grid-cols-4">
-                    <div><p className="text-[10px] text-gray-500">Projects</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.projects}</p></div>
-                    <div><p className="text-[10px] text-gray-500">Donations</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.donations}</p></div>
-                    <div><p className="text-[10px] text-gray-500">Beneficiaries</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.beneficiaries}</p></div>
-                    <div><p className="text-[10px] text-gray-500">Updates</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.updates}</p></div>
                   </div>
                 </div>
               ))}
-              <div className="flex items-center justify-between text-[11px] text-gray-500">
-                <span>
-                  Page {staffPage} of {staffPageCount}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setStaffPage((page) => Math.max(1, page - 1))}
-                    disabled={staffPage === 1}
-                    className="inline-flex h-7 w-7 items-center justify-center text-gray-500 transition hover:text-gray-800 disabled:opacity-35"
-                  >
-                    <ChevronLeft size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStaffPage((page) => Math.min(staffPageCount, page + 1))}
-                    disabled={staffPage === staffPageCount}
-                    className="inline-flex h-7 w-7 items-center justify-center text-gray-500 transition hover:text-gray-800 disabled:opacity-35"
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
             </div>
-          )}
-        </Card>
-      </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {supportByTypeChart.series.map((item) => (
+                <div key={`${item.label}-total`} className="rounded-[18px] bg-[#F8F8F6] px-3 py-2.5">
+                  <p className="text-[10px] text-gray-500">Total for {item.label}</p>
+                  <p className="mt-1 text-[12px] font-semibold text-gray-900">
+                    {formatCurrency(item.total)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
 
       {activitySection}
     </div>
@@ -593,7 +634,9 @@ function DashboardHomePage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Staff Workspace</h1>
-          <p className="mt-1.5 text-sm text-gray-600">Focus on your project work, donation activity, beneficiaries, and updates.</p>
+          <p className="mt-1.5 text-sm text-gray-600">
+            Focus on your project work, donation activity, beneficiaries, and updates.
+          </p>
         </div>
         <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
           <TrendingUp size={16} className="mr-2" />
@@ -607,9 +650,14 @@ function DashboardHomePage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-bold text-gray-900">Project Workspaces</h2>
-            <p className="mt-1 text-sm text-gray-500">Open one of your projects to manage beneficiaries, donations, updates, and details.</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Open one of your projects to manage beneficiaries, donations, updates, and details.
+            </p>
           </div>
-          <Link to="/dashboard/projects" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-800 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#0f4d27]">
+          <Link
+            to="/dashboard/projects"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-800 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#0f4d27]"
+          >
             Open Projects
             <ArrowRight size={14} />
           </Link>
