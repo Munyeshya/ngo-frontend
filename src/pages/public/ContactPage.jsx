@@ -19,13 +19,13 @@ function ContactPage() {
         <div className="overflow-hidden rounded-[26px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
           <div className="grid lg:grid-cols-[320px_1fr]">
             <div className="bg-black px-6 py-8 text-white sm:px-8 sm:py-9">
-              <h1 className="max-w-xs text-3xl font-bold leading-tight sm:text-[34px]">
+              <h1 className="max-w-xs text-2xl font-bold leading-tight sm:text-[30px]">
                 Share love,
                 <br />
                 donate hope.
               </h1>
 
-              <p className="mt-4 max-w-xs text-sm leading-6 text-white/65">
+              <p className="mt-4 max-w-xs text-xs leading-6 text-white/65 sm:text-sm">
                 Reach out for partnerships, support, project information, or general questions.
               </p>
 
@@ -48,7 +48,7 @@ function ContactPage() {
 
                   <div className="flex items-center gap-3 text-sm text-white/85">
                     <Clock3 size={17} className="text-green-400" />
-                    <span>Mon–Fri: 8:00am - 6:00pm</span>
+                    <span>Mon-Fri: 8:00am - 6:00pm</span>
                   </div>
 
                   <div className="flex items-center gap-3 text-sm text-white/85">
@@ -90,7 +90,7 @@ function ContactPage() {
                     <input
                       type="text"
                       placeholder="First Name"
-                      className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                      className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                     />
                   </div>
 
@@ -101,7 +101,7 @@ function ContactPage() {
                     <input
                       type="text"
                       placeholder="Last Name"
-                      className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                      className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                     />
                   </div>
                 </div>
@@ -114,7 +114,7 @@ function ContactPage() {
                     <input
                       type="email"
                       placeholder="Email Address"
-                      className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                      className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                     />
                   </div>
 
@@ -125,7 +125,7 @@ function ContactPage() {
                     <input
                       type="text"
                       placeholder="Phone Number"
-                      className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                      className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                     />
                   </div>
                 </div>
@@ -135,7 +135,7 @@ function ContactPage() {
                   <input
                     type="text"
                     placeholder="Subject"
-                    className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                    className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                   />
                 </div>
 
@@ -144,12 +144,12 @@ function ContactPage() {
                   <textarea
                     rows="5"
                     placeholder="Message"
-                    className="w-full rounded-xl border border-transparent bg-white px-4 py-3 outline-none transition focus:border-green-700"
+                    className="w-full rounded-xl border border-transparent bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-700"
                   />
                 </div>
 
                 <div className="pt-1">
-                  <Button variant="primary" className="min-w-[170px] rounded-xl px-7">
+                  <Button variant="primary" className="min-w-[160px] rounded-xl px-6 py-2.5 text-sm">
                     SEND MESSAGE
                   </Button>
                 </div>
@@ -178,7 +178,7 @@ function ContactPage() {
               </p>
               <p>
                 <span className="font-semibold text-white">Support Hours:</span> Monday to Friday,
-                8:00am – 6:00pm
+                8:00am - 6:00pm
               </p>
               <p>
                 <span className="font-semibold text-white">Nearby:</span> Central Kigali business
