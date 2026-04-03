@@ -1,5 +1,43 @@
 import Card from '../../components/ui/Card'
 
+const areaRows = [
+  {
+    area: 'Public site',
+    route: '/',
+    who: 'Everyone',
+    details:
+      'Shows the public experience only. Public project browsing always uses public reads, even when someone is logged in.',
+  },
+  {
+    area: 'Frontend guide',
+    route: '/frontend-guide',
+    who: 'Everyone',
+    details:
+      'Explains the frontend product behavior, role access, and business conditions across the platform.',
+  },
+  {
+    area: 'Donor portal',
+    route: '/donor/*',
+    who: 'Donor',
+    details:
+      'Supports profile editing, profile image upload, personal donations, subscriptions, and public-to-donor account transition.',
+  },
+  {
+    area: 'Staff portal',
+    route: '/dashboard/*',
+    who: 'Approved staff',
+    details:
+      'Project-centered workspace for own projects only, with Overview, Funds, Beneficiaries, Donations, and Updates.',
+  },
+  {
+    area: 'Admin portal',
+    route: '/dashboard/*',
+    who: 'Admin',
+    details:
+      'Oversight UI for users, staff verification, reported projects, partners, platform analytics, and moderation decisions.',
+  },
+]
+
 const roleCards = [
   {
     title: 'Public Visitor',
@@ -12,6 +50,7 @@ const roleCards = [
     conditions: [
       'Cannot report a project until logged in.',
       'Cannot access donor or staff/admin portal pages.',
+      'Sees moderation notices only when admin has put a project under review or stronger restriction.',
     ],
   },
   {
@@ -25,6 +64,7 @@ const roleCards = [
     conditions: [
       'Anonymous donations hide donor identity from public-facing contexts.',
       'Claim flow requires the emailed token before account activation.',
+      'Donor profile can be updated from the donor portal, including profile image upload.',
     ],
   },
   {
@@ -40,6 +80,7 @@ const roleCards = [
       'Cannot create projects until staff verification is approved.',
       'Cannot change project moderation or funding controls.',
       'Cashout works only when project funding is open and the project is not under review.',
+      'Document uploads and profile management live in the staff account menu.',
     ],
   },
   {
@@ -53,6 +94,7 @@ const roleCards = [
     conditions: [
       'Admin UI focuses on oversight rather than day-to-day staff project operations.',
       'Direct full CRUD still remains available in Django admin and backend where needed.',
+      'Admin can suspend users, review staff documents, manage partners, and control project moderation and funding state.',
     ],
   },
 ]
@@ -98,6 +140,16 @@ const featureRows = [
     who: 'Approved staff',
     details: 'Staff manage projects from a project-centered workspace with Overview, Funds, Beneficiaries, Donations, and Updates tabs.',
   },
+  {
+    feature: 'Toast feedback',
+    who: 'All signed-in users',
+    details: 'Short success and error feedback uses timed toast messages with compact styling instead of large inline alerts.',
+  },
+  {
+    feature: 'Document preview',
+    who: 'Staff and admin',
+    details: 'Uploaded staff verification images and PDFs can be previewed in-app during submission and review.',
+  },
 ]
 
 function ApiGuidePage() {
@@ -115,6 +167,10 @@ function ApiGuidePage() {
             This page explains what the frontend exposes, who can use each area, and the business
             conditions that affect actions like project creation, reporting, donations, moderation,
             and cashout.
+          </p>
+          <p className="mt-3 text-xs leading-6 text-gray-500">
+            Final frontend state for the end of development: the public site, donor portal, staff
+            workspace, and admin oversight UI now follow the current backend rules and product flow.
           </p>
         </Card>
       </section>
@@ -146,6 +202,40 @@ function ApiGuidePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-12">
+        <Card className="mb-4 rounded-[24px] border border-gray-200 p-4 sm:p-5">
+          <h2 className="text-base font-bold text-gray-900">Frontend Areas</h2>
+          <div className="mt-3 overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="text-left">
+                  <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Area
+                  </th>
+                  <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Route
+                  </th>
+                  <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Who
+                  </th>
+                  <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    Notes
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {areaRows.map((row) => (
+                  <tr key={row.area}>
+                    <td className="py-3 pr-4 text-sm font-semibold text-gray-900">{row.area}</td>
+                    <td className="py-3 pr-4 text-xs text-gray-600">{row.route}</td>
+                    <td className="py-3 pr-4 text-xs text-gray-600">{row.who}</td>
+                    <td className="py-3 text-xs leading-6 text-gray-600">{row.details}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
         <Card className="rounded-[24px] border border-gray-200 p-4 sm:p-5">
           <h2 className="text-lg font-bold text-gray-900">Feature Conditions</h2>
           <div className="mt-4 overflow-x-auto">
