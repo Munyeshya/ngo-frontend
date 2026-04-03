@@ -38,7 +38,7 @@ function buildDisplayName(user) {
 
 function DonorProfilePage() {
   const { showToast } = useToast()
-  const storedUser = getUser()
+  const [storedUser, setStoredUserState] = useState(() => getUser())
   const [profile, setProfile] = useState(storedUser)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -60,10 +60,7 @@ function DonorProfilePage() {
         setLoading(true)
         setError('')
 
-        const userId = storedUser?.id
-        const response = userId
-          ? await api.get(endpoints.userDetails(userId))
-          : await api.get(endpoints.profile)
+        const response = await api.get(endpoints.profile)
         const profileData = unwrapPayload(response.data) || {}
         const mergedProfile = {
           ...(storedUser || {}),
@@ -73,6 +70,7 @@ function DonorProfilePage() {
         if (!active) return
 
         setProfile(mergedProfile)
+        setStoredUserState(mergedProfile)
         setUser(mergedProfile)
 
         setFormData({
@@ -103,7 +101,7 @@ function DonorProfilePage() {
     return () => {
       active = false
     }
-  }, [showToast, storedUser])
+  }, [showToast])
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
@@ -147,6 +145,7 @@ function DonorProfilePage() {
       }
 
       setProfile(mergedProfile)
+      setStoredUserState(mergedProfile)
       setUser(mergedProfile)
 
       setFormData({
