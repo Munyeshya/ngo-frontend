@@ -752,7 +752,7 @@ function DashboardProjectsPage() {
 
       {showForm && canManageProjects && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
-          <Card className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-gray-200">
+          <Card className="max-h-[88vh] w-full max-w-[68rem] overflow-hidden rounded-[24px] border border-gray-200">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3.5">
               <div>
                 <h2 className="text-base font-bold text-gray-900">
@@ -776,7 +776,7 @@ function DashboardProjectsPage() {
               <div className="grid gap-4 lg:grid-cols-[1fr_0.92fr]">
                 <div className="space-y-3.5">
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                       Title
                     </label>
                     <input
@@ -790,7 +790,7 @@ function DashboardProjectsPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                       Description
                     </label>
                     <textarea
@@ -805,7 +805,7 @@ function DashboardProjectsPage() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         Status
                       </label>
                       <select
@@ -823,7 +823,7 @@ function DashboardProjectsPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         Location
                       </label>
                       <input
@@ -838,7 +838,7 @@ function DashboardProjectsPage() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         Budget
                       </label>
                       <input
@@ -854,7 +854,7 @@ function DashboardProjectsPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         Target Amount
                       </label>
                       <input
@@ -872,7 +872,7 @@ function DashboardProjectsPage() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         Start Date
                       </label>
                       <input
@@ -886,7 +886,7 @@ function DashboardProjectsPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                         End Date
                       </label>
                       <input
@@ -902,7 +902,7 @@ function DashboardProjectsPage() {
 
                 <div className="space-y-3.5">
                   <div className="rounded-[20px] border border-gray-200 bg-[#F8F8F6] p-3.5">
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                       Feature Image
                     </label>
                     <input
@@ -920,7 +920,7 @@ function DashboardProjectsPage() {
                   </div>
 
                   <div className="rounded-[20px] border border-gray-200 bg-[#F8F8F6] p-3.5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-700">
                       Partners
                     </p>
                     <p className="mt-1 text-xs leading-5 text-gray-500">
