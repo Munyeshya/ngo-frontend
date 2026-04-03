@@ -73,8 +73,8 @@ function AppRouter() {
         <Route element={<ProtectedRoute allowedRoles={['admin', 'staff']} />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
+            <Route path="/dashboard/profile" element={<StaffProfilePage />} />
             <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
-              <Route path="/dashboard/profile" element={<StaffProfilePage />} />
               <Route path="/dashboard/settings" element={<StaffSettingsPage />} />
               <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
               <Route
