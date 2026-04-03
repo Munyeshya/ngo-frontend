@@ -1,18 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  AlertCircle,
   ArrowRight,
+  Pencil,
   FolderKanban,
+  Plus,
   MapPin,
   Search,
   SlidersHorizontal,
   Target,
+  Trash2,
   TrendingUp,
+  X,
 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
+import Button from '../../components/ui/Button'
+import { getUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -85,15 +92,42 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
+const projectStatuses = [
+  { value: 'planning', label: 'Planning' },
+  { value: 'active', label: 'Active' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'on_hold', label: 'On Hold' },
+]
+
 function DashboardProjectsPage() {
+  const currentUser = getUser()
   const [projects, setProjects] = useState([])
+  const [partners, setPartners] = useState([])
   const [projectsCount, setProjectsCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [actionSuccess, setActionSuccess] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editingProject, setEditingProject] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('latest')
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    status: 'planning',
+    budget: '',
+    target_amount: '',
+    start_date: '',
+    end_date: '',
+    location: '',
+    feature_image: null,
+    partner_ids: [],
+  })
 
   useEffect(() => {
     let active = true
@@ -103,12 +137,25 @@ function DashboardProjectsPage() {
         setLoading(true)
         setError('')
 
-        const response = await api.get(endpoints.projects)
+        const [projectsResponse, partnersResponse] = await Promise.allSettled([
+          api.get(endpoints.projects),
+          api.get(endpoints.partners),
+        ])
         if (!active) return
 
-        const list = normalizeListResponse(response.data)
-        setProjects(list)
-        setProjectsCount(getCountFromResponse(response.data, list))
+        if (projectsResponse.status === 'fulfilled') {
+          const list = normalizeListResponse(projectsResponse.value.data)
+          setProjects(list)
+          setProjectsCount(getCountFromResponse(projectsResponse.value.data, list))
+        } else {
+          throw projectsResponse.reason
+        }
+
+        if (partnersResponse.status === 'fulfilled') {
+          setPartners(normalizeListResponse(partnersResponse.value.data))
+        } else {
+          setPartners([])
+        }
       } catch (err) {
         if (!active) return
 
@@ -130,6 +177,159 @@ function DashboardProjectsPage() {
       active = false
     }
   }, [])
+
+  const canManageProjects = useMemo(() => {
+    const role = String(currentUser?.role || '').toLowerCase()
+    return role === 'admin' || role === 'staff'
+  }, [currentUser])
+
+  function resetForm() {
+    setFormData({
+      title: '',
+      description: '',
+      status: 'planning',
+      budget: '',
+      target_amount: '',
+      start_date: '',
+      end_date: '',
+      location: '',
+      feature_image: null,
+      partner_ids: [],
+    })
+    setEditingProject(null)
+    setActionError('')
+  }
+
+  function openCreateForm() {
+    resetForm()
+    setShowForm(true)
+  }
+
+  function openEditForm(project) {
+    setEditingProject(project)
+    setActionError('')
+    setActionSuccess('')
+    setFormData({
+      title: project?.title || '',
+      description: project?.description || '',
+      status: project?.status || 'planning',
+      budget: project?.budget || '',
+      target_amount: project?.target_amount || '',
+      start_date: project?.start_date || '',
+      end_date: project?.end_date || '',
+      location: project?.location || '',
+      feature_image: null,
+      partner_ids: Array.isArray(project?.partners)
+        ? project.partners.map((partner) => partner.id)
+        : [],
+    })
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    resetForm()
+  }
+
+  function handleFieldChange(event) {
+    const { name, value, files } = event.target
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'feature_image' ? files?.[0] || null : value,
+    }))
+  }
+
+  function togglePartnerSelection(partnerId) {
+    setFormData((prev) => ({
+      ...prev,
+      partner_ids: prev.partner_ids.includes(partnerId)
+        ? prev.partner_ids.filter((id) => id !== partnerId)
+        : [...prev.partner_ids, partnerId],
+    }))
+  }
+
+  async function refreshProjects() {
+    const response = await api.get(endpoints.projects)
+    const list = normalizeListResponse(response.data)
+    setProjects(list)
+    setProjectsCount(getCountFromResponse(response.data, list))
+  }
+
+  async function handleSubmitProject(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmitting(true)
+
+      const payload = new FormData()
+      payload.append('title', formData.title.trim())
+      payload.append('description', formData.description.trim())
+      payload.append('status', formData.status)
+      payload.append('budget', formData.budget)
+      payload.append('target_amount', formData.target_amount)
+      payload.append('start_date', formData.start_date)
+
+      if (formData.end_date) payload.append('end_date', formData.end_date)
+      if (formData.location.trim()) payload.append('location', formData.location.trim())
+      if (formData.feature_image) payload.append('feature_image', formData.feature_image)
+      formData.partner_ids.forEach((partnerId) => payload.append('partner_ids', partnerId))
+
+      if (editingProject?.id) {
+        await api.patch(endpoints.projectDetails(editingProject.id), payload, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        setActionSuccess('Project updated successfully.')
+      } else {
+        await api.post(endpoints.projects, payload, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        setActionSuccess('Project created successfully.')
+      }
+
+      await refreshProjects()
+      closeForm()
+    } catch (err) {
+      const data = err?.response?.data
+      const flattened =
+        data && typeof data === 'object'
+          ? Object.values(data).flat().find(Boolean)
+          : null
+
+      setActionError(
+        data?.message ||
+          data?.detail ||
+          flattened ||
+          'Project action failed. Please review your inputs and try again.'
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDeleteProject(project) {
+    const confirmed = window.confirm(`Delete "${project?.title || 'this project'}"?`)
+    if (!confirmed) return
+
+    try {
+      setDeletingId(project.id)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.projectDetails(project.id))
+      await refreshProjects()
+      setActionSuccess('Project deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete project.'
+      )
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const statusOptions = useMemo(() => {
     const statuses = new Set(
@@ -270,9 +470,18 @@ function DashboardProjectsPage() {
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
-          <FolderKanban size={16} className="mr-2" />
-          Total Records: {projectsCount}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
+            <FolderKanban size={16} className="mr-2" />
+            Total Records: {projectsCount}
+          </div>
+
+          {canManageProjects && (
+            <Button className="px-4 py-2.5" onClick={openCreateForm}>
+              <Plus size={16} className="mr-2" />
+              New Project
+            </Button>
+          )}
         </div>
       </div>
 
@@ -325,6 +534,19 @@ function DashboardProjectsPage() {
           </p>
         </Card>
       </div>
+
+      {(actionError || actionSuccess) && (
+        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
+          <div
+            className={`flex items-start gap-3 text-sm ${
+              actionError ? 'text-red-700' : 'text-green-700'
+            }`}
+          >
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <span>{actionError || actionSuccess}</span>
+          </div>
+        </Card>
+      )}
 
       <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -475,19 +697,259 @@ function DashboardProjectsPage() {
                     Budget: <span className="font-medium text-gray-800">{formatCurrency(project?.budget)}</span>
                   </div>
 
-                  <Link
-                    to={`/projects/${project.id}`}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
-                  >
-                    View Public Page
-                    <ArrowRight size={15} />
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/projects/${project.id}`}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
+                    >
+                      View Public Page
+                      <ArrowRight size={15} />
+                    </Link>
+
+                    {canManageProjects && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(project)}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+                        >
+                          <Pencil size={13} />
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProject(project)}
+                          disabled={deletingId === project.id}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          <Trash2 size={13} />
+                          {deletingId === project.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </Card>
+
+      {showForm && canManageProjects && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
+          <Card className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-[28px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  {editingProject ? 'Edit Project' : 'Create Project'}
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage the project details that donors and staff will work with.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeForm}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitProject} className="overflow-y-auto px-5 py-5">
+              <div className="grid gap-5 lg:grid-cols-[1fr_0.95fr]">
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-900">Title</label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleFieldChange}
+                      required
+                      className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-gray-900">Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleFieldChange}
+                      rows="6"
+                      required
+                      className="w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                    />
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">Status</label>
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleFieldChange}
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      >
+                        {projectStatuses.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">Location</label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleFieldChange}
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">Budget</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="budget"
+                        value={formData.budget}
+                        onChange={handleFieldChange}
+                        required
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">Target Amount</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="target_amount"
+                        value={formData.target_amount}
+                        onChange={handleFieldChange}
+                        required
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">Start Date</label>
+                      <input
+                        type="date"
+                        name="start_date"
+                        value={formData.start_date}
+                        onChange={handleFieldChange}
+                        required
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-gray-900">End Date</label>
+                      <input
+                        type="date"
+                        name="end_date"
+                        value={formData.end_date}
+                        onChange={handleFieldChange}
+                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[24px] border border-gray-200 bg-[#F8F8F6] p-4">
+                    <label className="mb-2 block text-sm font-semibold text-gray-900">
+                      Feature Image
+                    </label>
+                    <input
+                      type="file"
+                      name="feature_image"
+                      accept="image/*"
+                      onChange={handleFieldChange}
+                      className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-sm file:font-semibold file:text-gray-800"
+                    />
+                    {editingProject?.feature_image && !formData.feature_image && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Leave empty to keep the current image.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="rounded-[24px] border border-gray-200 bg-[#F8F8F6] p-4">
+                    <p className="text-sm font-semibold text-gray-900">Partners</p>
+                    <p className="mt-1 text-xs leading-6 text-gray-500">
+                      Select any partners linked to this project.
+                    </p>
+
+                    <div className="mt-3 max-h-[260px] space-y-2 overflow-y-auto pr-1">
+                      {partners.length === 0 ? (
+                        <p className="text-sm text-gray-500">No partners available.</p>
+                      ) : (
+                        partners.map((partner) => (
+                          <label
+                            key={partner.id}
+                            className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.partner_ids.includes(partner.id)}
+                              onChange={() => togglePartnerSelection(partner.id)}
+                              className="mt-1 h-4 w-4 rounded border-gray-300 text-[#166534] focus:ring-green-700"
+                            />
+                            <div>
+                              <p className="font-semibold text-gray-900">{partner.name}</p>
+                              {partner.description && (
+                                <p className="mt-1 text-xs leading-6 text-gray-500">
+                                  {partner.description}
+                                </p>
+                              )}
+                            </div>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {actionError && (
+                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {actionError}
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap justify-end gap-3">
+                <Button type="button" variant="outline" onClick={closeForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting
+                    ? editingProject
+                      ? 'Saving...'
+                      : 'Creating...'
+                    : editingProject
+                    ? 'Save Changes'
+                    : 'Create Project'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
