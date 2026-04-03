@@ -15,7 +15,6 @@ import { useState } from 'react'
 
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
-import ThemeToggle from '../components/common/ThemeToggle'
 import { useToast } from '../components/feedback/ToastProvider'
 import { clearAuth, getRefreshToken, getUser } from '../utils/storage'
 
@@ -227,56 +226,52 @@ function DonorLayout() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
+              <div className="relative" ref={accountRef}>
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((prev) => !prev)}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-[#166534] transition hover:bg-green-50 hover:text-[#0f4d27]"
+                >
+                  <Settings size={24} />
+                </button>
 
-                <div className="relative" ref={accountRef}>
-                  <button
-                    type="button"
-                    onClick={() => setAccountOpen((prev) => !prev)}
-                    className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-transparent text-[#166534] transition hover:bg-green-50 hover:text-[#0f4d27]"
-                  >
-                    <Settings size={24} />
-                  </button>
-
-                  {accountOpen && (
-                    <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_20px_60px_rgba(16,24,40,0.12)]">
-                      <div className="border-b border-gray-100 px-4 py-4">
-                        <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
-                        <p className="truncate text-xs text-gray-500">{email}</p>
-                      </div>
-
-                      <div className="p-2">
-                        <Link
-                          to="/donor/profile"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
-                        >
-                          <UserCircle2 size={18} />
-                          Profile
-                        </Link>
-
-                        <Link
-                          to="/projects"
-                          onClick={() => setAccountOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
-                        >
-                          <ArrowLeft size={18} />
-                          Browse projects
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
-                        >
-                          <LogOut size={18} />
-                          Logout
-                        </button>
-                      </div>
+                {accountOpen && (
+                  <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_20px_60px_rgba(16,24,40,0.12)]">
+                    <div className="border-b border-gray-100 px-4 py-4">
+                      <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
+                      <p className="truncate text-xs text-gray-500">{email}</p>
                     </div>
-                  )}
-                </div>
+
+                    <div className="p-2">
+                      <Link
+                        to="/donor/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                      >
+                        <UserCircle2 size={18} />
+                        Profile
+                      </Link>
+
+                      <Link
+                        to="/projects"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                      >
+                        <ArrowLeft size={18} />
+                        Browse projects
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                      >
+                        <LogOut size={18} />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </header>
