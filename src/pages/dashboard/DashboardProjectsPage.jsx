@@ -753,7 +753,7 @@ function DashboardProjectsPage() {
       {showForm && canManageProjects && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
           <Card className="max-h-[88vh] w-full max-w-[68rem] overflow-hidden rounded-[24px] border border-gray-200">
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3.5">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3.5">
               <div>
                 <h2 className="text-base font-bold text-gray-900">
                   {editingProject ? 'Edit Project' : 'Create Project'}
@@ -772,7 +772,7 @@ function DashboardProjectsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitProject} className="overflow-y-auto px-4 py-4">
+            <form onSubmit={handleSubmitProject} className="overflow-y-auto px-6 py-4.5">
               <div className="grid gap-4 lg:grid-cols-[1fr_0.92fr]">
                 <div className="space-y-3.5">
                   <div>
