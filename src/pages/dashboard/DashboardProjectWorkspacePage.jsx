@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Bell,
@@ -9,11 +10,17 @@ import {
   HandCoins,
   HeartHandshake,
   MapPin,
+  Pencil,
+  Plus,
   Target,
+  Trash2,
+  Upload,
+  X,
 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 
 function unwrapPayload(payload) {
@@ -117,6 +124,40 @@ function DashboardProjectWorkspacePage() {
   const [updates, setUpdates] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [actionSuccess, setActionSuccess] = useState('')
+  const [showProjectForm, setShowProjectForm] = useState(false)
+  const [showBeneficiaryForm, setShowBeneficiaryForm] = useState(false)
+  const [showUpdateForm, setShowUpdateForm] = useState(false)
+  const [editingBeneficiary, setEditingBeneficiary] = useState(null)
+  const [editingUpdate, setEditingUpdate] = useState(null)
+  const [submittingProject, setSubmittingProject] = useState(false)
+  const [submittingBeneficiary, setSubmittingBeneficiary] = useState(false)
+  const [submittingUpdate, setSubmittingUpdate] = useState(false)
+  const [deletingBeneficiaryId, setDeletingBeneficiaryId] = useState(null)
+  const [deletingUpdateId, setDeletingUpdateId] = useState(null)
+  const [uploadingBeneficiaryImageFor, setUploadingBeneficiaryImageFor] = useState(null)
+  const [uploadingUpdateImageFor, setUploadingUpdateImageFor] = useState(null)
+  const [deletingImageId, setDeletingImageId] = useState(null)
+  const [projectForm, setProjectForm] = useState({
+    title: '',
+    description: '',
+    status: 'planning',
+    budget: '',
+    target_amount: '',
+    start_date: '',
+    end_date: '',
+    location: '',
+  })
+  const [beneficiaryForm, setBeneficiaryForm] = useState({
+    name: '',
+    description: '',
+    is_active: true,
+  })
+  const [updateForm, setUpdateForm] = useState({
+    title: '',
+    description: '',
+  })
 
   useEffect(() => {
     let active = true
@@ -181,6 +222,21 @@ function DashboardProjectWorkspacePage() {
     }
   }, [projectId])
 
+  useEffect(() => {
+    if (!project) return
+
+    setProjectForm({
+      title: project?.title || '',
+      description: project?.description || '',
+      status: project?.status || 'planning',
+      budget: project?.budget || '',
+      target_amount: project?.target_amount || '',
+      start_date: project?.start_date || '',
+      end_date: project?.end_date || '',
+      location: project?.location || '',
+    })
+  }, [project])
+
   const stats = useMemo(() => {
     return {
       beneficiaries: beneficiaries.length,
@@ -208,6 +264,343 @@ function DashboardProjectWorkspacePage() {
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('tab', tabId)
     setSearchParams(nextParams)
+  }
+
+  async function refreshWorkspace() {
+    const [projectResponse, beneficiariesResponse, donationsResponse, updatesResponse] =
+      await Promise.all([
+        api.get(endpoints.projectDetails(projectId)),
+        api.get(endpoints.beneficiaries, { params: { project: projectId } }),
+        api.get(endpoints.donations, { params: { project: projectId } }),
+        api.get(endpoints.projectUpdates, { params: { project: projectId } }),
+      ])
+
+    setProject(unwrapPayload(projectResponse.data))
+    setBeneficiaries(normalizeListResponse(beneficiariesResponse.data))
+    setDonations(normalizeListResponse(donationsResponse.data))
+    setUpdates(normalizeListResponse(updatesResponse.data))
+  }
+
+  function resetBeneficiaryForm() {
+    setBeneficiaryForm({
+      name: '',
+      description: '',
+      is_active: true,
+    })
+    setEditingBeneficiary(null)
+  }
+
+  function resetUpdateForm() {
+    setUpdateForm({
+      title: '',
+      description: '',
+    })
+    setEditingUpdate(null)
+  }
+
+  function openProjectForm() {
+    setActionError('')
+    setActionSuccess('')
+    setShowProjectForm(true)
+  }
+
+  function openBeneficiaryForm(item = null) {
+    setActionError('')
+    setActionSuccess('')
+
+    if (item) {
+      setEditingBeneficiary(item)
+      setBeneficiaryForm({
+        name: item?.name || '',
+        description: item?.description || '',
+        is_active: item?.is_active ?? true,
+      })
+    } else {
+      resetBeneficiaryForm()
+    }
+
+    setShowBeneficiaryForm(true)
+  }
+
+  function openUpdateForm(item = null) {
+    setActionError('')
+    setActionSuccess('')
+
+    if (item) {
+      setEditingUpdate(item)
+      setUpdateForm({
+        title: item?.title || '',
+        description: item?.description || '',
+      })
+    } else {
+      resetUpdateForm()
+    }
+
+    setShowUpdateForm(true)
+  }
+
+  function closeProjectForm() {
+    setShowProjectForm(false)
+  }
+
+  function closeBeneficiaryForm() {
+    setShowBeneficiaryForm(false)
+    resetBeneficiaryForm()
+  }
+
+  function closeUpdateForm() {
+    setShowUpdateForm(false)
+    resetUpdateForm()
+  }
+
+  function handleProjectFieldChange(event) {
+    const { name, value } = event.target
+    setProjectForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function handleBeneficiaryFieldChange(event) {
+    const { name, value, type, checked } = event.target
+    setBeneficiaryForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+  }
+
+  function handleUpdateFieldChange(event) {
+    const { name, value } = event.target
+    setUpdateForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  async function handleProjectSubmit(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmittingProject(true)
+      await api.patch(endpoints.projectDetails(projectId), {
+        ...projectForm,
+        title: projectForm.title.trim(),
+        description: projectForm.description.trim(),
+        location: projectForm.location.trim(),
+      })
+      await refreshWorkspace()
+      setActionSuccess('Project details updated successfully.')
+      closeProjectForm()
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to update project details.'
+      )
+    } finally {
+      setSubmittingProject(false)
+    }
+  }
+
+  async function handleBeneficiarySubmit(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmittingBeneficiary(true)
+      const payload = {
+        project: Number(projectId),
+        name: beneficiaryForm.name.trim(),
+        description: beneficiaryForm.description.trim(),
+        is_active: beneficiaryForm.is_active,
+      }
+
+      if (editingBeneficiary?.id) {
+        await api.patch(endpoints.beneficiaryDetails(editingBeneficiary.id), payload)
+        setActionSuccess('Beneficiary updated successfully.')
+      } else {
+        await api.post(endpoints.beneficiaries, payload)
+        setActionSuccess('Beneficiary created successfully.')
+      }
+
+      await refreshWorkspace()
+      closeBeneficiaryForm()
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to save beneficiary.'
+      )
+    } finally {
+      setSubmittingBeneficiary(false)
+    }
+  }
+
+  async function handleUpdateSubmit(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmittingUpdate(true)
+      const payload = {
+        project: Number(projectId),
+        title: updateForm.title.trim(),
+        description: updateForm.description.trim(),
+      }
+
+      if (editingUpdate?.id) {
+        await api.patch(endpoints.projectUpdateDetails(editingUpdate.id), payload)
+        setActionSuccess('Project update saved successfully.')
+      } else {
+        await api.post(endpoints.projectUpdates, payload)
+        setActionSuccess('Project update created successfully.')
+      }
+
+      await refreshWorkspace()
+      closeUpdateForm()
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to save project update.'
+      )
+    } finally {
+      setSubmittingUpdate(false)
+    }
+  }
+
+  async function handleDeleteBeneficiary(item) {
+    if (!window.confirm(`Delete "${item?.name || 'this beneficiary'}"?`)) return
+
+    try {
+      setDeletingBeneficiaryId(item.id)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.beneficiaryDetails(item.id))
+      await refreshWorkspace()
+      setActionSuccess('Beneficiary deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete beneficiary.'
+      )
+    } finally {
+      setDeletingBeneficiaryId(null)
+    }
+  }
+
+  async function handleDeleteUpdate(item) {
+    if (!window.confirm(`Delete "${item?.title || 'this update'}"?`)) return
+
+    try {
+      setDeletingUpdateId(item.id)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.projectUpdateDetails(item.id))
+      await refreshWorkspace()
+      setActionSuccess('Project update deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete project update.'
+      )
+    } finally {
+      setDeletingUpdateId(null)
+    }
+  }
+
+  async function handleBeneficiaryImageUpload(beneficiaryId, file) {
+    if (!file) return
+
+    try {
+      setUploadingBeneficiaryImageFor(beneficiaryId)
+      setActionError('')
+      setActionSuccess('')
+      const payload = new FormData()
+      payload.append('beneficiary', beneficiaryId)
+      payload.append('image', file)
+      await api.post(endpoints.beneficiaryImages, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      await refreshWorkspace()
+      setActionSuccess('Beneficiary image uploaded successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to upload beneficiary image.'
+      )
+    } finally {
+      setUploadingBeneficiaryImageFor(null)
+    }
+  }
+
+  async function handleUpdateImageUpload(updateId, file) {
+    if (!file) return
+
+    try {
+      setUploadingUpdateImageFor(updateId)
+      setActionError('')
+      setActionSuccess('')
+      const payload = new FormData()
+      payload.append('project_update', updateId)
+      payload.append('image', file)
+      await api.post(endpoints.projectUpdateImages, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      await refreshWorkspace()
+      setActionSuccess('Update image uploaded successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to upload update image.'
+      )
+    } finally {
+      setUploadingUpdateImageFor(null)
+    }
+  }
+
+  async function handleDeleteBeneficiaryImage(imageId) {
+    if (!window.confirm('Remove this beneficiary image?')) return
+
+    try {
+      setDeletingImageId(imageId)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.beneficiaryImageDetails(imageId))
+      await refreshWorkspace()
+      setActionSuccess('Beneficiary image deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete beneficiary image.'
+      )
+    } finally {
+      setDeletingImageId(null)
+    }
+  }
+
+  async function handleDeleteUpdateImage(imageId) {
+    if (!window.confirm('Remove this update image?')) return
+
+    try {
+      setDeletingImageId(imageId)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.projectUpdateImageDetails(imageId))
+      await refreshWorkspace()
+      setActionSuccess('Update image deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete update image.'
+      )
+    } finally {
+      setDeletingImageId(null)
+    }
   }
 
   if (loading) {
@@ -326,10 +719,33 @@ function DashboardProjectWorkspacePage() {
         </div>
       </Card>
 
+      {(actionError || actionSuccess) && (
+        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
+          <div
+            className={`flex items-start gap-3 text-sm ${
+              actionError ? 'text-red-700' : 'text-green-700'
+            }`}
+          >
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <span>{actionError || actionSuccess}</span>
+          </div>
+        </Card>
+      )}
+
       {selectedTab.id === 'overview' && (
         <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
           <Card className="rounded-[24px] p-5">
-            <h2 className="text-base font-bold text-gray-900">Project Details</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-gray-900">Project Details</h2>
+              <button
+                type="button"
+                onClick={openProjectForm}
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+              >
+                <Pencil size={13} />
+                Edit
+              </button>
+            </div>
             <p className="mt-3 text-sm leading-7 text-gray-600">
               {project?.description || 'No project description available.'}
             </p>
@@ -417,8 +833,16 @@ function DashboardProjectWorkspacePage() {
 
       {selectedTab.id === 'beneficiaries' && (
         <Card className="rounded-[24px] p-5">
-          <h2 className="text-base font-bold text-gray-900">Beneficiaries</h2>
-          <p className="mt-1 text-sm text-gray-500">All beneficiary records for this project.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Beneficiaries</h2>
+              <p className="mt-1 text-sm text-gray-500">All beneficiary records for this project.</p>
+            </div>
+            <Button className="px-3 py-2 text-xs" onClick={() => openBeneficiaryForm()}>
+              <Plus size={14} className="mr-1.5" />
+              New Beneficiary
+            </Button>
+          </div>
 
           {beneficiaries.length === 0 ? (
             <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
@@ -434,7 +858,44 @@ function DashboardProjectWorkspacePage() {
                     key={beneficiary.id}
                     className="rounded-[22px] border border-gray-200 bg-[#FCFCFB] p-4"
                   >
-                    <p className="text-sm font-semibold text-gray-900">{beneficiary.name}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-gray-900">{beneficiary.name}</p>
+                      <div className="flex items-center gap-2">
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
+                          <Upload size={12} />
+                          {uploadingBeneficiaryImageFor === beneficiary.id ? 'Uploading...' : 'Image'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => {
+                              handleBeneficiaryImageUpload(
+                                beneficiary.id,
+                                event.target.files?.[0]
+                              )
+                              event.target.value = ''
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => openBeneficiaryForm(beneficiary)}
+                          className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+                        >
+                          <Pencil size={12} />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBeneficiary(beneficiary)}
+                          disabled={deletingBeneficiaryId === beneficiary.id}
+                          className="inline-flex items-center gap-1 rounded-full border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-70"
+                        >
+                          <Trash2 size={12} />
+                          {deletingBeneficiaryId === beneficiary.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
                     <p className="mt-2 text-sm leading-6 text-gray-600">
                       {beneficiary.description || 'No beneficiary description available.'}
                     </p>
@@ -442,12 +903,21 @@ function DashboardProjectWorkspacePage() {
                     {images.length > 0 && (
                       <div className="mt-4 grid grid-cols-3 gap-2.5">
                         {images.slice(0, 3).map((image) => (
-                          <img
-                            key={image?.id || image?.image}
-                            src={image?.image}
-                            alt={image?.caption || beneficiary?.name || 'Beneficiary image'}
-                            className="h-20 w-full rounded-xl object-cover"
-                          />
+                          <div key={image?.id || image?.image} className="group relative">
+                            <img
+                              src={image?.image}
+                              alt={image?.caption || beneficiary?.name || 'Beneficiary image'}
+                              className="h-20 w-full rounded-xl object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBeneficiaryImage(image.id)}
+                              disabled={deletingImageId === image.id}
+                              className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-700 opacity-0 transition group-hover:opacity-100 disabled:opacity-100"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -462,7 +932,9 @@ function DashboardProjectWorkspacePage() {
       {selectedTab.id === 'donations' && (
         <Card className="rounded-[24px] p-5">
           <h2 className="text-base font-bold text-gray-900">Donations</h2>
-          <p className="mt-1 text-sm text-gray-500">Contribution history for this project.</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Contribution history for this project. Donations are view-only in the current backend.
+          </p>
 
           {sortedDonations.length === 0 ? (
             <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
@@ -515,8 +987,16 @@ function DashboardProjectWorkspacePage() {
 
       {selectedTab.id === 'updates' && (
         <Card className="rounded-[24px] p-5">
-          <h2 className="text-base font-bold text-gray-900">Updates</h2>
-          <p className="mt-1 text-sm text-gray-500">Recent progress records for this project.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Updates</h2>
+              <p className="mt-1 text-sm text-gray-500">Recent progress records for this project.</p>
+            </div>
+            <Button className="px-3 py-2 text-xs" onClick={() => openUpdateForm()}>
+              <Plus size={14} className="mr-1.5" />
+              New Update
+            </Button>
+          </div>
 
           {sortedUpdates.length === 0 ? (
             <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">
@@ -539,6 +1019,38 @@ function DashboardProjectWorkspacePage() {
                           {formatDate(update?.created_at)}
                         </p>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
+                          <Upload size={12} />
+                          {uploadingUpdateImageFor === update.id ? 'Uploading...' : 'Image'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => {
+                              handleUpdateImageUpload(update.id, event.target.files?.[0])
+                              event.target.value = ''
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => openUpdateForm(update)}
+                          className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+                        >
+                          <Pencil size={12} />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUpdate(update)}
+                          disabled={deletingUpdateId === update.id}
+                          className="inline-flex items-center gap-1 rounded-full border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-70"
+                        >
+                          <Trash2 size={12} />
+                          {deletingUpdateId === update.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
                     </div>
 
                     <p className="mt-3 text-sm leading-6 text-gray-600">
@@ -548,12 +1060,21 @@ function DashboardProjectWorkspacePage() {
                     {images.length > 0 && (
                       <div className="mt-4 grid grid-cols-3 gap-2.5">
                         {images.slice(0, 3).map((image) => (
-                          <img
-                            key={image?.id || image?.image}
-                            src={image?.image}
-                            alt={image?.caption || update?.title || 'Update image'}
-                            className="h-20 w-full rounded-xl object-cover"
-                          />
+                          <div key={image?.id || image?.image} className="group relative">
+                            <img
+                              src={image?.image}
+                              alt={image?.caption || update?.title || 'Update image'}
+                              className="h-20 w-full rounded-xl object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUpdateImage(image.id)}
+                              disabled={deletingImageId === image.id}
+                              className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-700 opacity-0 transition group-hover:opacity-100 disabled:opacity-100"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -563,6 +1084,261 @@ function DashboardProjectWorkspacePage() {
             </div>
           )}
         </Card>
+      )}
+
+      {showProjectForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
+          <Card className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Edit Project</h2>
+                <p className="mt-1 text-xs text-gray-500">Update the core project details for this workspace.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeProjectForm}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleProjectSubmit} className="overflow-y-auto px-6 py-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={projectForm.title}
+                    onChange={handleProjectFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Description</label>
+                  <textarea
+                    name="description"
+                    value={projectForm.description}
+                    onChange={handleProjectFieldChange}
+                    rows="5"
+                    required
+                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Status</label>
+                  <select
+                    name="status"
+                    value={projectForm.status}
+                    onChange={handleProjectFieldChange}
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  >
+                    <option value="planning">Planning</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={projectForm.location}
+                    onChange={handleProjectFieldChange}
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Budget</label>
+                  <input
+                    type="number"
+                    name="budget"
+                    min="0"
+                    step="0.01"
+                    value={projectForm.budget}
+                    onChange={handleProjectFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Target Amount</label>
+                  <input
+                    type="number"
+                    name="target_amount"
+                    min="0"
+                    step="0.01"
+                    value={projectForm.target_amount}
+                    onChange={handleProjectFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Start Date</label>
+                  <input
+                    type="date"
+                    name="start_date"
+                    value={projectForm.start_date}
+                    onChange={handleProjectFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">End Date</label>
+                  <input
+                    type="date"
+                    name="end_date"
+                    value={projectForm.end_date}
+                    onChange={handleProjectFieldChange}
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-end gap-2.5">
+                <Button type="button" variant="outline" onClick={closeProjectForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submittingProject}>
+                  {submittingProject ? 'Saving...' : 'Save Project'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {showBeneficiaryForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
+          <Card className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-[24px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">
+                  {editingBeneficiary ? 'Edit Beneficiary' : 'New Beneficiary'}
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">Add or update beneficiary details for this project.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeBeneficiaryForm}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleBeneficiarySubmit} className="overflow-y-auto px-6 py-5">
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={beneficiaryForm.name}
+                    onChange={handleBeneficiaryFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Description</label>
+                  <textarea
+                    name="description"
+                    value={beneficiaryForm.description}
+                    onChange={handleBeneficiaryFieldChange}
+                    rows="5"
+                    required
+                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <label className="flex items-center gap-3 rounded-xl bg-[#F8F8F6] px-4 py-3 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={beneficiaryForm.is_active}
+                    onChange={handleBeneficiaryFieldChange}
+                    className="h-4 w-4 rounded border-gray-300 text-[#166534] focus:ring-green-700"
+                  />
+                  Active beneficiary record
+                </label>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-end gap-2.5">
+                <Button type="button" variant="outline" onClick={closeBeneficiaryForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submittingBeneficiary}>
+                  {submittingBeneficiary
+                    ? 'Saving...'
+                    : editingBeneficiary
+                    ? 'Save Beneficiary'
+                    : 'Create Beneficiary'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {showUpdateForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
+          <Card className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-[24px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">
+                  {editingUpdate ? 'Edit Update' : 'New Update'}
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">Publish or update progress content for this project.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeUpdateForm}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateSubmit} className="overflow-y-auto px-6 py-5">
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={updateForm.title}
+                    onChange={handleUpdateFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Description</label>
+                  <textarea
+                    name="description"
+                    value={updateForm.description}
+                    onChange={handleUpdateFieldChange}
+                    rows="6"
+                    required
+                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-end gap-2.5">
+                <Button type="button" variant="outline" onClick={closeUpdateForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submittingUpdate}>
+                  {submittingUpdate
+                    ? 'Saving...'
+                    : editingUpdate
+                    ? 'Save Update'
+                    : 'Create Update'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
       )}
     </div>
   )
