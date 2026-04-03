@@ -20,6 +20,7 @@ import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { getUser } from '../../utils/storage'
+import { getProjectTypeLabel, PROJECT_TYPE_OPTIONS } from '../../utils/projectHelpers'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -115,11 +116,13 @@ function DashboardProjectsPage() {
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const [sortBy, setSortBy] = useState('latest')
   const [partnerSearch, setPartnerSearch] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    project_type: 'other',
     status: 'planning',
     budget: '',
     target_amount: '',
@@ -188,6 +191,7 @@ function DashboardProjectsPage() {
     setFormData({
       title: '',
       description: '',
+      project_type: 'other',
       status: 'planning',
       budget: '',
       target_amount: '',
@@ -214,6 +218,7 @@ function DashboardProjectsPage() {
     setFormData({
       title: project?.title || '',
       description: project?.description || '',
+      project_type: project?.project_type || 'other',
       status: project?.status || 'planning',
       budget: project?.budget || '',
       target_amount: project?.target_amount || '',
@@ -269,6 +274,7 @@ function DashboardProjectsPage() {
       const payload = new FormData()
       payload.append('title', formData.title.trim())
       payload.append('description', formData.description.trim())
+      payload.append('project_type', formData.project_type)
       payload.append('status', formData.status)
       payload.append('budget', formData.budget)
       payload.append('target_amount', formData.target_amount)
@@ -352,12 +358,14 @@ function DashboardProjectsPage() {
         const description = String(item?.description || '').toLowerCase()
         const location = String(item?.location || '').toLowerCase()
         const status = String(item?.status || '').toLowerCase()
+        const projectType = String(item?.project_type || '').toLowerCase()
 
         return (
           title.includes(query) ||
           description.includes(query) ||
           location.includes(query) ||
-          status.includes(query)
+          status.includes(query) ||
+          projectType.includes(query)
         )
       })
     }
@@ -365,6 +373,12 @@ function DashboardProjectsPage() {
     if (statusFilter !== 'all') {
       items = items.filter(
         (item) => String(item?.status || '').toLowerCase() === statusFilter
+      )
+    }
+
+    if (typeFilter !== 'all') {
+      items = items.filter(
+        (item) => String(item?.project_type || '').toLowerCase() === typeFilter
       )
     }
 
@@ -397,7 +411,7 @@ function DashboardProjectsPage() {
     })
 
     return items
-  }, [projects, search, statusFilter, sortBy])
+  }, [projects, search, statusFilter, typeFilter, sortBy])
 
   const filteredPartners = useMemo(() => {
     const query = partnerSearch.trim().toLowerCase()
@@ -571,7 +585,7 @@ function DashboardProjectsPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3 xl:min-w-[760px]">
+          <div className="grid gap-3 md:grid-cols-4 xl:min-w-[960px]">
             <div className="relative">
               <Search
                 size={17}
@@ -597,6 +611,25 @@ function DashboardProjectsPage() {
                 {statusOptions.map((status) => (
                   <option key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative">
+              <SlidersHorizontal
+                size={16}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="h-12 w-full appearance-none rounded-2xl border border-gray-300 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+              >
+                <option value="all">All types</option>
+                {PROJECT_TYPE_OPTIONS.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
                   </option>
                 ))}
               </select>
@@ -651,6 +684,10 @@ function DashboardProjectsPage() {
                         <MapPin size={15} />
                         <span>{project?.location || 'Location not specified'}</span>
                       </div>
+
+                      <span className="inline-flex rounded-full bg-[#F3F5F0] px-3 py-1 text-xs font-semibold text-gray-700">
+                        {getProjectTypeLabel(project)}
+                      </span>
 
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(
@@ -812,6 +849,24 @@ function DashboardProjectsPage() {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                        Project Type
+                      </label>
+                      <select
+                        name="project_type"
+                        value={formData.project_type}
+                        onChange={handleFieldChange}
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      >
+                        {PROJECT_TYPE_OPTIONS.map((type) => (
+                          <option key={type.value} value={type.value}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div>
                       <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
                         Status
