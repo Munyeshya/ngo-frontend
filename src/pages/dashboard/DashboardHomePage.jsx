@@ -16,8 +16,9 @@ import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
+import { PROJECT_TYPE_OPTIONS } from '../../utils/projectHelpers'
 
-const TYPE_COLORS = ['#2563eb', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#14b8a6']
+const TYPE_COLORS = ['#2563eb', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#14b8a6', '#ec4899', '#84cc16', '#64748b']
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -50,6 +51,14 @@ function formatCurrency(value) {
     currency: 'RWF',
     maximumFractionDigits: 0,
   }).format(Number.isNaN(amount) ? 0 : amount)
+}
+
+function formatAxisValue(value) {
+  const amount = Number(value || 0)
+  if (!amount) return '0'
+  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`
+  if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`
+  return new Intl.NumberFormat('en-RW', { maximumFractionDigits: 0 }).format(amount)
 }
 
 function formatDate(value) {
@@ -278,15 +287,30 @@ function DashboardHomePage() {
   }, [partners, users])
 
   const supportByTypeChart = useMemo(() => {
-    const months = typeSupportAnalytics?.months?.length ? typeSupportAnalytics.months : []
-    const series = (typeSupportAnalytics?.series || [])
-      .slice(0, 4)
-      .map((item, index) => ({
-        label: item?.project_type_display || item?.project_type || 'Other',
-        total: Number(item?.total_amount || 0),
-        months: Array.isArray(item?.monthly_amounts) ? item.monthly_amounts.map((value) => Number(value || 0)) : Array(12).fill(0),
+    const months = typeSupportAnalytics?.months?.length ? typeSupportAnalytics.months : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const analyticsLookup = new Map(
+      (typeSupportAnalytics?.series || []).map((item) => [
+        item?.project_type || 'other',
+        {
+          label: item?.project_type_display || item?.project_type || 'Other',
+          total: Number(item?.total_amount || 0),
+          months: Array.isArray(item?.monthly_amounts)
+            ? item.monthly_amounts.map((value) => Number(value || 0))
+            : Array(months.length).fill(0),
+        },
+      ])
+    )
+
+    const series = PROJECT_TYPE_OPTIONS.map((option, index) => {
+      const matched = analyticsLookup.get(option.value)
+      return {
+        key: option.value,
+        label: matched?.label || option.label,
+        total: matched?.total || 0,
+        months: matched?.months || Array(months.length).fill(0),
         color: TYPE_COLORS[index % TYPE_COLORS.length],
-      }))
+      }
+    })
 
     const maxValue = Math.max(...series.flatMap((item) => item.months), 0)
 
@@ -552,10 +576,6 @@ function DashboardHomePage() {
                   className="h-[240px] w-full min-w-[680px]"
                   aria-label="Support by project type line chart"
                 >
-                <text x="14" y="24" fontSize="10" fill="#6b7280" fontWeight="600">
-                  RWF
-                </text>
-
                 {Array.from({ length: 5 }).map((_, index) => {
                   const value = supportByTypeChart.maxValue
                     ? supportByTypeChart.maxValue - (supportByTypeChart.maxValue / 4) * index
@@ -571,7 +591,7 @@ function DashboardHomePage() {
                       fontSize="9"
                       fill="#6b7280"
                     >
-                      {formatCurrency(value)}
+                      {formatAxisValue(value)}
                     </text>
                   )
                 })}
@@ -672,9 +692,8 @@ function DashboardHomePage() {
                         style={{ backgroundColor: item.color }}
                       />
                       <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-gray-900">{item.label}</p>
-                        <p className="mt-0.5 text-[10px] text-gray-500">
-                          Total: {formatCurrency(item.total)}
+                        <p className="text-[10px] font-semibold leading-4 text-gray-800">
+                          {item.label}
                         </p>
                       </div>
                     </div>
@@ -690,18 +709,18 @@ function DashboardHomePage() {
               <table className="mt-3 min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr className="text-left">
-                    <th className="pb-2 pr-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500">
                       Project Type
                     </th>
                     {supportByTypeChart.months.map((month) => (
                       <th
                         key={month}
-                        className="pb-2 pr-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500"
+                        className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500"
                       >
                         {month}
                       </th>
                     ))}
-                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="pb-1.5 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500">
                       Total
                     </th>
                   </tr>
@@ -709,23 +728,23 @@ function DashboardHomePage() {
                 <tbody className="divide-y divide-gray-100">
                   {supportByTypeChart.series.map((item) => (
                     <tr key={`${item.label}-row`}>
-                      <td className="py-2.5 pr-3">
+                      <td className="py-2 pr-2">
                         <div className="flex items-center gap-2">
                           <span
-                            className="h-2.5 w-2.5 rounded-full"
+                            className="h-2 w-2 rounded-full"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-[11px] font-semibold text-gray-900">
+                          <span className="text-[10px] font-semibold text-gray-900">
                             {item.label}
                           </span>
                         </div>
                       </td>
                       {item.months.map((value, index) => (
-                        <td key={`${item.label}-${index}`} className="py-2.5 pr-3 text-[10px] text-gray-600">
+                        <td key={`${item.label}-${index}`} className="py-2 pr-2 text-[9px] text-gray-600">
                           {formatCurrency(value)}
                         </td>
                       ))}
-                      <td className="py-2.5 text-[10px] font-semibold text-gray-900">
+                      <td className="py-2 text-[9px] font-semibold text-gray-900">
                         {formatCurrency(item.total)}
                       </td>
                     </tr>
