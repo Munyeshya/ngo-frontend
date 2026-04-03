@@ -725,9 +725,14 @@ function DashboardHomePage() {
                     {supportByTypeChart.series.map((item) => (
                       <th
                         key={`${item.label}-head`}
-                        className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500"
+                        className="pb-1.5 pr-2 text-center"
+                        aria-label={item.label}
+                        title={item.label}
                       >
-                        <span style={{ color: item.color }}>{item.label}</span>
+                        <span
+                          className="inline-block h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
                       </th>
                     ))}
                   </tr>
