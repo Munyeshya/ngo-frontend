@@ -480,7 +480,7 @@ function DashboardProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
           <p className="mt-1.5 text-sm text-gray-600">
-            Review project performance, funding progress, and operational status.
+            Filter projects, then open a project workspace to review related records.
           </p>
         </div>
 
@@ -567,7 +567,7 @@ function DashboardProjectsPage() {
           <div>
             <h2 className="text-lg font-bold text-gray-900">Project Directory</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Search, filter, and review project records.
+              Search, filter, and open the project you want to manage.
             </p>
           </div>
 
@@ -712,6 +712,14 @@ function DashboardProjectsPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/dashboard/projects/${project.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-green-200 px-3 py-1.5 text-xs font-semibold text-green-800 transition hover:bg-green-50"
+                    >
+                      <FolderKanban size={13} />
+                      Open Workspace
+                    </Link>
+
                     <Link
                       to={`/projects/${project.id}`}
                       className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
