@@ -116,6 +116,7 @@ function DashboardProjectsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('latest')
+  const [partnerSearch, setPartnerSearch] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -196,6 +197,7 @@ function DashboardProjectsPage() {
       feature_image: null,
       partner_ids: [],
     })
+    setPartnerSearch('')
     setEditingProject(null)
     setActionError('')
   }
@@ -396,6 +398,18 @@ function DashboardProjectsPage() {
 
     return items
   }, [projects, search, statusFilter, sortBy])
+
+  const filteredPartners = useMemo(() => {
+    const query = partnerSearch.trim().toLowerCase()
+
+    if (!query) return partners
+
+    return partners.filter((partner) => {
+      const name = String(partner?.name || '').toLowerCase()
+      const description = String(partner?.description || '').toLowerCase()
+      return name.includes(query) || description.includes(query)
+    })
+  }, [partnerSearch, partners])
 
   const stats = useMemo(() => {
     const activeCount = projects.filter(
@@ -738,13 +752,13 @@ function DashboardProjectsPage() {
 
       {showForm && canManageProjects && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
-          <Card className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-[28px] border border-gray-200">
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+          <Card className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3.5">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-base font-bold text-gray-900">
                   {editingProject ? 'Edit Project' : 'Create Project'}
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-xs text-gray-500">
                   Manage the project details that donors and staff will work with.
                 </p>
               </div>
@@ -752,47 +766,53 @@ function DashboardProjectsPage() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitProject} className="overflow-y-auto px-5 py-5">
-              <div className="grid gap-5 lg:grid-cols-[1fr_0.95fr]">
-                <div className="space-y-4">
+            <form onSubmit={handleSubmitProject} className="overflow-y-auto px-4 py-4">
+              <div className="grid gap-4 lg:grid-cols-[1fr_0.92fr]">
+                <div className="space-y-3.5">
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-900">Title</label>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      Title
+                    </label>
                     <input
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleFieldChange}
                       required
-                      className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-semibold text-gray-900">Description</label>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      Description
+                    </label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleFieldChange}
-                      rows="6"
+                      rows="5"
                       required
-                      className="w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                     />
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">Status</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        Status
+                      </label>
                       <select
                         name="status"
                         value={formData.status}
                         onChange={handleFieldChange}
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       >
                         {projectStatuses.map((status) => (
                           <option key={status.value} value={status.value}>
@@ -803,20 +823,24 @@ function DashboardProjectsPage() {
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">Location</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        Location
+                      </label>
                       <input
                         type="text"
                         name="location"
                         value={formData.location}
                         onChange={handleFieldChange}
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       />
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">Budget</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        Budget
+                      </label>
                       <input
                         type="number"
                         step="0.01"
@@ -825,12 +849,14 @@ function DashboardProjectsPage() {
                         value={formData.budget}
                         onChange={handleFieldChange}
                         required
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">Target Amount</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        Target Amount
+                      </label>
                       <input
                         type="number"
                         step="0.01"
@@ -839,40 +865,44 @@ function DashboardProjectsPage() {
                         value={formData.target_amount}
                         onChange={handleFieldChange}
                         required
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       />
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">Start Date</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        Start Date
+                      </label>
                       <input
                         type="date"
                         name="start_date"
                         value={formData.start_date}
                         onChange={handleFieldChange}
                         required
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold text-gray-900">End Date</label>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                        End Date
+                      </label>
                       <input
                         type="date"
                         name="end_date"
                         value={formData.end_date}
                         onChange={handleFieldChange}
-                        className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="rounded-[24px] border border-gray-200 bg-[#F8F8F6] p-4">
-                    <label className="mb-2 block text-sm font-semibold text-gray-900">
+                <div className="space-y-3.5">
+                  <div className="rounded-[20px] border border-gray-200 bg-[#F8F8F6] p-3.5">
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
                       Feature Image
                     </label>
                     <input
@@ -880,7 +910,7 @@ function DashboardProjectsPage() {
                       name="feature_image"
                       accept="image/*"
                       onChange={handleFieldChange}
-                      className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-sm file:font-semibold file:text-gray-800"
+                      className="block w-full text-xs text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-gray-800"
                     />
                     {editingProject?.feature_image && !formData.feature_image && (
                       <p className="mt-2 text-xs text-gray-500">
@@ -889,20 +919,40 @@ function DashboardProjectsPage() {
                     )}
                   </div>
 
-                  <div className="rounded-[24px] border border-gray-200 bg-[#F8F8F6] p-4">
-                    <p className="text-sm font-semibold text-gray-900">Partners</p>
-                    <p className="mt-1 text-xs leading-6 text-gray-500">
+                  <div className="rounded-[20px] border border-gray-200 bg-[#F8F8F6] p-3.5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-700">
+                      Partners
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">
                       Select any partners linked to this project.
                     </p>
 
-                    <div className="mt-3 max-h-[260px] space-y-2 overflow-y-auto pr-1">
+                    <div className="relative mt-3">
+                      <Search
+                        size={15}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
+                      <input
+                        type="text"
+                        value={partnerSearch}
+                        onChange={(event) => setPartnerSearch(event.target.value)}
+                        placeholder="Search partners"
+                        className="h-10 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      />
+                    </div>
+
+                    <div className="mt-3 max-h-[220px] space-y-2 overflow-y-auto pr-1">
                       {partners.length === 0 ? (
                         <p className="text-sm text-gray-500">No partners available.</p>
+                      ) : filteredPartners.length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          No partners match your search.
+                        </p>
                       ) : (
-                        partners.map((partner) => (
+                        filteredPartners.map((partner) => (
                           <label
                             key={partner.id}
-                            className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700"
+                            className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700"
                           >
                             <input
                               type="checkbox"
@@ -911,9 +961,9 @@ function DashboardProjectsPage() {
                               className="mt-1 h-4 w-4 rounded border-gray-300 text-[#166534] focus:ring-green-700"
                             />
                             <div>
-                              <p className="font-semibold text-gray-900">{partner.name}</p>
+                              <p className="text-sm font-semibold text-gray-900">{partner.name}</p>
                               {partner.description && (
-                                <p className="mt-1 text-xs leading-6 text-gray-500">
+                                <p className="mt-1 text-xs leading-5 text-gray-500">
                                   {partner.description}
                                 </p>
                               )}
@@ -927,12 +977,12 @@ function DashboardProjectsPage() {
               </div>
 
               {actionError && (
-                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
                   {actionError}
                 </div>
               )}
 
-              <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <div className="mt-5 flex flex-wrap justify-end gap-2.5">
                 <Button type="button" variant="outline" onClick={closeForm}>
                   Cancel
                 </Button>
