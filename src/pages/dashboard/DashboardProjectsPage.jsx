@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowRight,
   Pencil,
   FolderKanban,
@@ -17,6 +16,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { getUser } from '../../utils/storage'
@@ -101,6 +101,7 @@ const projectStatuses = [
 ]
 
 function DashboardProjectsPage() {
+  const { showToast } = useToast()
   const currentUser = getUser()
   const isStaff = String(currentUser?.role || '').toLowerCase() === 'staff'
   const staffApplicationStatus = String(currentUser?.staff_application_status || '').toLowerCase()
@@ -109,8 +110,6 @@ function DashboardProjectsPage() {
   const [projectsCount, setProjectsCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -210,7 +209,6 @@ function DashboardProjectsPage() {
     })
     setPartnerSearch('')
     setEditingProject(null)
-    setActionError('')
   }
 
   function openCreateForm() {
@@ -220,8 +218,6 @@ function DashboardProjectsPage() {
 
   function openEditForm(project) {
     setEditingProject(project)
-    setActionError('')
-    setActionSuccess('')
     setFormData({
       title: project?.title || '',
       description: project?.description || '',
@@ -272,8 +268,6 @@ function DashboardProjectsPage() {
 
   async function handleSubmitProject(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmitting(true)
@@ -296,12 +290,12 @@ function DashboardProjectsPage() {
         await api.patch(endpoints.projectDetails(editingProject.id), payload, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        setActionSuccess('Project updated successfully.')
+        showToast({ type: 'success', message: 'Project updated successfully.' })
       } else {
         await api.post(endpoints.projects, payload, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        setActionSuccess('Project created successfully.')
+        showToast({ type: 'success', message: 'Project created successfully.' })
       }
 
       await refreshProjects()
@@ -313,12 +307,14 @@ function DashboardProjectsPage() {
           ? Object.values(data).flat().find(Boolean)
           : null
 
-      setActionError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           flattened ||
-          'Project action failed. Please review your inputs and try again.'
-      )
+          'Project action failed. Please review your inputs and try again.',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -330,17 +326,17 @@ function DashboardProjectsPage() {
 
     try {
       setDeletingId(project.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.projectDetails(project.id))
       await refreshProjects()
-      setActionSuccess('Project deleted successfully.')
+      showToast({ type: 'success', message: 'Project deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete project.'
-      )
+          'Failed to delete project.',
+      })
     } finally {
       setDeletingId(null)
     }
@@ -587,19 +583,6 @@ function DashboardProjectsPage() {
           </p>
         </Card>
       </div>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              actionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{actionError || actionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -1058,12 +1041,6 @@ function DashboardProjectsPage() {
                   </div>
                 </div>
               </div>
-
-              {actionError && (
-                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
-                  {actionError}
-                </div>
-              )}
 
               <div className="mt-5 flex flex-wrap justify-end gap-2.5">
                 <Button type="button" variant="outline" onClick={closeForm}>
