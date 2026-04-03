@@ -941,7 +941,7 @@ function DashboardProjectsPage() {
                       />
                     </div>
 
-                    <div className="mt-3 max-h-[220px] space-y-2 overflow-y-auto pr-1">
+                    <div className="mt-3 max-h-[220px] overflow-y-auto pr-1">
                       {partners.length === 0 ? (
                         <p className="text-sm text-gray-500">No partners available.</p>
                       ) : filteredPartners.length === 0 ? (
@@ -952,7 +952,7 @@ function DashboardProjectsPage() {
                         filteredPartners.map((partner) => (
                           <label
                             key={partner.id}
-                            className="flex cursor-pointer items-start gap-3 rounded-lg px-1 py-2 text-sm text-gray-700"
+                            className="flex cursor-pointer items-start gap-3 border-b border-gray-200 px-1 py-2.5 text-sm text-gray-700 last:border-b-0"
                           >
                             <input
                               type="checkbox"
