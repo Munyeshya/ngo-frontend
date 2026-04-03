@@ -189,7 +189,7 @@ function ContactPage() {
 
           <div className="overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-[0_18px_50px_rgba(0,0,0,0.06)]">
             <iframe
-              title="NGO Platform Location Map"
+              title="NGO Transparency Location Map"
               src="https://www.google.com/maps?q=Kigali,Rwanda&z=13&output=embed"
               className="h-[280px] w-full border-0 sm:h-[320px]"
               loading="lazy"
