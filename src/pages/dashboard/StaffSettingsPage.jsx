@@ -4,6 +4,7 @@ import { FileBadge2, Save, ShieldAlert, Upload } from 'lucide-react'
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import DocumentPreviewModal from '../../components/common/DocumentPreviewModal'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import { getUser, setUser } from '../../utils/storage'
 
@@ -46,10 +47,10 @@ function fileInputClassName() {
 }
 
 function StaffSettingsPage() {
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [application, setApplication] = useState(null)
   const [previewDocument, setPreviewDocument] = useState(null)
   const [form, setForm] = useState({
@@ -98,12 +99,13 @@ function StaffSettingsPage() {
         }
       } catch (err) {
         if (!active) return
-        setError(
+        const message =
           err?.response?.data?.message ||
-            err?.response?.data?.detail ||
-            err?.message ||
-            'Failed to load staff settings.'
-        )
+          err?.response?.data?.detail ||
+          err?.message ||
+          'Failed to load staff settings.'
+        setError(message)
+        showToast({ type: 'error', message })
       } finally {
         if (active) setLoading(false)
       }
@@ -158,7 +160,6 @@ function StaffSettingsPage() {
     try {
       setSaving(true)
       setError('')
-      setSuccess('')
 
       const payload = new FormData()
       Object.entries(form).forEach(([key, value]) => {
@@ -172,7 +173,7 @@ function StaffSettingsPage() {
       })
       const data = response?.data?.data || response?.data
       setApplication(data)
-      setSuccess('Staff verification details saved successfully.')
+      showToast({ type: 'success', message: 'Staff verification details saved successfully.' })
 
       const storedUser = getUser()
       if (storedUser) {
@@ -196,7 +197,10 @@ function StaffSettingsPage() {
         payload?.message ||
         payload?.detail ||
         'Failed to save staff verification details.'
-      setError(typeof details === 'string' ? details : JSON.stringify(details))
+      showToast({
+        type: 'error',
+        message: typeof details === 'string' ? details : JSON.stringify(details),
+      })
     } finally {
       setSaving(false)
     }
@@ -231,14 +235,6 @@ function StaffSettingsPage() {
           {STATUS_LABELS[application?.status] || 'Draft'}
         </div>
       </div>
-
-      {(error || success) && (
-        <Card className={`p-4 ${error ? 'border-red-200' : 'border-green-200'}`}>
-          <p className={`text-sm ${error ? 'text-red-700' : 'text-green-700'}`}>
-            {error || success}
-          </p>
-        </Card>
-      )}
 
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="rounded-[22px] p-4">
