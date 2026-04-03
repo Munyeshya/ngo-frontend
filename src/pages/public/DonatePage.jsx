@@ -15,6 +15,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import publicApi from '../../api/publicApi'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
@@ -166,7 +167,7 @@ function DonatePage() {
         setIsLoadingProject(true)
         setProjectError('')
 
-        const response = await api.get(endpoints.projectDetails(routeProjectId))
+        const response = await publicApi.get(endpoints.projectDetails(routeProjectId))
         const projectData = unwrapPayload(response.data)
 
         if (!active) return
