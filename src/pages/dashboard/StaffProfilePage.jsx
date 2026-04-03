@@ -130,14 +130,18 @@ function StaffProfilePage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       const updatedProfile = unwrapPayload(response.data)
-      setProfile(updatedProfile)
-      setUser(updatedProfile)
+      const mergedProfile = {
+        ...(getUser() || {}),
+        ...updatedProfile,
+      }
+      setProfile(mergedProfile)
+      setUser(mergedProfile)
       setFormData({
-        first_name: updatedProfile?.first_name || '',
-        last_name: updatedProfile?.last_name || '',
-        username: updatedProfile?.username || '',
-        email: updatedProfile?.email || '',
-        phone_number: updatedProfile?.phone_number || '',
+        first_name: mergedProfile?.first_name || '',
+        last_name: mergedProfile?.last_name || '',
+        username: mergedProfile?.username || '',
+        email: mergedProfile?.email || '',
+        phone_number: mergedProfile?.phone_number || '',
         profile_image: null,
       })
       setSuccess('Staff profile updated successfully.')
