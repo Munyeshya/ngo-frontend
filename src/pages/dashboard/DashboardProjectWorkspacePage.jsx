@@ -1131,7 +1131,7 @@ function DashboardProjectWorkspacePage() {
                 })}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-1">
                 <p className="text-xs text-gray-500">
                   Page {Math.min(beneficiaryPage, beneficiaryPageCount)} of {beneficiaryPageCount}
                 </p>
@@ -1215,7 +1215,7 @@ function DashboardProjectWorkspacePage() {
                 </table>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-1">
                 <p className="text-[11px] text-gray-500">
                   Page {Math.min(donationPage, donationPageCount)} of {donationPageCount}
                 </p>
@@ -1343,7 +1343,7 @@ function DashboardProjectWorkspacePage() {
                 )
               })}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-1">
                 <p className="text-xs text-gray-500">
                   Page {Math.min(updatePage, updatePageCount)} of {updatePageCount}
                 </p>
