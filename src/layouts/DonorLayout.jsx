@@ -215,9 +215,14 @@ function DonorLayout() {
           <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur">
             <div className="flex items-center justify-between px-4 py-3 sm:px-5 lg:px-6">
               <div>
-                <h1 className="text-base font-bold text-gray-900">Welcome {displayName}</h1>
-                <p className="text-xs text-gray-500 sm:text-sm">
-                  Donor Portal. Track your donations, interests, and project engagement.
+                <h1 className="text-xl font-bold text-gray-950 sm:text-2xl">
+                  Welcome {displayName}
+                </h1>
+                <p className="mt-1 text-xs font-semibold text-gray-600 sm:text-sm">
+                  Donor Portal
+                </p>
+                <p className="text-[11px] text-gray-500 sm:text-xs">
+                  Track your donations, interests, and project engagement.
                 </p>
               </div>
 
