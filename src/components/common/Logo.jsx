@@ -7,7 +7,7 @@ function Logo() {
         <HeartHandshake size={20} />
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-900">NGO Platform</p>
+        <p className="text-sm font-bold text-gray-900">NGO Transparency</p>
         <p className="text-xs text-gray-500">Support • Impact • Hope</p>
       </div>
     </div>
