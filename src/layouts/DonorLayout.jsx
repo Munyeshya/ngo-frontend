@@ -15,6 +15,7 @@ import { useState } from 'react'
 
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
+import { useToast } from '../components/feedback/ToastProvider'
 import { clearAuth, getRefreshToken, getUser } from '../utils/storage'
 
 function getInitials(name) {
@@ -41,6 +42,7 @@ function buildDisplayName(user) {
 
 function DonorLayout() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -92,6 +94,9 @@ function DonorLayout() {
     } catch {
     } finally {
       clearAuth()
+      setAccountOpen(false)
+      setMobileOpen(false)
+      showToast({ type: 'success', message: 'Logged out successfully.' })
       navigate('/login', { replace: true })
     }
   }
