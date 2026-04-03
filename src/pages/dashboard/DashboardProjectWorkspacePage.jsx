@@ -104,7 +104,7 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
-const DONATIONS_PER_PAGE = 10
+const DONATIONS_PER_PAGE = 5
 const BENEFICIARIES_PER_PAGE = 5
 const UPDATES_PER_PAGE = 5
 
