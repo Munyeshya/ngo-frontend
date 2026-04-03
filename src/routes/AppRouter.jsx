@@ -23,6 +23,7 @@ import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import DashboardProjectsPage from '../pages/dashboard/DashboardProjectsPage'
 import DashboardProjectWorkspacePage from '../pages/dashboard/DashboardProjectWorkspacePage'
 import AdminUsersPage from '../pages/dashboard/AdminUsersPage'
+import AdminPartnersPage from '../pages/dashboard/AdminPartnersPage'
 
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
@@ -65,13 +66,16 @@ function AppRouter() {
         <Route element={<ProtectedRoute allowedRoles={['admin', 'staff']} />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
-            <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
-            <Route
-              path="/dashboard/projects/:projectId"
-              element={<DashboardProjectWorkspacePage />}
-            />
+            <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
+              <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
+              <Route
+                path="/dashboard/projects/:projectId"
+                element={<DashboardProjectWorkspacePage />}
+              />
+            </Route>
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/dashboard/users" element={<AdminUsersPage />} />
+              <Route path="/dashboard/partners" element={<AdminPartnersPage />} />
             </Route>
           </Route>
         </Route>
