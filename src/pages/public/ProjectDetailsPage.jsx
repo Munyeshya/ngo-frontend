@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Landmark,
   Target,
+  ShieldAlert,
+  Flag,
 } from 'lucide-react'
 
 import api from '../../api/axios'
@@ -22,6 +24,16 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
 import SectionTitle from '../../components/common/SectionTitle'
+import { getUser } from '../../utils/storage'
+
+const REPORT_REASON_OPTIONS = [
+  { value: 'misleading_information', label: 'Misleading information' },
+  { value: 'misuse_of_funds', label: 'Misuse of funds' },
+  { value: 'inappropriate_content', label: 'Inappropriate content' },
+  { value: 'fake_project', label: 'Fake project' },
+  { value: 'duplicate_project', label: 'Duplicate project' },
+  { value: 'other', label: 'Other' },
+]
 
 const currencyFormatter = new Intl.NumberFormat('en-RW', {
   style: 'currency',
@@ -155,6 +167,8 @@ function extractUpdateImages(update) {
 function ProjectDetailsPage() {
   const params = useParams()
   const routeProjectId = params.projectId ?? params.id ?? ''
+  const currentUser = getUser()
+  const canReportProject = Boolean(currentUser?.role)
 
   const [project, setProject] = useState(null)
   const [partners, setPartners] = useState([])
@@ -170,6 +184,11 @@ function ProjectDetailsPage() {
   const [subscribeLoading, setSubscribeLoading] = useState(false)
   const [subscribeSuccess, setSubscribeSuccess] = useState('')
   const [subscribeError, setSubscribeError] = useState('')
+  const [reportReason, setReportReason] = useState(REPORT_REASON_OPTIONS[0].value)
+  const [reportClaim, setReportClaim] = useState('')
+  const [reportLoading, setReportLoading] = useState(false)
+  const [reportSuccess, setReportSuccess] = useState('')
+  const [reportError, setReportError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -325,6 +344,36 @@ function ProjectDetailsPage() {
       )
     } finally {
       setSubscribeLoading(false)
+    }
+  }
+
+  async function handleReportSubmit(event) {
+    event.preventDefault()
+
+    if (!project?.id || !canReportProject) return
+
+    setReportSuccess('')
+    setReportError('')
+    setReportLoading(true)
+
+    try {
+      await api.post(endpoints.projectReports, {
+        project: project.id,
+        reason_type: reportReason,
+        claim_text: reportClaim.trim(),
+      })
+
+      setReportSuccess('Your report has been sent for admin review.')
+      setReportClaim('')
+      setReportReason(REPORT_REASON_OPTIONS[0].value)
+    } catch (err) {
+      setReportError(
+        err?.response?.data?.detail ||
+          err?.response?.data?.message ||
+          'Unable to submit your report right now.'
+      )
+    } finally {
+      setReportLoading(false)
     }
   }
 
@@ -546,6 +595,23 @@ function ProjectDetailsPage() {
             <Card className="rounded-[28px] p-7">
               <h2 className="text-3xl font-bold text-gray-900">Funding summary</h2>
 
+              {(project?.funding_status !== 'open' || project?.moderation_status !== 'clear') && (
+                <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <ShieldAlert size={18} className="mt-0.5 shrink-0 text-amber-700" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-900">
+                        Donations are currently restricted
+                      </p>
+                      <p className="mt-1 text-xs leading-6 text-amber-800">
+                        This project is under admin review or has frozen funding. New donations
+                        may be unavailable until it is cleared.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="flex gap-3 rounded-2xl bg-[#F8F8F6] p-4">
                   <Landmark size={20} className="mt-0.5 shrink-0 text-green-700" />
@@ -742,6 +808,20 @@ function ProjectDetailsPage() {
                             {update.title || 'Project update'}
                           </h3>
 
+                          {String(update?.update_type || '').toLowerCase() === 'cashout' && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full bg-green-100 px-3 py-1 text-[11px] font-semibold text-green-800">
+                                Cashout activity
+                              </span>
+                              <span className="rounded-full bg-[#F3F5F0] px-3 py-1 text-[11px] font-semibold text-gray-700">
+                                Used: {formatCurrency(update?.cashout_amount)}
+                              </span>
+                              <span className="rounded-full bg-[#F3F5F0] px-3 py-1 text-[11px] font-semibold text-gray-700">
+                                Balance: {formatCurrency(update?.remaining_balance)}
+                              </span>
+                            </div>
+                          )}
+
                           <p className="mt-3 text-sm leading-7 text-gray-600">
                             {update.description || 'No update description available.'}
                           </p>
@@ -799,7 +879,102 @@ function ProjectDetailsPage() {
                     {Math.round(derived.fundingPercentage)}%
                   </p>
                 </div>
+
+                <div className="rounded-2xl bg-[#F8F8F6] p-4">
+                  <p className="text-sm text-gray-500">Available balance</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {formatCurrency(project?.available_balance)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-[#F8F8F6] p-4">
+                  <p className="text-sm text-gray-500">Cashouts recorded</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {formatCurrency(project?.total_cashouts)}
+                  </p>
+                </div>
               </div>
+            </Card>
+
+            <Card className="rounded-[28px] p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Report this project</h3>
+                  <p className="mt-1 text-xs leading-6 text-gray-500">
+                    Flag misleading claims or suspected misuse for admin review.
+                  </p>
+                </div>
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-red-50 text-red-700">
+                  <Flag size={16} />
+                </div>
+              </div>
+
+              {canReportProject ? (
+                <form onSubmit={handleReportSubmit} className="mt-4 space-y-3">
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-semibold text-gray-700">
+                      Claim type
+                    </span>
+                    <select
+                      value={reportReason}
+                      onChange={(event) => setReportReason(event.target.value)}
+                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                    >
+                      {REPORT_REASON_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-semibold text-gray-700">
+                      Details
+                    </span>
+                    <textarea
+                      rows="4"
+                      value={reportClaim}
+                      onChange={(event) => setReportClaim(event.target.value)}
+                      placeholder="Briefly explain what looks wrong."
+                      className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                      required
+                    />
+                  </label>
+
+                  {reportSuccess ? (
+                    <div className="rounded-2xl bg-green-50 px-3 py-2.5 text-xs text-green-700">
+                      {reportSuccess}
+                    </div>
+                  ) : null}
+
+                  {reportError ? (
+                    <div className="rounded-2xl bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                      {reportError}
+                    </div>
+                  ) : null}
+
+                  <Button
+                    type="submit"
+                    className="w-full px-3 py-2 text-xs"
+                    disabled={reportLoading}
+                  >
+                    <Flag size={14} className="mr-1.5" />
+                    {reportLoading ? 'Submitting...' : 'Submit Report'}
+                  </Button>
+                </form>
+              ) : (
+                <div className="mt-4 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                  <p className="text-xs leading-6 text-gray-600">
+                    Log in first if you need to report this project for admin review.
+                  </p>
+                  <div className="mt-3">
+                    <Link to="/login">
+                      <Button className="px-3 py-2 text-xs">Log In to Report</Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
             </Card>
 
             <Card
