@@ -102,6 +102,8 @@ const projectStatuses = [
 
 function DashboardProjectsPage() {
   const currentUser = getUser()
+  const isStaff = String(currentUser?.role || '').toLowerCase() === 'staff'
+  const staffApplicationStatus = String(currentUser?.staff_application_status || '').toLowerCase()
   const [projects, setProjects] = useState([])
   const [partners, setPartners] = useState([])
   const [projectsCount, setProjectsCount] = useState(0)
@@ -186,6 +188,11 @@ function DashboardProjectsPage() {
     const role = String(currentUser?.role || '').toLowerCase()
     return role === 'admin' || role === 'staff'
   }, [currentUser])
+
+  const canCreateProjects = useMemo(() => {
+    if (!isStaff) return canManageProjects
+    return staffApplicationStatus === 'approved'
+  }, [canManageProjects, isStaff, staffApplicationStatus])
 
   function resetForm() {
     setFormData({
@@ -505,13 +512,31 @@ function DashboardProjectsPage() {
           </div>
 
           {canManageProjects && (
-            <Button className="px-4 py-2.5" onClick={openCreateForm}>
+            <Button
+              className="px-4 py-2.5"
+              onClick={openCreateForm}
+              disabled={!canCreateProjects}
+            >
               <Plus size={16} className="mr-2" />
               New Project
             </Button>
           )}
         </div>
       </div>
+
+      {isStaff && !canCreateProjects ? (
+        <Card className="border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3 text-sm text-amber-800">
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Project creation is locked until verification is approved.</p>
+              <p className="mt-1">
+                Open `Staff settings` from your account menu, upload the required documents, and submit them for admin review.
+              </p>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="rounded-[24px] p-4">
