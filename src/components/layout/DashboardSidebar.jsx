@@ -35,7 +35,7 @@ function DashboardSidebar() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-white">NGO Platform</p>
+            <p className="text-sm font-semibold text-white">NGO Transparency</p>
             <p className="text-[11px] uppercase tracking-[0.16em] text-white/75">{portalLabel}</p>
           </div>
         </Link>
