@@ -144,19 +144,19 @@ function Footer() {
               href="#"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
             >
-              <Facebook size={16} />
+              <Facebook size={16} className="text-black" />
             </a>
             <a
               href="#"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
             >
-              <Twitter size={16} />
+              <Twitter size={16} className="text-black" />
             </a>
             <a
               href="#"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
             >
-              <Instagram size={16} />
+              <Instagram size={16} className="text-black" />
             </a>
           </div>
         </div>
