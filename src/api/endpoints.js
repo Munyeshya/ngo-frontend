@@ -11,6 +11,7 @@ const endpoints = {
   beneficiaryImageDetails: (id) => `/beneficiaries/images/${id}/`,
 
   donations: '/donations/',
+  donationTypeSupportAnalytics: '/donations/type-support-analytics/',
 
   projectUpdates: '/projects/updates/',
   projectUpdateDetails: (id) => `/projects/updates/${id}/`,
