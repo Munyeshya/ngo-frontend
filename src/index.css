@@ -124,6 +124,31 @@ img {
   font-size: 0.92rem;
 }
 
+.public-app h1 {
+  letter-spacing: -0.03em;
+}
+
+.public-app h2,
+.public-app h3 {
+  letter-spacing: -0.02em;
+}
+
+.public-app p,
+.public-app span,
+.public-app td,
+.public-app th,
+.public-app label,
+.public-app li {
+  font-size: 0.94rem;
+}
+
+.public-app input,
+.public-app select,
+.public-app textarea,
+.public-app button {
+  font-size: 0.94rem;
+}
+
 @keyframes galaxySpin {
   0% {
     transform: rotate(0deg) scale(1);
