@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowRight,
   HeartHandshake,
   Image as ImageIcon,
@@ -18,6 +17,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
@@ -76,14 +76,13 @@ function formatDate(value) {
 }
 
 function DashboardBeneficiariesPage() {
+  const { showToast } = useToast()
   const currentUser = getUser()
   const [beneficiaries, setBeneficiaries] = useState([])
   const [projects, setProjects] = useState([])
   const [beneficiariesCount, setBeneficiariesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingBeneficiary, setEditingBeneficiary] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -170,7 +169,6 @@ function DashboardBeneficiariesPage() {
       is_active: true,
     })
     setEditingBeneficiary(null)
-    setActionError('')
   }
 
   function openCreateForm() {
@@ -180,8 +178,6 @@ function DashboardBeneficiariesPage() {
 
   function openEditForm(beneficiary) {
     setEditingBeneficiary(beneficiary)
-    setActionError('')
-    setActionSuccess('')
     setFormData({
       project: String(getProjectId(beneficiary) || ''),
       name: beneficiary?.name || '',
@@ -206,8 +202,6 @@ function DashboardBeneficiariesPage() {
 
   async function handleSubmitBeneficiary(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmitting(true)
@@ -221,10 +215,10 @@ function DashboardBeneficiariesPage() {
 
       if (editingBeneficiary?.id) {
         await api.patch(endpoints.beneficiaryDetails(editingBeneficiary.id), payload)
-        setActionSuccess('Beneficiary updated successfully.')
+        showToast({ type: 'success', message: 'Beneficiary updated successfully.' })
       } else {
         await api.post(endpoints.beneficiaries, payload)
-        setActionSuccess('Beneficiary created successfully.')
+        showToast({ type: 'success', message: 'Beneficiary created successfully.' })
       }
 
       await refreshBeneficiaries()
@@ -236,12 +230,14 @@ function DashboardBeneficiariesPage() {
           ? Object.values(data).flat().find(Boolean)
           : null
 
-      setActionError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           flattened ||
-          'Beneficiary action failed. Please review your inputs and try again.'
-      )
+          'Beneficiary action failed. Please review your inputs and try again.',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -255,17 +251,17 @@ function DashboardBeneficiariesPage() {
 
     try {
       setDeletingId(beneficiary.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.beneficiaryDetails(beneficiary.id))
       await refreshBeneficiaries()
-      setActionSuccess('Beneficiary deleted successfully.')
+      showToast({ type: 'success', message: 'Beneficiary deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete beneficiary.'
-      )
+          'Failed to delete beneficiary.',
+      })
     } finally {
       setDeletingId(null)
     }
@@ -276,8 +272,6 @@ function DashboardBeneficiariesPage() {
 
     try {
       setUploadingImageFor(beneficiaryId)
-      setActionError('')
-      setActionSuccess('')
 
       const payload = new FormData()
       payload.append('beneficiary', beneficiaryId)
@@ -288,13 +282,15 @@ function DashboardBeneficiariesPage() {
       })
 
       await refreshBeneficiaries()
-      setActionSuccess('Beneficiary image uploaded successfully.')
+      showToast({ type: 'success', message: 'Beneficiary image uploaded successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to upload beneficiary image.'
-      )
+          'Failed to upload beneficiary image.',
+      })
     } finally {
       setUploadingImageFor(null)
     }
@@ -306,18 +302,18 @@ function DashboardBeneficiariesPage() {
 
     try {
       setDeletingImageId(imageId)
-      setActionError('')
-      setActionSuccess('')
 
       await api.delete(endpoints.beneficiaryImageDetails(imageId))
       await refreshBeneficiaries()
-      setActionSuccess('Beneficiary image deleted successfully.')
+      showToast({ type: 'success', message: 'Beneficiary image deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete beneficiary image.'
-      )
+          'Failed to delete beneficiary image.',
+      })
     } finally {
       setDeletingImageId(null)
     }
@@ -496,19 +492,6 @@ function DashboardBeneficiariesPage() {
           <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.totalImages}</p>
         </Card>
       </div>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              actionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{actionError || actionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -791,12 +774,6 @@ function DashboardBeneficiariesPage() {
                   Active beneficiary record
                 </label>
               </div>
-
-              {actionError && (
-                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
-                  {actionError}
-                </div>
-              )}
 
               <div className="mt-5 flex flex-wrap justify-end gap-2.5">
                 <Button type="button" variant="outline" onClick={closeForm}>
