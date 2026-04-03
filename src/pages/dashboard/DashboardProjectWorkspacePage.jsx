@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Bell,
@@ -21,6 +20,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 
@@ -118,6 +118,7 @@ const tabs = [
 ]
 
 function DashboardProjectWorkspacePage() {
+  const { showToast } = useToast()
   const { projectId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = tabs.some((tab) => tab.id === searchParams.get('tab'))
@@ -138,8 +139,6 @@ function DashboardProjectWorkspacePage() {
   const [cashouts, setCashouts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [actionError, setActionError] = useState('')
-  const [actionSuccess, setActionSuccess] = useState('')
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [showBeneficiaryForm, setShowBeneficiaryForm] = useState(false)
   const [showUpdateForm, setShowUpdateForm] = useState(false)
@@ -226,11 +225,12 @@ function DashboardProjectWorkspacePage() {
       } catch (err) {
         if (!active) return
 
-        setError(
+        const message =
           err?.response?.data?.detail ||
-            err?.response?.data?.message ||
-            'Failed to load this project workspace.'
-        )
+          err?.response?.data?.message ||
+          'Failed to load this project workspace.'
+        setError(message)
+        showToast({ type: 'error', message })
       } finally {
         if (active) {
           setLoading(false)
@@ -407,15 +407,10 @@ function DashboardProjectWorkspacePage() {
   }
 
   function openProjectForm() {
-    setActionError('')
-    setActionSuccess('')
     setShowProjectForm(true)
   }
 
   function openBeneficiaryForm(item = null) {
-    setActionError('')
-    setActionSuccess('')
-
     if (item) {
       setEditingBeneficiary(item)
       setBeneficiaryForm({
@@ -431,9 +426,6 @@ function DashboardProjectWorkspacePage() {
   }
 
   function openUpdateForm(item = null) {
-    setActionError('')
-    setActionSuccess('')
-
     if (item) {
       setEditingUpdate(item)
       setUpdateForm({
@@ -486,8 +478,6 @@ function DashboardProjectWorkspacePage() {
 
   async function handleProjectSubmit(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmittingProject(true)
@@ -498,14 +488,16 @@ function DashboardProjectWorkspacePage() {
         location: projectForm.location.trim(),
       })
       await refreshWorkspace()
-      setActionSuccess('Project details updated successfully.')
+      showToast({ type: 'success', message: 'Project details updated successfully.' })
       closeProjectForm()
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to update project details.'
-      )
+          'Failed to update project details.',
+      })
     } finally {
       setSubmittingProject(false)
     }
@@ -513,8 +505,6 @@ function DashboardProjectWorkspacePage() {
 
   async function handleBeneficiarySubmit(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmittingBeneficiary(true)
@@ -527,20 +517,22 @@ function DashboardProjectWorkspacePage() {
 
       if (editingBeneficiary?.id) {
         await api.patch(endpoints.beneficiaryDetails(editingBeneficiary.id), payload)
-        setActionSuccess('Beneficiary updated successfully.')
+        showToast({ type: 'success', message: 'Beneficiary updated successfully.' })
       } else {
         await api.post(endpoints.beneficiaries, payload)
-        setActionSuccess('Beneficiary created successfully.')
+        showToast({ type: 'success', message: 'Beneficiary created successfully.' })
       }
 
       await refreshWorkspace()
       closeBeneficiaryForm()
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to save beneficiary.'
-      )
+          'Failed to save beneficiary.',
+      })
     } finally {
       setSubmittingBeneficiary(false)
     }
@@ -548,8 +540,6 @@ function DashboardProjectWorkspacePage() {
 
   async function handleUpdateSubmit(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmittingUpdate(true)
@@ -561,20 +551,22 @@ function DashboardProjectWorkspacePage() {
 
       if (editingUpdate?.id) {
         await api.patch(endpoints.projectUpdateDetails(editingUpdate.id), payload)
-        setActionSuccess('Project update saved successfully.')
+        showToast({ type: 'success', message: 'Project update saved successfully.' })
       } else {
         await api.post(endpoints.projectUpdates, payload)
-        setActionSuccess('Project update created successfully.')
+        showToast({ type: 'success', message: 'Project update created successfully.' })
       }
 
       await refreshWorkspace()
       closeUpdateForm()
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to save project update.'
-      )
+          'Failed to save project update.',
+      })
     } finally {
       setSubmittingUpdate(false)
     }
@@ -582,8 +574,6 @@ function DashboardProjectWorkspacePage() {
 
   async function handleCashoutSubmit(event) {
     event.preventDefault()
-    setActionError('')
-    setActionSuccess('')
 
     try {
       setSubmittingCashout(true)
@@ -595,13 +585,18 @@ function DashboardProjectWorkspacePage() {
       await refreshWorkspace()
       setCashoutForm({ amount: '', purpose: '' })
       switchTab('funds')
-      setActionSuccess('Cashout recorded and published into project updates.')
+      showToast({
+        type: 'success',
+        message: 'Cashout recorded and published into project updates.',
+      })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to record project cashout.'
-      )
+          'Failed to record project cashout.',
+      })
     } finally {
       setSubmittingCashout(false)
     }
@@ -612,17 +607,17 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setDeletingBeneficiaryId(item.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.beneficiaryDetails(item.id))
       await refreshWorkspace()
-      setActionSuccess('Beneficiary deleted successfully.')
+      showToast({ type: 'success', message: 'Beneficiary deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete beneficiary.'
-      )
+          'Failed to delete beneficiary.',
+      })
     } finally {
       setDeletingBeneficiaryId(null)
     }
@@ -633,17 +628,17 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setDeletingUpdateId(item.id)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.projectUpdateDetails(item.id))
       await refreshWorkspace()
-      setActionSuccess('Project update deleted successfully.')
+      showToast({ type: 'success', message: 'Project update deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete project update.'
-      )
+          'Failed to delete project update.',
+      })
     } finally {
       setDeletingUpdateId(null)
     }
@@ -654,8 +649,6 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setUploadingBeneficiaryImageFor(beneficiaryId)
-      setActionError('')
-      setActionSuccess('')
       const payload = new FormData()
       payload.append('beneficiary', beneficiaryId)
       payload.append('image', file)
@@ -663,13 +656,15 @@ function DashboardProjectWorkspacePage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       await refreshWorkspace()
-      setActionSuccess('Beneficiary image uploaded successfully.')
+      showToast({ type: 'success', message: 'Beneficiary image uploaded successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to upload beneficiary image.'
-      )
+          'Failed to upload beneficiary image.',
+      })
     } finally {
       setUploadingBeneficiaryImageFor(null)
     }
@@ -680,8 +675,6 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setUploadingUpdateImageFor(updateId)
-      setActionError('')
-      setActionSuccess('')
       const payload = new FormData()
       payload.append('project_update', updateId)
       payload.append('image', file)
@@ -689,13 +682,15 @@ function DashboardProjectWorkspacePage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       await refreshWorkspace()
-      setActionSuccess('Update image uploaded successfully.')
+      showToast({ type: 'success', message: 'Update image uploaded successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to upload update image.'
-      )
+          'Failed to upload update image.',
+      })
     } finally {
       setUploadingUpdateImageFor(null)
     }
@@ -706,17 +701,17 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setDeletingImageId(imageId)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.beneficiaryImageDetails(imageId))
       await refreshWorkspace()
-      setActionSuccess('Beneficiary image deleted successfully.')
+      showToast({ type: 'success', message: 'Beneficiary image deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete beneficiary image.'
-      )
+          'Failed to delete beneficiary image.',
+      })
     } finally {
       setDeletingImageId(null)
     }
@@ -727,17 +722,17 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setDeletingImageId(imageId)
-      setActionError('')
-      setActionSuccess('')
       await api.delete(endpoints.projectUpdateImageDetails(imageId))
       await refreshWorkspace()
-      setActionSuccess('Update image deleted successfully.')
+      showToast({ type: 'success', message: 'Update image deleted successfully.' })
     } catch (err) {
-      setActionError(
-        err?.response?.data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to delete update image.'
-      )
+          'Failed to delete update image.',
+      })
     } finally {
       setDeletingImageId(null)
     }
@@ -837,19 +832,6 @@ function DashboardProjectWorkspacePage() {
           })}
         </div>
       </Card>
-
-      {(actionError || actionSuccess) && (
-        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
-          <div
-            className={`flex items-start gap-3 text-sm ${
-              actionError ? 'text-red-700' : 'text-green-700'
-            }`}
-          >
-            <AlertCircle size={18} className="mt-0.5 shrink-0" />
-            <span>{actionError || actionSuccess}</span>
-          </div>
-        </Card>
-      )}
 
       {selectedTab.id === 'overview' && (
         <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
