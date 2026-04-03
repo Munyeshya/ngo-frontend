@@ -5,6 +5,7 @@ import { FileBadge2, LogOut, Settings, UserCircle2 } from 'lucide-react'
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
 import DashboardSidebar from '../components/layout/DashboardSidebar'
+import { useToast } from '../components/feedback/ToastProvider'
 import { clearAuth, getRefreshToken, getUser } from '../utils/storage'
 
 function getDisplayName(user) {
@@ -28,6 +29,7 @@ function getInitials(name) {
 
 function DashboardLayout() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const accountRef = useRef(null)
   const [accountOpen, setAccountOpen] = useState(false)
   const user = getUser()
@@ -64,6 +66,8 @@ function DashboardLayout() {
     } catch {
     } finally {
       clearAuth()
+      setAccountOpen(false)
+      showToast({ type: 'success', message: 'Logged out successfully.' })
       navigate('/login', { replace: true })
     }
   }
