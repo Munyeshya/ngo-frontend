@@ -962,11 +962,6 @@ function DashboardProjectsPage() {
                             />
                             <div>
                               <p className="text-sm font-semibold text-gray-900">{partner.name}</p>
-                              {partner.description && (
-                                <p className="mt-1 text-xs leading-5 text-gray-500">
-                                  {partner.description}
-                                </p>
-                              )}
                             </div>
                           </label>
                         ))
