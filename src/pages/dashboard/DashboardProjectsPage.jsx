@@ -952,7 +952,7 @@ function DashboardProjectsPage() {
                         filteredPartners.map((partner) => (
                           <label
                             key={partner.id}
-                            className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700"
+                            className="flex cursor-pointer items-start gap-3 rounded-lg px-1 py-2 text-sm text-gray-700"
                           >
                             <input
                               type="checkbox"
