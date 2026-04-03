@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Filter,
   HandCoins,
   Search,
@@ -63,6 +65,7 @@ function getProjectId(donation) {
 }
 
 function DonorDonationHistoryPage() {
+  const DONATIONS_PER_PAGE = 8
   const [donations, setDonations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -70,6 +73,7 @@ function DonorDonationHistoryPage() {
   const [search, setSearch] = useState('')
   const [paymentFilter, setPaymentFilter] = useState('all')
   const [sortBy, setSortBy] = useState('latest')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let active = true
@@ -178,6 +182,18 @@ function DonorDonationHistoryPage() {
     }
   }, [donations])
 
+  const pageCount = Math.max(1, Math.ceil(filteredDonations.length / DONATIONS_PER_PAGE))
+
+  const paginatedDonations = useMemo(() => {
+    const safePage = Math.min(page, pageCount)
+    const startIndex = (safePage - 1) * DONATIONS_PER_PAGE
+    return filteredDonations.slice(startIndex, startIndex + DONATIONS_PER_PAGE)
+  }, [filteredDonations, page, pageCount])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, paymentFilter, sortBy])
+
   if (loading) {
     return (
       <div className="space-y-5">
@@ -283,30 +299,30 @@ function DonorDonationHistoryPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3 xl:min-w-[760px]">
+          <div className="grid gap-2 md:grid-cols-3 xl:min-w-[660px]">
             <div className="relative">
               <Search
-                size={17}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by project or message"
-                className="h-12 w-full rounded-2xl border border-gray-300 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                className="h-10 w-full rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
               />
             </div>
 
             <div className="relative">
               <Filter
-                size={16}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="h-12 w-full appearance-none rounded-2xl border border-gray-300 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                className="h-10 w-full appearance-none rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
               >
                 <option value="all">All payment methods</option>
                 {paymentMethods.map((method) => (
@@ -319,13 +335,13 @@ function DonorDonationHistoryPage() {
 
             <div className="relative">
               <SlidersHorizontal
-                size={16}
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="h-12 w-full appearance-none rounded-2xl border border-gray-300 bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                className="h-10 w-full appearance-none rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
               >
                 <option value="latest">Latest first</option>
                 <option value="oldest">Oldest first</option>
@@ -380,7 +396,7 @@ function DonorDonationHistoryPage() {
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 bg-white">
-                  {filteredDonations.map((donation) => {
+                  {paginatedDonations.map((donation) => {
                     const projectId = getProjectId(donation)
 
                     return (
@@ -430,6 +446,29 @@ function DonorDonationHistoryPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-200 bg-[#FBFBFA] px-4 py-2">
+              <p className="text-[10px] text-gray-500">
+                Page {Math.min(page, pageCount)} of {pageCount}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page <= 1}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))}
+                  disabled={page >= pageCount}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
           </div>
         )}
