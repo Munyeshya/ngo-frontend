@@ -1131,31 +1131,29 @@ function DashboardProjectWorkspacePage() {
                 })}
               </div>
 
-              {beneficiaryPageCount > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
-                  <p className="text-xs text-gray-500">
-                    Page {Math.min(beneficiaryPage, beneficiaryPageCount)} of {beneficiaryPageCount}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setBeneficiaryPage(Math.max(1, beneficiaryPage - 1))}
-                      disabled={beneficiaryPage <= 1}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBeneficiaryPage(Math.min(beneficiaryPageCount, beneficiaryPage + 1))}
-                      disabled={beneficiaryPage >= beneficiaryPageCount}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                <p className="text-xs text-gray-500">
+                  Page {Math.min(beneficiaryPage, beneficiaryPageCount)} of {beneficiaryPageCount}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBeneficiaryPage(Math.max(1, beneficiaryPage - 1))}
+                    disabled={beneficiaryPage <= 1}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBeneficiaryPage(Math.min(beneficiaryPageCount, beneficiaryPage + 1))}
+                    disabled={beneficiaryPage >= beneficiaryPageCount}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </Card>
@@ -1215,32 +1213,30 @@ function DashboardProjectWorkspacePage() {
                 </table>
               </div>
 
-              {donationPageCount > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
-                  <p className="text-xs text-gray-500">
-                    Page {Math.min(donationPage, donationPageCount)} of {donationPageCount}
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                <p className="text-xs text-gray-500">
+                  Page {Math.min(donationPage, donationPageCount)} of {donationPageCount}
+                </p>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDonationPage(Math.max(1, donationPage - 1))}
-                      disabled={donationPage <= 1}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDonationPage(Math.min(donationPageCount, donationPage + 1))}
-                      disabled={donationPage >= donationPageCount}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDonationPage(Math.max(1, donationPage - 1))}
+                    disabled={donationPage <= 1}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDonationPage(Math.min(donationPageCount, donationPage + 1))}
+                    disabled={donationPage >= donationPageCount}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </Card>
@@ -1343,31 +1339,29 @@ function DashboardProjectWorkspacePage() {
                 )
               })}
 
-              {updatePageCount > 1 && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
-                  <p className="text-xs text-gray-500">
-                    Page {Math.min(updatePage, updatePageCount)} of {updatePageCount}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setUpdatePage(Math.max(1, updatePage - 1))}
-                      disabled={updatePage <= 1}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUpdatePage(Math.min(updatePageCount, updatePage + 1))}
-                      disabled={updatePage >= updatePageCount}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                <p className="text-xs text-gray-500">
+                  Page {Math.min(updatePage, updatePageCount)} of {updatePageCount}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUpdatePage(Math.max(1, updatePage - 1))}
+                    disabled={updatePage <= 1}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUpdatePage(Math.min(updatePageCount, updatePage + 1))}
+                    disabled={updatePage >= updatePageCount}
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </Card>
