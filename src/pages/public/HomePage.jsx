@@ -54,11 +54,11 @@ function HomePage() {
             </div>
 
             <div>
-              <h2 className="text-4xl font-bold leading-tight text-gray-900 sm:text-5xl">
+              <h2 className="text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
                 Transforming good intentions into good actions
               </h2>
 
-              <p className="mt-6 text-base leading-8 text-gray-600">
+              <p className="mt-5 text-sm leading-7 text-gray-600 sm:text-base">
                 The platform is designed to help donors, communities, and NGOs connect through
                 transparent project visibility, trusted giving, and impact-focused communication.
               </p>
@@ -88,11 +88,11 @@ function HomePage() {
       <section className="bg-[#F6F6F4]">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
           <div>
-            <div className="text-6xl font-bold leading-none text-green-700">“</div>
-            <h3 className="mt-3 max-w-md text-3xl font-bold leading-tight text-gray-900">
+            <div className="text-5xl font-bold leading-none text-green-700">"</div>
+            <h3 className="mt-3 max-w-md text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">
               Together, we can change lives for the better
             </h3>
-            <p className="mt-5 max-w-md text-sm leading-8 text-gray-600">
+            <p className="mt-4 max-w-md text-xs leading-7 text-gray-600 sm:text-sm">
               Transparent digital experiences help people trust what they support. By making
               project progress, updates, and outcomes clearer, NGOs can build stronger and more
               lasting relationships with donors and communities.
@@ -134,10 +134,10 @@ function HomePage() {
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
               Support transparent change
             </p>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
               Help fund projects that deliver visible community impact
             </h2>
-            <p className="mt-4 text-base leading-8 text-white/70">
+            <p className="mt-3 text-sm leading-7 text-white/70">
               Explore causes, follow updates, and contribute to meaningful initiatives with
               confidence.
             </p>
@@ -187,8 +187,8 @@ function HomePage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-800">
                     <Icon size={24} />
                   </div>
-                  <h3 className="mt-5 text-2xl font-semibold text-gray-900">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-8 text-gray-600">{item.text}</p>
+                  <h3 className="mt-4 text-xl font-semibold text-gray-900">{item.title}</h3>
+                  <p className="mt-2 text-xs leading-7 text-gray-600 sm:text-sm">{item.text}</p>
                 </Card>
               )
             })}
