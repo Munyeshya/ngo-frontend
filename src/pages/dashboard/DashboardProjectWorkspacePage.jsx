@@ -104,6 +104,8 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
+const DONATIONS_PER_PAGE = 10
+
 const tabs = [
   { id: 'overview', label: 'Overview', icon: FolderKanban },
   { id: 'beneficiaries', label: 'Beneficiaries', icon: HeartHandshake },
@@ -117,6 +119,8 @@ function DashboardProjectWorkspacePage() {
   const activeTab = tabs.some((tab) => tab.id === searchParams.get('tab'))
     ? searchParams.get('tab')
     : 'overview'
+  const donationPageParam = Number(searchParams.get('donationPage') || 1)
+  const donationPage = Number.isFinite(donationPageParam) && donationPageParam > 0 ? donationPageParam : 1
 
   const [project, setProject] = useState(null)
   const [beneficiaries, setBeneficiaries] = useState([])
@@ -252,6 +256,16 @@ function DashboardProjectWorkspacePage() {
     )
   }, [donations])
 
+  const donationPageCount = Math.max(
+    1,
+    Math.ceil(sortedDonations.length / DONATIONS_PER_PAGE)
+  )
+
+  const paginatedDonations = useMemo(() => {
+    const startIndex = (Math.min(donationPage, donationPageCount) - 1) * DONATIONS_PER_PAGE
+    return sortedDonations.slice(startIndex, startIndex + DONATIONS_PER_PAGE)
+  }, [sortedDonations, donationPage, donationPageCount])
+
   const sortedUpdates = useMemo(() => {
     return [...updates].sort(
       (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
@@ -263,6 +277,14 @@ function DashboardProjectWorkspacePage() {
   function switchTab(tabId) {
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('tab', tabId)
+    nextParams.delete('donationPage')
+    setSearchParams(nextParams)
+  }
+
+  function setDonationPage(pageNumber) {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('tab', 'donations')
+    nextParams.set('donationPage', String(pageNumber))
     setSearchParams(nextParams)
   }
 
@@ -941,45 +963,74 @@ function DashboardProjectWorkspacePage() {
               No donation records are visible for this project yet.
             </div>
           ) : (
-            <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr className="text-left">
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
-                      Donor
-                    </th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
-                      Amount
-                    </th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
-                      Method
-                    </th>
-                    <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {sortedDonations.map((donation) => (
-                    <tr key={donation.id}>
-                      <td className="py-3.5 pr-4">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {getDonorName(donation)}
-                        </p>
-                      </td>
-                      <td className="py-3.5 pr-4 text-sm font-semibold text-green-800">
-                        {formatCurrency(donation?.amount)}
-                      </td>
-                      <td className="py-3.5 pr-4 text-sm text-gray-600">
-                        {donation?.payment_method || 'N/A'}
-                      </td>
-                      <td className="py-3.5 text-sm text-gray-600">
-                        {formatDate(getDonationDate(donation))}
-                      </td>
+            <div className="mt-5 space-y-4">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr className="text-left">
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                        Donor
+                      </th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                        Amount
+                      </th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                        Method
+                      </th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                        Date
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginatedDonations.map((donation) => (
+                      <tr key={donation.id}>
+                        <td className="py-3.5 pr-4">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {getDonorName(donation)}
+                          </p>
+                        </td>
+                        <td className="py-3.5 pr-4 text-sm font-semibold text-green-800">
+                          {formatCurrency(donation?.amount)}
+                        </td>
+                        <td className="py-3.5 pr-4 text-sm text-gray-600">
+                          {donation?.payment_method || 'N/A'}
+                        </td>
+                        <td className="py-3.5 text-sm text-gray-600">
+                          {formatDate(getDonationDate(donation))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {donationPageCount > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
+                  <p className="text-xs text-gray-500">
+                    Page {Math.min(donationPage, donationPageCount)} of {donationPageCount}
+                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDonationPage(Math.max(1, donationPage - 1))}
+                      disabled={donationPage <= 1}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDonationPage(Math.min(donationPageCount, donationPage + 1))}
+                      disabled={donationPage >= donationPageCount}
+                      className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Card>
