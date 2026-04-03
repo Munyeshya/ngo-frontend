@@ -11,7 +11,6 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import Logo from '../common/Logo'
-import ThemeToggle from '../common/ThemeToggle'
 import Button from '../ui/Button'
 import { useToast } from '../feedback/ToastProvider'
 import { clearAuth, getRefreshToken, getToken, getUser } from '../../utils/storage'
@@ -130,8 +129,6 @@ function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <ThemeToggle />
-
           {isLoggedIn ? (
             <div className="relative" ref={accountRef}>
               <button
@@ -238,10 +235,6 @@ function Navbar() {
           </div>
 
           <div className="mt-4 grid gap-3">
-            <div className="flex justify-end">
-              <ThemeToggle />
-            </div>
-
             {isLoggedIn ? (
               <>
                 <Link to={accountLink} onClick={() => setIsOpen(false)}>
