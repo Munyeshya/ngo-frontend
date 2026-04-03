@@ -3,19 +3,22 @@ import {
   FolderKanban,
   BriefcaseBusiness,
   ArrowLeft,
+  Users,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { getUser } from '../../utils/storage'
-
-const items = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
-]
 
 function DashboardSidebar() {
   const user = getUser()
   const isAdmin = String(user?.role || '').toLowerCase() === 'admin'
   const portalLabel = isAdmin ? 'Admin Portal' : 'Staff Workspace'
+  const items = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
+    ...(isAdmin
+      ? [{ name: 'User Management', href: '/dashboard/users', icon: Users }]
+      : []),
+  ]
 
   return (
     <aside className="flex h-full w-[272px] flex-col bg-[#166534] text-white">
