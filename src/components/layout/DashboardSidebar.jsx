@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Users,
   Handshake,
+  ShieldAlert,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { getUser } from '../../utils/storage'
@@ -16,6 +17,7 @@ function DashboardSidebar() {
   const items = isAdmin
     ? [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Reports', href: '/dashboard/reports', icon: ShieldAlert },
         { name: 'User Management', href: '/dashboard/users', icon: Users },
         { name: 'Partners', href: '/dashboard/partners', icon: Handshake },
       ]
