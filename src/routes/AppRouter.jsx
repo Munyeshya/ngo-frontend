@@ -26,6 +26,7 @@ import DashboardProjectWorkspacePage from '../pages/dashboard/DashboardProjectWo
 import StaffProfilePage from '../pages/dashboard/StaffProfilePage'
 import StaffSettingsPage from '../pages/dashboard/StaffSettingsPage'
 import AdminUsersPage from '../pages/dashboard/AdminUsersPage'
+import AdminUserApplicationDetailsPage from '../pages/dashboard/AdminUserApplicationDetailsPage'
 import AdminPartnersPage from '../pages/dashboard/AdminPartnersPage'
 import AdminReportsPage from '../pages/dashboard/AdminReportsPage'
 import AdminReportDetailsPage from '../pages/dashboard/AdminReportDetailsPage'
@@ -83,6 +84,10 @@ function AppRouter() {
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/dashboard/users" element={<AdminUsersPage />} />
+              <Route
+                path="/dashboard/users/applications/:applicationId"
+                element={<AdminUserApplicationDetailsPage />}
+              />
               <Route path="/dashboard/reports" element={<AdminReportsPage />} />
               <Route path="/dashboard/reports/:projectId" element={<AdminReportDetailsPage />} />
               <Route path="/dashboard/partners" element={<AdminPartnersPage />} />
