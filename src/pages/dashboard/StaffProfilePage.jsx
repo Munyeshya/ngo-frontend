@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, Mail, Save, ShieldCheck, Upload, UserCircle2 } from 'lucide-react'
+import { Mail, Save, ShieldCheck, Upload, UserCircle2 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import { getUser, setUser } from '../../utils/storage'
 
@@ -33,11 +34,11 @@ function buildDisplayName(user) {
 }
 
 function StaffProfilePage() {
+  const { showToast } = useToast()
   const [profile, setProfile] = useState(getUser())
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -71,11 +72,12 @@ function StaffProfilePage() {
         })
       } catch (err) {
         if (!active) return
-        setError(
+        const message =
           err?.response?.data?.detail ||
-            err?.response?.data?.message ||
-            'Failed to load your staff profile.'
-        )
+          err?.response?.data?.message ||
+          'Failed to load your staff profile.'
+        setError(message)
+        showToast({ type: 'error', message })
       } finally {
         if (active) setLoading(false)
       }
@@ -107,10 +109,12 @@ function StaffProfilePage() {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
-    setSuccess('')
 
     if (!profile?.id) {
-      setError('Your profile record could not be identified. Please reload and try again.')
+      showToast({
+        type: 'error',
+        message: 'Your profile record could not be identified. Please reload and try again.',
+      })
       return
     }
 
@@ -144,13 +148,15 @@ function StaffProfilePage() {
         phone_number: mergedProfile?.phone_number || '',
         profile_image: null,
       })
-      setSuccess('Staff profile updated successfully.')
+      showToast({ type: 'success', message: 'Staff profile updated successfully.' })
     } catch (err) {
-      setError(
-        err?.response?.data?.detail ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Failed to update staff profile.'
-      )
+          'Failed to update staff profile.',
+      })
     } finally {
       setSaving(false)
     }
@@ -349,20 +355,6 @@ function StaffProfilePage() {
                 />
               </label>
             </div>
-
-            {error ? (
-              <div className="flex items-start gap-3 rounded-[16px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            ) : null}
-
-            {success ? (
-              <div className="flex items-start gap-3 rounded-[16px] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                <span>{success}</span>
-              </div>
-            ) : null}
 
             <button
               type="submit"
