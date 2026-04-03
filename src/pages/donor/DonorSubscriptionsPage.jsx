@@ -11,6 +11,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import { getUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
@@ -82,13 +83,13 @@ function getProjectImage(item) {
 }
 
 function DonorSubscriptionsPage() {
+  const { showToast } = useToast()
   const currentUser = getUser()
   const [subscriptions, setSubscriptions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [removingId, setRemovingId] = useState(null)
-  const [actionMessage, setActionMessage] = useState('')
 
   useEffect(() => {
     let active = true
@@ -153,13 +154,15 @@ function DonorSubscriptionsPage() {
 
     if (!projectId) return
     if (!email) {
-      setActionMessage('We could not determine the subscription email for this project.')
+      showToast({
+        type: 'error',
+        message: 'We could not determine the subscription email for this project.',
+      })
       return
     }
 
     try {
       setRemovingId(item.id || projectId)
-      setActionMessage('')
 
       await api.post(endpoints.unsubscribeFromProject, {
         project: projectId,
@@ -170,13 +173,15 @@ function DonorSubscriptionsPage() {
         prev.filter((entry) => (entry.id || getProjectId(entry)) !== (item.id || projectId))
       )
 
-      setActionMessage('Subscription removed successfully.')
+      showToast({ type: 'success', message: 'Subscription removed successfully.' })
     } catch (err) {
-      setActionMessage(
-        err?.response?.data?.detail ||
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Failed to unsubscribe from project.'
-      )
+          'Failed to unsubscribe from project.',
+      })
     } finally {
       setRemovingId(null)
     }
@@ -286,12 +291,6 @@ function DonorSubscriptionsPage() {
             />
           </div>
         </div>
-
-        {actionMessage && (
-          <div className="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            {actionMessage}
-          </div>
-        )}
 
         {filteredSubscriptions.length === 0 ? (
           <div className="mt-6 rounded-[24px] bg-[#F6F8F4] p-6 text-center">
