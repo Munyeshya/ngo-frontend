@@ -34,7 +34,12 @@ function DashboardLayout() {
 
   const displayName = useMemo(() => getDisplayName(user), [user])
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const role = String(user?.role || 'staff')
+  const role = String(user?.role || 'staff').toLowerCase()
+  const portalTitle = role === 'admin' ? 'Admin Portal' : 'Staff Workspace'
+  const portalSubtitle =
+    role === 'admin'
+      ? 'Oversee platform-wide projects, donations, beneficiaries, and updates.'
+      : 'Manage only the projects, beneficiaries, donations, and updates linked to your work.'
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -74,10 +79,8 @@ function DashboardLayout() {
           <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur">
             <div className="flex items-center justify-between px-4 py-3 sm:px-5 lg:px-6">
               <div>
-                <h1 className="text-base font-bold text-gray-900">Management Portal</h1>
-                <p className="text-xs text-gray-500 sm:text-sm">
-                  Monitor projects, donations, beneficiaries, and platform activity.
-                </p>
+                <h1 className="text-base font-bold text-gray-900">{portalTitle}</h1>
+                <p className="text-xs text-gray-500 sm:text-sm">{portalSubtitle}</p>
               </div>
 
               <div className="relative" ref={accountRef}>
