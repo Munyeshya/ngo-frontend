@@ -1176,16 +1176,16 @@ function DashboardProjectWorkspacePage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr className="text-left">
-                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                      <th className="pb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
                         Donor
                       </th>
-                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                      <th className="pb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
                         Amount
                       </th>
-                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                      <th className="pb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
                         Method
                       </th>
-                      <th className="pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+                      <th className="pb-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">
                         Date
                       </th>
                     </tr>
@@ -1193,18 +1193,18 @@ function DashboardProjectWorkspacePage() {
                   <tbody className="divide-y divide-gray-100">
                     {paginatedDonations.map((donation) => (
                       <tr key={donation.id}>
-                        <td className="py-3.5 pr-4">
-                          <p className="text-sm font-semibold text-gray-900">
+                        <td className="py-3 pr-4">
+                          <p className="text-[13px] font-semibold text-gray-900">
                             {getDonorName(donation)}
                           </p>
                         </td>
-                        <td className="py-3.5 pr-4 text-sm font-semibold text-green-800">
+                        <td className="py-3 pr-4 text-[13px] font-semibold text-green-800">
                           {formatCurrency(donation?.amount)}
                         </td>
-                        <td className="py-3.5 pr-4 text-sm text-gray-600">
+                        <td className="py-3 pr-4 text-[13px] text-gray-600">
                           {donation?.payment_method || 'N/A'}
                         </td>
-                        <td className="py-3.5 text-sm text-gray-600">
+                        <td className="py-3 text-[13px] text-gray-600">
                           {formatDate(getDonationDate(donation))}
                         </td>
                       </tr>
@@ -1214,7 +1214,7 @@ function DashboardProjectWorkspacePage() {
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F8F8F6] px-4 py-3">
-                <p className="text-xs text-gray-500">
+                <p className="text-[11px] text-gray-500">
                   Page {Math.min(donationPage, donationPageCount)} of {donationPageCount}
                 </p>
 
@@ -1223,7 +1223,7 @@ function DashboardProjectWorkspacePage() {
                     type="button"
                     onClick={() => setDonationPage(Math.max(1, donationPage - 1))}
                     disabled={donationPage <= 1}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Previous
                   </button>
@@ -1231,7 +1231,7 @@ function DashboardProjectWorkspacePage() {
                     type="button"
                     onClick={() => setDonationPage(Math.min(donationPageCount, donationPage + 1))}
                     disabled={donationPage >= donationPageCount}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-gray-200 px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                   </button>
