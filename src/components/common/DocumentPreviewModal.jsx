@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { FileText, Image as ImageIcon, X } from 'lucide-react'
 
 import api from '../../api/axios'
@@ -27,11 +28,56 @@ function isPdf(path) {
 }
 
 function DocumentPreviewModal({ open, title, fileUrl, onClose }) {
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  useEffect(() => {
+    if (!open || !fileUrl) {
+      setPreviewUrl('')
+      return undefined
+    }
+
+    const resolvedUrl = buildMediaUrl(fileUrl)
+    const pdf = isPdf(fileUrl)
+
+    if (!pdf) {
+      setPreviewUrl(resolvedUrl)
+      return undefined
+    }
+
+    let active = true
+    let objectUrl = ''
+
+    async function loadPdfPreview() {
+      try {
+        const response = await fetch(resolvedUrl)
+        const blob = await response.blob()
+        objectUrl = URL.createObjectURL(blob)
+        if (active) {
+          setPreviewUrl(objectUrl)
+        }
+      } catch {
+        if (active) {
+          setPreviewUrl(resolvedUrl)
+        }
+      }
+    }
+
+    loadPdfPreview()
+
+    return () => {
+      active = false
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+  }, [open, fileUrl])
+
   if (!open || !fileUrl) return null
 
   const resolvedUrl = buildMediaUrl(fileUrl)
   const pdf = isPdf(fileUrl)
   const fileName = getFileName(fileUrl)
+  const activePreviewUrl = previewUrl || resolvedUrl
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4 py-6">
@@ -56,7 +102,7 @@ function DocumentPreviewModal({ open, title, fileUrl, onClose }) {
           {pdf ? (
             <div className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white">
               <iframe
-                src={resolvedUrl}
+                src={activePreviewUrl}
                 title={title || fileName}
                 className="h-[70vh] w-full"
               />
@@ -64,7 +110,7 @@ function DocumentPreviewModal({ open, title, fileUrl, onClose }) {
           ) : (
             <div className="flex h-full items-center justify-center overflow-auto rounded-2xl border border-gray-200 bg-white p-4">
               <img
-                src={resolvedUrl}
+                src={activePreviewUrl}
                 alt={title || fileName}
                 className="max-h-[70vh] max-w-full rounded-xl object-contain"
               />
