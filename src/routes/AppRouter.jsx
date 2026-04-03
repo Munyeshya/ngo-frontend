@@ -26,6 +26,7 @@ import StaffProfilePage from '../pages/dashboard/StaffProfilePage'
 import StaffSettingsPage from '../pages/dashboard/StaffSettingsPage'
 import AdminUsersPage from '../pages/dashboard/AdminUsersPage'
 import AdminPartnersPage from '../pages/dashboard/AdminPartnersPage'
+import AdminReportsPage from '../pages/dashboard/AdminReportsPage'
 
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
@@ -79,6 +80,7 @@ function AppRouter() {
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/dashboard/users" element={<AdminUsersPage />} />
+              <Route path="/dashboard/reports" element={<AdminReportsPage />} />
               <Route path="/dashboard/partners" element={<AdminPartnersPage />} />
             </Route>
           </Route>
