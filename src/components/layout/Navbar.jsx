@@ -134,14 +134,19 @@ function Navbar() {
               <button
                 type="button"
                 onClick={() => setAccountOpen((prev) => !prev)}
-                className="inline-flex h-11 items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-3 text-green-900 transition hover:border-green-300 hover:bg-green-100"
+                className="inline-flex h-11 items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-2.5 text-green-900 transition hover:border-green-300 hover:bg-green-100"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#166534] text-xs font-bold text-white">
-                  {initials}
-                </div>
-                <span className="max-w-[110px] truncate text-sm font-medium">
-                  {displayName}
-                </span>
+                {user?.profile_image ? (
+                  <img
+                    src={user.profile_image}
+                    alt={displayName}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#166534] text-xs font-bold text-white">
+                    {initials}
+                  </div>
+                )}
                 <ChevronDown size={16} />
               </button>
 
