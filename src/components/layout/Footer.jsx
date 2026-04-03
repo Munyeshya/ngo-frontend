@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Twitter, HeartHandshake } from 'lucide-react'
 import AnimatedBackground from '../common/AnimatedBackground'
+import publicApi from '../../api/publicApi'
+import endpoints from '../../api/endpoints'
 
 const aboutLinks = [
   { name: 'About Us', to: '/about' },
@@ -17,16 +20,100 @@ const usefulLinks = [
   { name: 'Privacy Policy', to: '/about' },
 ]
 
-const causeImages = [
-  'https://images.unsplash.com/photo-1518398046578-8cca57782e17?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1593113598332-cd59a93d7c2b?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1524069290683-0457abfe42c3?auto=format&fit=crop&w=300&q=80',
-]
+function normalizeListResponse(data) {
+  if (Array.isArray(data)) {
+    return {
+      results: data,
+      next: null,
+    }
+  }
+
+  if (Array.isArray(data?.results)) {
+    return {
+      results: data.results,
+      next: data.next ?? null,
+    }
+  }
+
+  if (Array.isArray(data?.data)) {
+    return {
+      results: data.data,
+      next: data.next ?? null,
+    }
+  }
+
+  if (Array.isArray(data?.data?.results)) {
+    return {
+      results: data.data.results,
+      next: data.data.next ?? null,
+    }
+  }
+
+  return {
+    results: [],
+    next: null,
+  }
+}
+
+function shuffle(items) {
+  const copy = [...items]
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const nextIndex = Math.floor(Math.random() * (index + 1))
+    ;[copy[index], copy[nextIndex]] = [copy[nextIndex], copy[index]]
+  }
+
+  return copy
+}
 
 function Footer() {
+  const [causeImages, setCauseImages] = useState([])
+
+  useEffect(() => {
+    let active = true
+
+    async function loadCauseImages() {
+      try {
+        const collectedImages = []
+        let page = 1
+        let next = true
+
+        while (next && page <= 10) {
+          const response = await publicApi.get(endpoints.projects, {
+            params: { page },
+          })
+          const normalized = normalizeListResponse(response.data)
+
+          normalized.results.forEach((project) => {
+            if (project?.feature_image) {
+              collectedImages.push({
+                id: project.id || `${page}-${collectedImages.length}`,
+                title: project.title || 'Project',
+                image: project.feature_image,
+              })
+            }
+          })
+
+          next = Boolean(normalized.next)
+          page += 1
+        }
+
+        if (!active) return
+
+        setCauseImages(shuffle(collectedImages).slice(0, 6))
+      } catch {
+        if (!active) return
+        setCauseImages([])
+      }
+    }
+
+    loadCauseImages()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <footer className="relative overflow-hidden bg-black text-white">
       <AnimatedBackground variant="dark" />
@@ -107,15 +194,22 @@ function Footer() {
         <div>
           <h3 className="text-lg font-semibold">Causes</h3>
           <div className="mt-5 grid grid-cols-3 gap-3">
-            {causeImages.map((image, index) => (
-              <div key={index} className="overflow-hidden rounded-xl">
-                <img
-                  src={image}
-                  alt={`Cause ${index + 1}`}
-                  className="h-16 w-full object-cover transition duration-300 hover:scale-105"
-                />
-              </div>
-            ))}
+            {causeImages.length > 0
+              ? causeImages.map((item) => (
+                  <div key={item.id} className="overflow-hidden rounded-xl">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-16 w-full object-cover transition duration-300 hover:scale-105"
+                    />
+                  </div>
+                ))
+              : Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    key={`cause-placeholder-${index}`}
+                    className="h-16 overflow-hidden rounded-xl bg-white/8"
+                  />
+                ))}
           </div>
         </div>
       </div>
