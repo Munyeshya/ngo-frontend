@@ -565,7 +565,8 @@ function DashboardHomePage() {
                     className="h-2 w-2 rounded-full"
                     style={{ backgroundColor: item.color }}
                   />
-                  {item.label}
+                  <span>{item.label}</span>
+                  <span className="text-gray-500">- {formatCurrency(item.total)}</span>
                 </div>
               ))}
             </div>
@@ -576,6 +577,30 @@ function DashboardHomePage() {
                 className="h-[240px] w-full min-w-[680px]"
                 aria-label="Support by project type line chart"
               >
+                <text x="14" y="24" fontSize="10" fill="#6b7280" fontWeight="600">
+                  RWF
+                </text>
+
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const value = supportByTypeChart.maxValue
+                    ? supportByTypeChart.maxValue - (supportByTypeChart.maxValue / 4) * index
+                    : 0
+                  const y = 24 + index * 44
+
+                  return (
+                    <text
+                      key={`axis-${index}`}
+                      x="38"
+                      y={y + 4}
+                      textAnchor="end"
+                      fontSize="9"
+                      fill="#6b7280"
+                    >
+                      {formatCurrency(value)}
+                    </text>
+                  )
+                })}
+
                 {Array.from({ length: 5 }).map((_, index) => {
                   const y = 24 + index * 44
                   return (
@@ -645,6 +670,10 @@ function DashboardHomePage() {
                     </g>
                   )
                 })}
+
+                <text x="367" y="236" textAnchor="middle" fontSize="10" fill="#6b7280" fontWeight="600">
+                  Months
+                </text>
               </svg>
             </div>
 
