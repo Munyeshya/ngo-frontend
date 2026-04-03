@@ -159,7 +159,7 @@ function ProjectsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const pageSize = 6
+  const pageSize = 12
 
   const queryObject = useMemo(() => {
     const query = {
