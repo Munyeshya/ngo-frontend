@@ -45,6 +45,7 @@ function DashboardSidebar() {
               <NavLink
                 key={item.name}
                 to={item.href}
+                end={item.href === '/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                     isActive
