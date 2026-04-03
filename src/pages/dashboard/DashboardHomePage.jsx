@@ -727,13 +727,7 @@ function DashboardHomePage() {
                         key={`${item.label}-head`}
                         className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500"
                       >
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span>{item.label}</span>
-                        </div>
+                        <span style={{ color: item.color }}>{item.label}</span>
                       </th>
                     ))}
                   </tr>
