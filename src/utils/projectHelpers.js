@@ -1,3 +1,15 @@
+export const PROJECT_TYPE_OPTIONS = [
+  { value: 'education', label: 'Education' },
+  { value: 'health', label: 'Health' },
+  { value: 'livelihood', label: 'Livelihood' },
+  { value: 'women_empowerment', label: 'Women Empowerment' },
+  { value: 'youth_empowerment', label: 'Youth Empowerment' },
+  { value: 'community_development', label: 'Community Development' },
+  { value: 'environment', label: 'Environment' },
+  { value: 'emergency_relief', label: 'Emergency Relief' },
+  { value: 'other', label: 'Other' },
+]
+
 export function formatCurrency(value) {
   const amount = Number(value || 0)
 
@@ -47,4 +59,11 @@ export function getProjectStatusLabel(project) {
   if (project.is_goal_reached) return 'Goal Reached'
   if (project.status) return String(project.status).replace(/_/g, ' ')
   return 'Active'
+}
+
+export function getProjectTypeLabel(project) {
+  if (project?.project_type_display) return project.project_type_display
+
+  const matched = PROJECT_TYPE_OPTIONS.find((option) => option.value === project?.project_type)
+  return matched?.label || 'Other'
 }
