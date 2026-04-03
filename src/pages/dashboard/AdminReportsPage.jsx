@@ -288,8 +288,8 @@ function AdminReportsPage() {
                       to={`/dashboard/reports/${project.id}`}
                       className="inline-flex items-center gap-2 rounded-2xl bg-green-800 px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#0f4d27]"
                     >
-                      Open Report
-                      <ArrowRight size={14} />
+                      <span className="text-white">Open Report</span>
+                      <ArrowRight size={14} className="text-white" />
                     </Link>
                   </div>
                 </div>
