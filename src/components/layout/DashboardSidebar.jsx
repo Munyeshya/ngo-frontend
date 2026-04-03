@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   ArrowLeft,
   Users,
+  Handshake,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { getUser } from '../../utils/storage'
@@ -12,13 +13,16 @@ function DashboardSidebar() {
   const user = getUser()
   const isAdmin = String(user?.role || '').toLowerCase() === 'admin'
   const portalLabel = isAdmin ? 'Admin Portal' : 'Staff Workspace'
-  const items = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
-    ...(isAdmin
-      ? [{ name: 'User Management', href: '/dashboard/users', icon: Users }]
-      : []),
-  ]
+  const items = isAdmin
+    ? [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'User Management', href: '/dashboard/users', icon: Users },
+        { name: 'Partners', href: '/dashboard/partners', icon: Handshake },
+      ]
+    : [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
+      ]
 
   return (
     <aside className="flex h-full w-[272px] flex-col bg-[#166534] text-white">
