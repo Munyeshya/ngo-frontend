@@ -551,7 +551,7 @@ function AdminUsersPage() {
             <div>
               <h2 className="text-sm font-bold text-gray-900">User Directory</h2>
               <p className="mt-1 text-xs text-gray-500">
-                Search users and manage staff account activation.
+                Search users and manage account access across the platform.
               </p>
             </div>
 
@@ -627,8 +627,8 @@ function AdminUsersPage() {
                             {updatingUserId === user.id
                               ? 'Saving...'
                               : user?.is_active
-                              ? 'Set Inactive'
-                              : 'Approve'}
+                              ? 'Suspend'
+                              : 'Reactivate'}
                           </button>
                         ) : (
                           <span className="text-[11px] text-gray-400">No action</span>
