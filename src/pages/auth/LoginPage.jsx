@@ -85,9 +85,7 @@ function LoginPage() {
       api.defaults.headers.common.Authorization = `Bearer ${access}`
 
       if (!user) {
-        const profileResponse = await api.get(
-          endpoints.profile || endpoints.me || '/users/profile/'
-        )
+        const profileResponse = await api.get(endpoints.me || '/users/me/')
 
         user =
           profileResponse?.data?.data ||
