@@ -683,93 +683,97 @@ function AdminUsersPage() {
               No matching users found.
             </div>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr className="text-left">
-                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
-                      User
-                    </th>
-                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
-                      Role
-                    </th>
-                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
-                      Status
-                    </th>
-                    <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {paginatedUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td className="py-3 pr-4">
-                        <p className="text-[13px] font-semibold text-gray-900">
-                          {getDisplayName(user)}
-                        </p>
-                        <p className="mt-1 text-[11px] text-gray-500">
-                          {user?.email || user?.username || 'No email'}
-                        </p>
-                      </td>
-                      <td className="py-3 pr-4">
-                        <span className="inline-flex rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[11px] font-semibold capitalize text-gray-700">
-                          {user?.role || 'user'}
-                        </span>
-                      </td>
-                      <td className="py-3 pr-4 text-[12px] text-gray-600">
-                        {user?.is_active ? 'Active' : 'Pending / Inactive'}
-                      </td>
-                      <td className="py-3">
-                        {String(user?.role || '').toLowerCase() === 'staff' ? (
-                          <button
-                            type="button"
-                            onClick={() => handleUserStatusUpdate(user, !user?.is_active)}
-                            disabled={updatingUserId === user.id}
-                            className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                              user?.is_active
-                                ? 'bg-[#F3F5F0] text-gray-700 hover:bg-gray-200'
-                                : 'bg-green-800 text-white hover:bg-[#0f4d27]'
-                            }`}
-                          >
-                            {updatingUserId === user.id
-                              ? 'Saving...'
-                              : user?.is_active
-                              ? 'Suspend'
-                              : 'Reactivate'}
-                          </button>
-                        ) : (
-                          <span className="text-[11px] text-gray-400">No action</span>
-                        )}
-                      </td>
+            <>
+              <div className="mt-4 overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr className="text-left">
+                      <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                        User
+                      </th>
+                      <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                        Role
+                      </th>
+                      <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                        Status
+                      </th>
+                      <th className="pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                        Action
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-1">
-              <p className="text-xs text-gray-500">
-                Page {Math.min(directoryPage, directoryPageCount)} of {directoryPageCount}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDirectoryPage((prev) => Math.max(1, prev - 1))}
-                  disabled={directoryPage <= 1}
-                  className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDirectoryPage((prev) => Math.min(directoryPageCount, prev + 1))}
-                  disabled={directoryPage >= directoryPageCount}
-                  className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Next
-                </button>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginatedUsers.map((user) => (
+                      <tr key={user.id}>
+                        <td className="py-3 pr-4">
+                          <p className="text-[13px] font-semibold text-gray-900">
+                            {getDisplayName(user)}
+                          </p>
+                          <p className="mt-1 text-[11px] text-gray-500">
+                            {user?.email || user?.username || 'No email'}
+                          </p>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className="inline-flex rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[11px] font-semibold capitalize text-gray-700">
+                            {user?.role || 'user'}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4 text-[12px] text-gray-600">
+                          {user?.is_active ? 'Active' : 'Pending / Inactive'}
+                        </td>
+                        <td className="py-3">
+                          {String(user?.role || '').toLowerCase() === 'staff' ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUserStatusUpdate(user, !user?.is_active)}
+                              disabled={updatingUserId === user.id}
+                              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                user?.is_active
+                                  ? 'bg-[#F3F5F0] text-gray-700 hover:bg-gray-200'
+                                  : 'bg-green-800 text-white hover:bg-[#0f4d27]'
+                              }`}
+                            >
+                              {updatingUserId === user.id
+                                ? 'Saving...'
+                                : user?.is_active
+                                ? 'Suspend'
+                                : 'Reactivate'}
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-gray-400">No action</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-1">
+                <p className="text-xs text-gray-500">
+                  Page {Math.min(directoryPage, directoryPageCount)} of {directoryPageCount}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDirectoryPage((prev) => Math.max(1, prev - 1))}
+                    disabled={directoryPage <= 1}
+                    className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDirectoryPage((prev) => Math.min(directoryPageCount, prev + 1))
+                    }
+                    disabled={directoryPage >= directoryPageCount}
+                    className="rounded-full bg-[#F3F5F0] px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </Card>
       )}
