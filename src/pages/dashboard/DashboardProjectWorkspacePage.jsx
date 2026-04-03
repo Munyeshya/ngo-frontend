@@ -1135,25 +1135,27 @@ function DashboardProjectWorkspacePage() {
                 <p className="text-xs text-gray-500">
                   Page {Math.min(beneficiaryPage, beneficiaryPageCount)} of {beneficiaryPageCount}
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setBeneficiaryPage(Math.max(1, beneficiaryPage - 1))}
-                    disabled={beneficiaryPage <= 1}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBeneficiaryPage(Math.min(beneficiaryPageCount, beneficiaryPage + 1))}
-                    disabled={beneficiaryPage >= beneficiaryPageCount}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setBeneficiaryPage(Math.max(1, beneficiaryPage - 1))}
+                      disabled={beneficiaryPage <= 1}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Previous beneficiaries page"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBeneficiaryPage(Math.min(beneficiaryPageCount, beneficiaryPage + 1))}
+                      disabled={beneficiaryPage >= beneficiaryPageCount}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Next beneficiaries page"
+                    >
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
-              </div>
             </div>
           )}
         </Card>
@@ -1223,17 +1225,19 @@ function DashboardProjectWorkspacePage() {
                     type="button"
                     onClick={() => setDonationPage(Math.max(1, donationPage - 1))}
                     disabled={donationPage <= 1}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Previous donations page"
                   >
-                    Previous
+                    <ArrowLeft size={14} />
                   </button>
                   <button
                     type="button"
                     onClick={() => setDonationPage(Math.min(donationPageCount, donationPage + 1))}
                     disabled={donationPage >= donationPageCount}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Next donations page"
                   >
-                    Next
+                    <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
@@ -1343,25 +1347,27 @@ function DashboardProjectWorkspacePage() {
                 <p className="text-xs text-gray-500">
                   Page {Math.min(updatePage, updatePageCount)} of {updatePageCount}
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setUpdatePage(Math.max(1, updatePage - 1))}
-                    disabled={updatePage <= 1}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUpdatePage(Math.min(updatePageCount, updatePage + 1))}
-                    disabled={updatePage >= updatePageCount}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUpdatePage(Math.max(1, updatePage - 1))}
+                      disabled={updatePage <= 1}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Previous updates page"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUpdatePage(Math.min(updatePageCount, updatePage + 1))}
+                      disabled={updatePage >= updatePageCount}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-700 transition hover:bg-green-50 hover:text-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Next updates page"
+                    >
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
-              </div>
             </div>
           )}
         </Card>
