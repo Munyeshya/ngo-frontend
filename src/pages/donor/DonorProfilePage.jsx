@@ -130,16 +130,20 @@ function DonorProfilePage() {
 
       const response = await api.patch(endpoints.userDetails(profile.id), payload)
       const updatedProfile = unwrapPayload(response.data)
+      const mergedProfile = {
+        ...(getUser() || {}),
+        ...updatedProfile,
+      }
 
-      setProfile(updatedProfile)
-      setUser(updatedProfile)
+      setProfile(mergedProfile)
+      setUser(mergedProfile)
 
       setFormData({
-        first_name: updatedProfile?.first_name || '',
-        last_name: updatedProfile?.last_name || '',
-        username: updatedProfile?.username || '',
-        email: updatedProfile?.email || '',
-        phone_number: updatedProfile?.phone_number || '',
+        first_name: mergedProfile?.first_name || '',
+        last_name: mergedProfile?.last_name || '',
+        username: mergedProfile?.username || '',
+        email: mergedProfile?.email || '',
+        phone_number: mergedProfile?.phone_number || '',
       })
 
       setSuccess('Profile updated successfully.')
