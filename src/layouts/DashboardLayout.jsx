@@ -116,26 +116,24 @@ function DashboardLayout() {
                         <span className="capitalize">{role} account</span>
                       </div>
 
-                      {role === 'staff' ? (
-                        <>
-                          <Link
-                            to="/dashboard/profile"
-                            onClick={() => setAccountOpen(false)}
-                            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
-                          >
-                            <UserCircle2 size={18} />
-                            Profile
-                          </Link>
+                      <Link
+                        to="/dashboard/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                      >
+                        <UserCircle2 size={18} />
+                        Profile
+                      </Link>
 
-                          <Link
-                            to="/dashboard/settings"
-                            onClick={() => setAccountOpen(false)}
-                            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
-                          >
-                            <FileBadge2 size={18} />
-                            Staff settings
-                          </Link>
-                        </>
+                      {role === 'staff' ? (
+                        <Link
+                          to="/dashboard/settings"
+                          onClick={() => setAccountOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                        >
+                          <FileBadge2 size={18} />
+                          Staff settings
+                        </Link>
                       ) : null}
 
                       <Link
