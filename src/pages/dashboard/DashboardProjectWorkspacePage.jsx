@@ -759,27 +759,6 @@ function DashboardProjectWorkspacePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-[22px] p-4">
-          <p className="text-xs text-gray-500">Raised</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">{formatCurrency(stats.raised)}</p>
-        </Card>
-        <Card className="rounded-[22px] p-4">
-          <p className="text-xs text-gray-500">Target</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">
-            {formatCurrency(project?.target_amount)}
-          </p>
-        </Card>
-        <Card className="rounded-[22px] p-4">
-          <p className="text-xs text-gray-500">Beneficiaries</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">{stats.beneficiaries}</p>
-        </Card>
-        <Card className="rounded-[22px] p-4">
-          <p className="text-xs text-gray-500">Updates</p>
-          <p className="mt-1 text-xl font-bold text-gray-900">{stats.updates}</p>
-        </Card>
-      </div>
-
       <Card className="rounded-[24px] p-4">
         <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => {
@@ -980,6 +959,31 @@ function DashboardProjectWorkspacePage() {
 
           <Card className="rounded-[24px] p-5">
             <h2 className="text-base font-bold text-gray-900">Project Snapshot</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#F8F8F6] p-3.5">
+                <p className="text-xs text-gray-500">Raised</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">
+                  {formatCurrency(stats.raised)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3.5">
+                <p className="text-xs text-gray-500">Target</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">
+                  {formatCurrency(project?.target_amount)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3.5">
+                <p className="text-xs text-gray-500">Beneficiaries</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">
+                  {stats.beneficiaries}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3.5">
+                <p className="text-xs text-gray-500">Updates</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">{stats.updates}</p>
+              </div>
+            </div>
+
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between rounded-2xl bg-[#F8F8F6] px-3.5 py-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
