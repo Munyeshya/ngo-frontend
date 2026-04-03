@@ -6,6 +6,8 @@ import {
   HandCoins,
   Handshake,
   HeartHandshake,
+  ChevronLeft,
+  ChevronRight,
   TrendingUp,
   UserCheck,
   UserCog,
@@ -131,6 +133,7 @@ function DashboardHomePage() {
   const [partnersCount, setPartnersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [staffSearch, setStaffSearch] = useState('')
 
   useEffect(() => {
     let active = true
@@ -265,7 +268,7 @@ function DashboardHomePage() {
     () =>
       [...projects]
         .sort((a, b) => Number(b?.total_donated || 0) - Number(a?.total_donated || 0))
-        .slice(0, 5),
+        .slice(0, 3),
     [projects]
   )
 
@@ -307,6 +310,34 @@ function DashboardHomePage() {
       metrics: metrics.sort((a, b) => b.raised - a.raised || b.projects - a.projects),
     }
   }, [beneficiaries, donations, partners, projects, updates, users])
+
+  const filteredStaffMetrics = useMemo(() => {
+    const query = staffSearch.trim().toLowerCase()
+    if (!query) return adminMetrics.metrics
+
+    return adminMetrics.metrics.filter((item) =>
+      String(item.name || '').toLowerCase().includes(query)
+    )
+  }, [adminMetrics.metrics, staffSearch])
+
+  const staffPageSize = 2
+  const staffPageCount = Math.max(1, Math.ceil(filteredStaffMetrics.length / staffPageSize))
+  const [staffPage, setStaffPage] = useState(1)
+
+  useEffect(() => {
+    setStaffPage(1)
+  }, [staffSearch])
+
+  useEffect(() => {
+    if (staffPage > staffPageCount) {
+      setStaffPage(staffPageCount)
+    }
+  }, [staffPage, staffPageCount])
+
+  const paginatedStaffMetrics = useMemo(() => {
+    const start = (staffPage - 1) * staffPageSize
+    return filteredStaffMetrics.slice(start, start + staffPageSize)
+  }, [filteredStaffMetrics, staffPage])
 
   if (loading) {
     return (
@@ -359,38 +390,38 @@ function DashboardHomePage() {
 
   const activitySection = (
     <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-      <Card className="rounded-[24px] p-5">
+      <Card className="rounded-[24px] p-4">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Recent Donations</h2>
-          <p className="mt-1 text-sm text-gray-500">Latest contribution activity visible to your role.</p>
+          <h2 className="text-base font-bold text-gray-900">Recent Donations</h2>
+          <p className="mt-1 text-xs text-gray-500">Latest contribution activity visible to your role.</p>
         </div>
         {recentDonations.length === 0 ? (
-          <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">No donation activity available yet.</div>
+          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No donation activity available yet.</div>
         ) : (
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr className="text-left">
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Project</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Amount</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Payment</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Date</th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Project</th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Amount</th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Payment</th>
+                  <th className="pb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-500">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {recentDonations.map((donation) => (
+                {recentDonations.slice(0, 5).map((donation) => (
                   <tr key={donation.id}>
-                    <td className="py-4 pr-4">
-                      <p className="text-sm font-semibold text-gray-900">{getProjectName(donation)}</p>
-                      <p className="mt-1 text-xs text-gray-500">{donation?.donor_name || donation?.donor_username || 'Donor'}</p>
+                    <td className="py-3 pr-3">
+                      <p className="text-[12px] font-semibold text-gray-900">{getProjectName(donation)}</p>
+                      <p className="mt-1 text-[10px] text-gray-500">{donation?.donor_name || donation?.donor_username || 'Donor'}</p>
                     </td>
-                    <td className="py-4 pr-4 text-sm font-semibold text-green-800">{formatCurrency(donation?.amount)}</td>
-                    <td className="py-4 pr-4">
-                      <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold capitalize text-green-800">
+                    <td className="py-3 pr-3 text-[12px] font-semibold text-green-800">{formatCurrency(donation?.amount)}</td>
+                    <td className="py-3 pr-3">
+                      <span className="inline-flex rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold capitalize text-green-800">
                         {donation?.payment_method || 'N/A'}
                       </span>
                     </td>
-                    <td className="py-4 text-sm text-gray-600">{formatDate(getDonationDate(donation))}</td>
+                    <td className="py-3 text-[11px] text-gray-600">{formatDate(getDonationDate(donation))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -399,34 +430,34 @@ function DashboardHomePage() {
         )}
       </Card>
 
-      <Card className="rounded-[24px] p-5">
+      <Card className="rounded-[24px] p-4">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Top Funded Projects</h2>
-          <p className="mt-1 text-sm text-gray-500">Projects with the highest visible funding progress.</p>
+          <h2 className="text-base font-bold text-gray-900">Top Funded Projects</h2>
+          <p className="mt-1 text-xs text-gray-500">Projects with the highest visible funding progress.</p>
         </div>
         {topFundedProjects.length === 0 ? (
-          <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">No project funding data available yet.</div>
+          <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No project funding data available yet.</div>
         ) : (
-          <div className="mt-5 space-y-3.5">
+          <div className="mt-4 space-y-3">
             {topFundedProjects.map((project) => (
-              <div key={project.id} className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-4">
+              <div key={project.id} className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{project?.title || 'Untitled project'}</p>
-                    <p className="mt-1 text-xs text-gray-500">{project?.location || 'Location not specified'}</p>
+                    <p className="text-[12px] font-semibold text-gray-900">{project?.title || 'Untitled project'}</p>
+                    <p className="mt-1 text-[10px] text-gray-500">{project?.location || 'Location not specified'}</p>
                   </div>
-                  <div className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-                    <TrendingUp size={14} className="mr-1" />
+                  <div className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold text-green-800">
+                    <TrendingUp size={12} className="mr-1" />
                     {Number(project?.funding_percentage || 0).toFixed(0)}%
                   </div>
                 </div>
-                <div className="mt-4 h-2.5 rounded-full bg-gray-200">
+                <div className="mt-3 h-2 rounded-full bg-gray-200">
                   <div
-                    className="h-2.5 rounded-full bg-green-800"
+                    className="h-2 rounded-full bg-green-800"
                     style={{ width: `${Math.min(Number(project?.funding_percentage || 0), 100)}%` }}
                   />
                 </div>
-                <div className="mt-4 flex items-center justify-between text-sm">
+                <div className="mt-3 flex items-center justify-between text-[11px]">
                   <div>
                     <p className="text-gray-500">Raised</p>
                     <p className="font-semibold text-gray-900">{formatCurrency(project?.total_donated)}</p>
@@ -466,59 +497,90 @@ function DashboardHomePage() {
 
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="rounded-[24px] p-5">
-          <h2 className="text-lg font-bold text-gray-900">Oversight Actions</h2>
-          <p className="mt-1 text-sm text-gray-500">Use dedicated workspaces for approvals and partner management.</p>
-          <div className="mt-5 space-y-3">
-            <Link to="/dashboard/users" className="flex items-center justify-between rounded-[20px] border border-gray-200 bg-[#FCFCFB] px-4 py-3.5 transition hover:border-green-200 hover:bg-green-50/40">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">User Management</p>
-                <p className="mt-1 text-xs text-gray-500">Pending approvals, suspensions, and staff account oversight.</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Staff Performance</h2>
+              <p className="mt-1 text-xs text-gray-500">Overall numbers by staff owner across the platform.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={staffSearch}
+                  onChange={(event) => setStaffSearch(event.target.value)}
+                  placeholder="Search staff"
+                  className="h-8 w-[170px] rounded-xl border border-gray-300 bg-white px-3 text-[11px] outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                />
               </div>
-              <UserCog size={16} className="text-green-800" />
-            </Link>
-            <Link to="/dashboard/partners" className="flex items-center justify-between rounded-[20px] border border-gray-200 bg-[#FCFCFB] px-4 py-3.5 transition hover:border-green-200 hover:bg-green-50/40">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Partner Management</p>
-                <p className="mt-1 text-xs text-gray-500">Add, suspend, and maintain partners used by staff projects.</p>
-              </div>
-              <Handshake size={16} className="text-green-800" />
-            </Link>
+              <Link
+                to="/dashboard/users"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-green-800 px-2.5 py-2 text-[10px] font-semibold text-white transition hover:bg-[#0f4d27]"
+              >
+                <UserCog size={12} />
+                Users
+              </Link>
+              <Link
+                to="/dashboard/partners"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-green-200 px-2.5 py-2 text-[10px] font-semibold text-green-800 transition hover:bg-green-50"
+              >
+                <Handshake size={12} />
+                Partners
+              </Link>
+            </div>
           </div>
-        </Card>
-
-        <Card className="rounded-[24px] p-5">
-          <h2 className="text-lg font-bold text-gray-900">Staff Performance</h2>
-          <p className="mt-1 text-sm text-gray-500">Overall numbers by staff owner across the platform.</p>
-          {adminMetrics.metrics.length === 0 ? (
-            <div className="mt-5 rounded-2xl bg-[#F8F8F6] p-5 text-sm text-gray-600">No staff records are available yet.</div>
+          {filteredStaffMetrics.length === 0 ? (
+            <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">No staff records are available yet.</div>
           ) : (
-            <div className="mt-5 space-y-3">
-              {adminMetrics.metrics.slice(0, 6).map((item) => (
-                <div key={item.id} className="rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-4">
+            <div className="mt-4 space-y-3">
+              {paginatedStaffMetrics.map((item) => (
+                <div key={item.id} className="rounded-[20px] border border-gray-200 bg-[#FCFCFB] p-3.5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-900">{item.name}</p>
+                      <p className="truncate text-[12px] font-semibold text-gray-900">{item.name}</p>
                       <p className="mt-1 text-[11px] text-gray-500">{item.isActive ? 'Active staff' : 'Pending / Inactive'}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[11px] text-gray-500">Raised</p>
-                      <p className="mt-1 text-sm font-semibold text-green-800">{formatCurrency(item.raised)}</p>
+                      <p className="text-[10px] text-gray-500">Raised</p>
+                      <p className="mt-1 text-[12px] font-semibold text-green-800">{formatCurrency(item.raised)}</p>
                     </div>
                   </div>
-                  <div className="mt-3 h-2 rounded-full bg-gray-200">
+                  <div className="mt-2.5 h-1.5 rounded-full bg-gray-200">
                     <div
-                      className="h-2 rounded-full bg-green-800"
+                      className="h-1.5 rounded-full bg-green-800"
                       style={{ width: `${Math.min(adminMetrics.highestRaised > 0 ? (item.raised / adminMetrics.highestRaised) * 100 : 0, 100)}%` }}
                     />
                   </div>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-4">
-                    <div><p className="text-[11px] text-gray-500">Projects</p><p className="mt-1 text-sm font-semibold text-gray-900">{item.projects}</p></div>
-                    <div><p className="text-[11px] text-gray-500">Donations</p><p className="mt-1 text-sm font-semibold text-gray-900">{item.donations}</p></div>
-                    <div><p className="text-[11px] text-gray-500">Beneficiaries</p><p className="mt-1 text-sm font-semibold text-gray-900">{item.beneficiaries}</p></div>
-                    <div><p className="text-[11px] text-gray-500">Updates</p><p className="mt-1 text-sm font-semibold text-gray-900">{item.updates}</p></div>
+                  <div className="mt-2.5 grid gap-2.5 sm:grid-cols-4">
+                    <div><p className="text-[10px] text-gray-500">Projects</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.projects}</p></div>
+                    <div><p className="text-[10px] text-gray-500">Donations</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.donations}</p></div>
+                    <div><p className="text-[10px] text-gray-500">Beneficiaries</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.beneficiaries}</p></div>
+                    <div><p className="text-[10px] text-gray-500">Updates</p><p className="mt-1 text-[12px] font-semibold text-gray-900">{item.updates}</p></div>
                   </div>
                 </div>
               ))}
+              <div className="flex items-center justify-between text-[11px] text-gray-500">
+                <span>
+                  Page {staffPage} of {staffPageCount}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStaffPage((page) => Math.max(1, page - 1))}
+                    disabled={staffPage === 1}
+                    className="inline-flex h-7 w-7 items-center justify-center text-gray-500 transition hover:text-gray-800 disabled:opacity-35"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStaffPage((page) => Math.min(staffPageCount, page + 1))}
+                    disabled={staffPage === staffPageCount}
+                    className="inline-flex h-7 w-7 items-center justify-center text-gray-500 transition hover:text-gray-800 disabled:opacity-35"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </Card>
