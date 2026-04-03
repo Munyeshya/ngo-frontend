@@ -19,7 +19,15 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
   const dismissToast = useCallback((id) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id))
+    setToasts((current) =>
+      current.map((toast) =>
+        toast.id === id ? { ...toast, isLeaving: true } : toast
+      )
+    )
+
+    window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id))
+    }, 220)
   }, [])
 
   const showToast = useCallback(
@@ -28,7 +36,7 @@ export function ToastProvider({ children }) {
 
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
-      setToasts((current) => [...current, { id, type, message }])
+      setToasts((current) => [...current, { id, type, message, isLeaving: false }])
 
       window.setTimeout(() => {
         dismissToast(id)
@@ -49,6 +57,32 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={value}>
       {children}
 
+      <style>
+        {`
+          @keyframes toast-enter {
+            from {
+              opacity: 0;
+              transform: translate3d(0, -10px, 0);
+            }
+            to {
+              opacity: 1;
+              transform: translate3d(0, 0, 0);
+            }
+          }
+
+          @keyframes toast-exit {
+            from {
+              opacity: 1;
+              transform: translate3d(0, 0, 0);
+            }
+            to {
+              opacity: 0;
+              transform: translate3d(0, -8px, 0);
+            }
+          }
+        `}
+      </style>
+
       <div className="pointer-events-none fixed right-4 top-4 z-[90] flex w-[min(92vw,22rem)] flex-col gap-2">
         {toasts.map((toast) => {
           const Icon = getToastIcon(toast.type)
@@ -57,6 +91,11 @@ export function ToastProvider({ children }) {
             <div
               key={toast.id}
               className={`pointer-events-auto border px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.1)] ${getToastTone(toast.type)}`}
+              style={{
+                animation: toast.isLeaving
+                  ? 'toast-exit 220ms ease forwards'
+                  : 'toast-enter 240ms ease forwards',
+              }}
             >
               <div className="flex items-start gap-3">
                 <Icon size={18} className="mt-0.5 shrink-0" />
