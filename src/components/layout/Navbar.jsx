@@ -134,7 +134,7 @@ function Navbar() {
               <button
                 type="button"
                 onClick={() => setAccountOpen((prev) => !prev)}
-                className="inline-flex h-11 items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-2.5 text-green-900 transition hover:border-green-300 hover:bg-green-100"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-green-200 bg-green-50 text-green-900 transition hover:border-green-300 hover:bg-green-100"
               >
                 {user?.profile_image ? (
                   <img
@@ -147,7 +147,6 @@ function Navbar() {
                     {initials}
                   </div>
                 )}
-                <ChevronDown size={16} />
               </button>
 
               {accountOpen && (
