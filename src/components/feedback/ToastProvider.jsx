@@ -56,7 +56,7 @@ export function ToastProvider({ children }) {
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto border px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.14)] ${getToastTone(toast.type)}`}
+              className={`pointer-events-auto border px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.1)] ${getToastTone(toast.type)}`}
             >
               <div className="flex items-start gap-3">
                 <Icon size={18} className="mt-0.5 shrink-0" />
