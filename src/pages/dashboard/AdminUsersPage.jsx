@@ -3,6 +3,7 @@ import { AlertCircle, FileBadge2, Search, ShieldCheck, UserCheck, UserCog } from
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal'
 import Card from '../../components/ui/Card'
 
 const REVIEW_REASON_OPTIONS = [
@@ -76,6 +77,7 @@ function AdminUsersPage() {
   const [updatingUserId, setUpdatingUserId] = useState(null)
   const [userSearch, setUserSearch] = useState('')
   const [applicationReviews, setApplicationReviews] = useState({})
+  const [previewDocument, setPreviewDocument] = useState(null)
 
   async function loadUsers() {
     const [usersResponse, applicationsResponse] = await Promise.all([
@@ -388,9 +390,25 @@ function AdminUsersPage() {
                       {isIndividual ? (
                         <div className="rounded-2xl border border-gray-200 bg-white p-3">
                           <p className="text-[11px] font-semibold text-gray-900">Individual ID document</p>
-                          <p className="mt-1 text-[10px] text-gray-500">
-                            {fileNameFromUrl(application.individual_id_document)}
-                          </p>
+                          <div className="mt-1 flex items-center justify-between gap-3">
+                            <p className="text-[10px] text-gray-500">
+                              {fileNameFromUrl(application.individual_id_document)}
+                            </p>
+                            {application.individual_id_document ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPreviewDocument({
+                                    title: 'Individual ID document',
+                                    fileUrl: application.individual_id_document,
+                                  })
+                                }
+                                className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                              >
+                                Preview
+                              </button>
+                            ) : null}
+                          </div>
                           <div className="mt-3 grid gap-3 md:grid-cols-2">
                             <select
                               value={review.individual_id_status}
@@ -422,9 +440,25 @@ function AdminUsersPage() {
                         <>
                           <div className="rounded-2xl border border-gray-200 bg-white p-3">
                             <p className="text-[11px] font-semibold text-gray-900">Group legal document</p>
-                            <p className="mt-1 text-[10px] text-gray-500">
-                              {fileNameFromUrl(application.group_legal_document)}
-                            </p>
+                            <div className="mt-1 flex items-center justify-between gap-3">
+                              <p className="text-[10px] text-gray-500">
+                                {fileNameFromUrl(application.group_legal_document)}
+                              </p>
+                              {application.group_legal_document ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setPreviewDocument({
+                                      title: 'Group legal document',
+                                      fileUrl: application.group_legal_document,
+                                    })
+                                  }
+                                  className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                                >
+                                  Preview
+                                </button>
+                              ) : null}
+                            </div>
                             <div className="mt-3 grid gap-3 md:grid-cols-2">
                               <select
                                 value={review.group_legal_document_status}
@@ -455,9 +489,25 @@ function AdminUsersPage() {
 
                           <div className="rounded-2xl border border-gray-200 bg-white p-3">
                             <p className="text-[11px] font-semibold text-gray-900">Representative ID document</p>
-                            <p className="mt-1 text-[10px] text-gray-500">
-                              {fileNameFromUrl(application.representative_id_document)}
-                            </p>
+                            <div className="mt-1 flex items-center justify-between gap-3">
+                              <p className="text-[10px] text-gray-500">
+                                {fileNameFromUrl(application.representative_id_document)}
+                              </p>
+                              {application.representative_id_document ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setPreviewDocument({
+                                      title: 'Representative ID document',
+                                      fileUrl: application.representative_id_document,
+                                    })
+                                  }
+                                  className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                                >
+                                  Preview
+                                </button>
+                              ) : null}
+                            </div>
                             <div className="mt-3 grid gap-3 md:grid-cols-2">
                               <select
                                 value={review.representative_id_status}
@@ -642,6 +692,13 @@ function AdminUsersPage() {
           )}
         </Card>
       )}
+
+      <DocumentPreviewModal
+        open={Boolean(previewDocument?.fileUrl)}
+        title={previewDocument?.title}
+        fileUrl={previewDocument?.fileUrl}
+        onClose={() => setPreviewDocument(null)}
+      />
     </div>
   )
 }
