@@ -3,6 +3,7 @@ import { FileBadge2, Save, ShieldAlert, Upload } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal'
 import Card from '../../components/ui/Card'
 import { getUser, setUser } from '../../utils/storage'
 
@@ -50,6 +51,7 @@ function StaffSettingsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [application, setApplication] = useState(null)
+  const [previewDocument, setPreviewDocument] = useState(null)
   const [form, setForm] = useState({
     applicant_type: 'individual',
     mission_summary: '',
@@ -330,9 +332,25 @@ function StaffSettingsPage() {
                       onChange={handleChange}
                       className={fileInputClassName()}
                     />
-                    <p className="text-[10px] text-gray-500">
-                      Current file: {fileNameFromUrl(application?.individual_id_document) || 'None yet'}
-                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[10px] text-gray-500">
+                        Current file: {fileNameFromUrl(application?.individual_id_document) || 'None yet'}
+                      </p>
+                      {application?.individual_id_document ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewDocument({
+                              title: 'Individual ID document',
+                              fileUrl: application.individual_id_document,
+                            })
+                          }
+                          className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                        >
+                          Preview
+                        </button>
+                      ) : null}
+                    </div>
                   </label>
                 </div>
               </div>
@@ -410,9 +428,25 @@ function StaffSettingsPage() {
                         onChange={handleChange}
                         className={fileInputClassName()}
                       />
-                      <p className="text-[10px] text-gray-500">
-                        Current file: {fileNameFromUrl(application?.group_legal_document) || 'None yet'}
-                      </p>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] text-gray-500">
+                          Current file: {fileNameFromUrl(application?.group_legal_document) || 'None yet'}
+                        </p>
+                        {application?.group_legal_document ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewDocument({
+                                title: 'Group legal document',
+                                fileUrl: application.group_legal_document,
+                              })
+                            }
+                            className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                          >
+                            Preview
+                          </button>
+                        ) : null}
+                      </div>
                     </label>
 
                     <label className="space-y-1.5">
@@ -423,9 +457,25 @@ function StaffSettingsPage() {
                         onChange={handleChange}
                         className={fileInputClassName()}
                       />
-                      <p className="text-[10px] text-gray-500">
-                        Current file: {fileNameFromUrl(application?.representative_id_document) || 'None yet'}
-                      </p>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] text-gray-500">
+                          Current file: {fileNameFromUrl(application?.representative_id_document) || 'None yet'}
+                        </p>
+                        {application?.representative_id_document ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewDocument({
+                                title: 'Representative ID document',
+                                fileUrl: application.representative_id_document,
+                              })
+                            }
+                            className="text-[10px] font-semibold text-green-800 hover:text-green-900"
+                          >
+                            Preview
+                          </button>
+                        ) : null}
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -504,6 +554,13 @@ function StaffSettingsPage() {
           </Card>
         </div>
       </div>
+
+      <DocumentPreviewModal
+        open={Boolean(previewDocument?.fileUrl)}
+        title={previewDocument?.title}
+        fileUrl={previewDocument?.fileUrl}
+        onClose={() => setPreviewDocument(null)}
+      />
     </div>
   )
 }
