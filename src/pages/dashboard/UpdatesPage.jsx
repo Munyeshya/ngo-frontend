@@ -1,17 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  AlertCircle,
   ArrowRight,
   CalendarDays,
   FolderKanban,
   Megaphone,
+  Pencil,
+  Plus,
   Search,
   SlidersHorizontal,
+  Trash2,
+  Upload,
+  X,
 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
+import { getUser } from '../../utils/storage'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -67,28 +75,61 @@ function getUpdateImages(item) {
 }
 
 function UpdatesPage() {
+  const currentUser = getUser()
   const [updates, setUpdates] = useState([])
+  const [projects, setProjects] = useState([])
   const [updatesCount, setUpdatesCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [actionSuccess, setActionSuccess] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editingUpdate, setEditingUpdate] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const [uploadingImageFor, setUploadingImageFor] = useState(null)
+  const [deletingImageId, setDeletingImageId] = useState(null)
 
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('latest')
+  const [formData, setFormData] = useState({
+    project: '',
+    title: '',
+    description: '',
+  })
+
+  const canManageUpdates = useMemo(() => {
+    const role = String(currentUser?.role || '').toLowerCase()
+    return role === 'admin' || role === 'staff'
+  }, [currentUser])
 
   useEffect(() => {
     let active = true
 
-    async function loadUpdates() {
+    async function loadData() {
       try {
         setLoading(true)
         setError('')
 
-        const response = await api.get(endpoints.projectUpdates)
+        const [updatesResponse, projectsResponse] = await Promise.allSettled([
+          api.get(endpoints.projectUpdates),
+          api.get(endpoints.projects),
+        ])
         if (!active) return
 
-        const list = normalizeListResponse(response.data)
-        setUpdates(list)
-        setUpdatesCount(getCountFromResponse(response.data, list))
+        if (updatesResponse.status === 'fulfilled') {
+          const list = normalizeListResponse(updatesResponse.value.data)
+          setUpdates(list)
+          setUpdatesCount(getCountFromResponse(updatesResponse.value.data, list))
+        } else {
+          throw updatesResponse.reason
+        }
+
+        if (projectsResponse.status === 'fulfilled') {
+          setProjects(normalizeListResponse(projectsResponse.value.data))
+        } else {
+          setProjects([])
+        }
       } catch (err) {
         if (!active) return
 
@@ -104,12 +145,174 @@ function UpdatesPage() {
       }
     }
 
-    loadUpdates()
+    loadData()
 
     return () => {
       active = false
     }
   }, [])
+
+  async function refreshUpdates() {
+    const response = await api.get(endpoints.projectUpdates)
+    const list = normalizeListResponse(response.data)
+    setUpdates(list)
+    setUpdatesCount(getCountFromResponse(response.data, list))
+  }
+
+  function resetForm() {
+    setFormData({
+      project: '',
+      title: '',
+      description: '',
+    })
+    setEditingUpdate(null)
+    setActionError('')
+  }
+
+  function openCreateForm() {
+    resetForm()
+    setShowForm(true)
+  }
+
+  function openEditForm(update) {
+    setEditingUpdate(update)
+    setActionError('')
+    setActionSuccess('')
+    setFormData({
+      project: String(getProjectId(update) || ''),
+      title: update?.title || '',
+      description: update?.description || '',
+    })
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    resetForm()
+  }
+
+  function handleFieldChange(event) {
+    const { name, value } = event.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  async function handleSubmitUpdate(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmitting(true)
+
+      const payload = {
+        project: Number(formData.project),
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+      }
+
+      if (editingUpdate?.id) {
+        await api.patch(endpoints.projectUpdateDetails(editingUpdate.id), payload)
+        setActionSuccess('Project update saved successfully.')
+      } else {
+        await api.post(endpoints.projectUpdates, payload)
+        setActionSuccess('Project update created successfully.')
+      }
+
+      await refreshUpdates()
+      closeForm()
+    } catch (err) {
+      const data = err?.response?.data
+      const flattened =
+        data && typeof data === 'object'
+          ? Object.values(data).flat().find(Boolean)
+          : null
+
+      setActionError(
+        data?.message ||
+          data?.detail ||
+          flattened ||
+          'Update action failed. Please review your inputs and try again.'
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDeleteUpdate(update) {
+    const confirmed = window.confirm(`Delete "${update?.title || 'this update'}"?`)
+    if (!confirmed) return
+
+    try {
+      setDeletingId(update.id)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.projectUpdateDetails(update.id))
+      await refreshUpdates()
+      setActionSuccess('Project update deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete project update.'
+      )
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  async function handleUploadImage(updateId, file) {
+    if (!file) return
+
+    try {
+      setUploadingImageFor(updateId)
+      setActionError('')
+      setActionSuccess('')
+
+      const payload = new FormData()
+      payload.append('project_update', updateId)
+      payload.append('image', file)
+
+      await api.post(endpoints.projectUpdateImages, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      await refreshUpdates()
+      setActionSuccess('Project update image uploaded successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to upload project update image.'
+      )
+    } finally {
+      setUploadingImageFor(null)
+    }
+  }
+
+  async function handleDeleteImage(imageId) {
+    const confirmed = window.confirm('Remove this project update image?')
+    if (!confirmed) return
+
+    try {
+      setDeletingImageId(imageId)
+      setActionError('')
+      setActionSuccess('')
+      await api.delete(endpoints.projectUpdateImageDetails(imageId))
+      await refreshUpdates()
+      setActionSuccess('Project update image deleted successfully.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete project update image.'
+      )
+    } finally {
+      setDeletingImageId(null)
+    }
+  }
 
   const filteredUpdates = useMemo(() => {
     let items = [...updates]
@@ -218,13 +421,22 @@ function UpdatesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Project Updates</h1>
           <p className="mt-1.5 text-sm text-gray-600">
-            Review published progress updates across all projects.
+            Review published progress updates across visible projects.
           </p>
         </div>
 
-        <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
-          <Megaphone size={16} className="mr-2" />
-          Total Records: {updatesCount}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center rounded-2xl bg-green-50 px-3.5 py-2 text-xs font-semibold text-green-800">
+            <Megaphone size={16} className="mr-2" />
+            Total Records: {updatesCount}
+          </div>
+
+          {canManageUpdates && (
+            <Button className="px-4 py-2.5" onClick={openCreateForm}>
+              <Plus size={16} className="mr-2" />
+              New Update
+            </Button>
+          )}
         </div>
       </div>
 
@@ -273,6 +485,19 @@ function UpdatesPage() {
           <p className="mt-2 text-[1.7rem] font-bold text-gray-900">{stats.totalImages}</p>
         </Card>
       </div>
+
+      {(actionError || actionSuccess) && (
+        <Card className={`p-4 ${actionError ? 'border-red-200' : 'border-green-200'}`}>
+          <div
+            className={`flex items-start gap-3 text-sm ${
+              actionError ? 'text-red-700' : 'text-green-700'
+            }`}
+          >
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            <span>{actionError || actionSuccess}</span>
+          </div>
+        </Card>
+      )}
 
       <Card className="rounded-[24px] p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -375,34 +600,84 @@ function UpdatesPage() {
                       {images.slice(0, 3).map((image) => (
                         <div
                           key={image?.id || image?.image}
-                          className="overflow-hidden rounded-2xl bg-gray-100"
+                          className="group relative overflow-hidden rounded-2xl bg-gray-100"
                         >
                           <img
                             src={image?.image}
                             alt={image?.caption || update?.title || 'Update image'}
                             className="h-24 w-full object-cover"
                           />
+
+                          {canManageUpdates && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(image.id)}
+                              disabled={deletingImageId === image.id}
+                              className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-700 opacity-0 shadow-sm transition group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-100"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <div className="mt-5 flex items-center justify-between">
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                     <div className="text-sm text-gray-500">
                       Project: <span className="font-medium text-gray-800">{getProjectName(update)}</span>
                     </div>
 
-                    {projectId ? (
-                      <Link
-                        to={`/projects/${projectId}`}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
-                      >
-                        View Project
-                        <ArrowRight size={15} />
-                      </Link>
-                    ) : (
-                      <span className="text-sm text-gray-400">No project link</span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {projectId ? (
+                        <Link
+                          to={`/projects/${projectId}`}
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
+                        >
+                          View Project
+                          <ArrowRight size={15} />
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-gray-400">No project link</span>
+                      )}
+
+                      {canManageUpdates && (
+                        <>
+                          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
+                            <Upload size={13} />
+                            {uploadingImageFor === update.id ? 'Uploading...' : 'Add Image'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(event) => {
+                                handleUploadImage(update.id, event.target.files?.[0])
+                                event.target.value = ''
+                              }}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(update)}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+                          >
+                            <Pencil size={13} />
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUpdate(update)}
+                            disabled={deletingId === update.id}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            <Trash2 size={13} />
+                            {deletingId === update.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               )
@@ -410,6 +685,104 @@ function UpdatesPage() {
           </div>
         )}
       </Card>
+
+      {showForm && canManageUpdates && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
+          <Card className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-[24px] border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">
+                  {editingUpdate ? 'Edit Project Update' : 'Create Project Update'}
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  Share progress clearly and attach images when needed.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeForm}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitUpdate} className="overflow-y-auto px-6 py-5">
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                    Project
+                  </label>
+                  <select
+                    name="project"
+                    value={formData.project}
+                    onChange={handleFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  >
+                    <option value="">Select a project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleFieldChange}
+                    required
+                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleFieldChange}
+                    rows="6"
+                    required
+                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  />
+                </div>
+              </div>
+
+              {actionError && (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+                  {actionError}
+                </div>
+              )}
+
+              <div className="mt-5 flex flex-wrap justify-end gap-2.5">
+                <Button type="button" variant="outline" onClick={closeForm}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting
+                    ? editingUpdate
+                      ? 'Saving...'
+                      : 'Creating...'
+                    : editingUpdate
+                    ? 'Save Changes'
+                    : 'Create Update'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
