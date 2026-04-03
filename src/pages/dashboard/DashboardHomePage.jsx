@@ -61,6 +61,13 @@ function formatAxisValue(value) {
   return new Intl.NumberFormat('en-RW', { maximumFractionDigits: 0 }).format(amount)
 }
 
+function formatPlainAmount(value) {
+  const amount = Number(value || 0)
+  return new Intl.NumberFormat('en-RW', {
+    maximumFractionDigits: 0,
+  }).format(Number.isNaN(amount) ? 0 : amount)
+}
+
 function formatDate(value) {
   if (!value) return 'N/A'
   const date = new Date(value)
@@ -709,44 +716,42 @@ function DashboardHomePage() {
               <table className="mt-3 min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr className="text-left">
-                    <th className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500">
-                      Project Type
-                    </th>
                     {supportByTypeChart.months.map((month) => (
+                      <th key={month} className="hidden" />
+                    ))}
+                    <th className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500">
+                      Month
+                    </th>
+                    {supportByTypeChart.series.map((item) => (
                       <th
-                        key={month}
+                        key={`${item.label}-head`}
                         className="pb-1.5 pr-2 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500"
                       >
-                        {month}
-                      </th>
-                    ))}
-                    <th className="pb-1.5 text-[9px] font-semibold uppercase tracking-[0.04em] text-gray-500">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {supportByTypeChart.series.map((item) => (
-                    <tr key={`${item.label}-row`}>
-                      <td className="py-2 pr-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <span
                             className="h-2 w-2 rounded-full"
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-[10px] font-semibold text-gray-900">
-                            {item.label}
-                          </span>
+                          <span>{item.label}</span>
                         </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {supportByTypeChart.months.map((month, monthIndex) => (
+                    <tr key={`${month}-row`}>
+                      <td className="py-2 pr-2 text-[10px] font-semibold text-gray-900">
+                        {month}
                       </td>
-                      {item.months.map((value, index) => (
-                        <td key={`${item.label}-${index}`} className="py-2 pr-2 text-[9px] text-gray-600">
-                          {formatCurrency(value)}
+                      {supportByTypeChart.series.map((item) => (
+                        <td
+                          key={`${month}-${item.label}`}
+                          className="py-2 pr-2 text-[9px] text-gray-600"
+                        >
+                          {formatPlainAmount(item.months[monthIndex])}
                         </td>
                       ))}
-                      <td className="py-2 text-[9px] font-semibold text-gray-900">
-                        {formatCurrency(item.total)}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
