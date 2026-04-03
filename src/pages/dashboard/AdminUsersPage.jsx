@@ -78,6 +78,7 @@ function AdminUsersPage() {
   const [error, setError] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState(null)
   const [userSearch, setUserSearch] = useState('')
+  const [userRoleFilter, setUserRoleFilter] = useState('all')
   const [applicationPage, setApplicationPage] = useState(1)
   const [directoryPage, setDirectoryPage] = useState(1)
   const [applicationReviews, setApplicationReviews] = useState({})
@@ -141,16 +142,20 @@ function AdminUsersPage() {
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase()
 
-    if (!query) {
-      return users
-    }
+    return users.filter((user) => {
+        const role = String(user?.role || '').toLowerCase()
 
-    return users
-      .filter((user) => {
+        if (userRoleFilter !== 'all' && role !== userRoleFilter) {
+          return false
+        }
+
+        if (!query) {
+          return true
+        }
+
         const name = getDisplayName(user).toLowerCase()
         const email = String(user?.email || '').toLowerCase()
         const username = String(user?.username || '').toLowerCase()
-        const role = String(user?.role || '').toLowerCase()
 
         return (
           name.includes(query) ||
@@ -159,7 +164,7 @@ function AdminUsersPage() {
           role.includes(query)
         )
       })
-  }, [users, userSearch])
+  }, [users, userSearch, userRoleFilter])
 
   const applicationPageCount = Math.max(
     1,
@@ -194,7 +199,7 @@ function AdminUsersPage() {
 
   useEffect(() => {
     setDirectoryPage(1)
-  }, [userSearch])
+  }, [userSearch, userRoleFilter])
 
   function getReviewState(application) {
     return (
@@ -651,18 +656,30 @@ function AdminUsersPage() {
               </p>
             </div>
 
-            <div className="relative lg:w-[280px]">
-              <Search
-                size={14}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Search users"
-                className="h-9 w-full rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-              />
+            <div className="grid gap-2 lg:w-[420px] lg:grid-cols-[1fr_140px]">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  placeholder="Search users"
+                  className="h-9 w-full rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                />
+              </div>
+
+              <select
+                value={userRoleFilter}
+                onChange={(e) => setUserRoleFilter(e.target.value)}
+                className="h-9 rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+              >
+                <option value="all">All roles</option>
+                <option value="staff">Staff only</option>
+                <option value="donor">Donors only</option>
+              </select>
             </div>
           </div>
 
