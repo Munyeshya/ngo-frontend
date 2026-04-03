@@ -16,9 +16,7 @@ import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 import Card from '../../components/ui/Card'
 import { getUser } from '../../utils/storage'
-import { getProjectTypeLabel } from '../../utils/projectHelpers'
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const TYPE_COLORS = ['#166534', '#15803d', '#65a30d', '#0f766e']
 
 function unwrapPayload(payload) {
@@ -73,13 +71,6 @@ function getDonationDate(donation) {
   return donation?.donated_at || donation?.created_at || donation?.date || null
 }
 
-function getDonationProjectId(donation) {
-  if (typeof donation?.project === 'number' || typeof donation?.project === 'string') {
-    return donation.project
-  }
-  return donation?.project?.id ?? null
-}
-
 function StatCard({ icon: Icon, label, title, value, accent = 'green', subtext = '' }) {
   const tone =
     accent === 'amber'
@@ -112,6 +103,7 @@ function DashboardHomePage() {
   const [updates, setUpdates] = useState([])
   const [users, setUsers] = useState([])
   const [partners, setPartners] = useState([])
+  const [typeSupportAnalytics, setTypeSupportAnalytics] = useState({ months: [], series: [] })
   const [projectsCount, setProjectsCount] = useState(0)
   const [donationsCount, setDonationsCount] = useState(0)
   const [beneficiariesCount, setBeneficiariesCount] = useState(0)
@@ -139,12 +131,21 @@ function DashboardHomePage() {
         if (isAdmin) {
           requests.push(api.get(endpoints.users))
           requests.push(api.get(endpoints.partners))
+          requests.push(api.get(endpoints.donationTypeSupportAnalytics))
         }
 
         const results = await Promise.allSettled(requests)
         if (!active) return
 
-        const [projectsRes, donationsRes, beneficiariesRes, updatesRes, usersRes, partnersRes] =
+        const [
+          projectsRes,
+          donationsRes,
+          beneficiariesRes,
+          updatesRes,
+          usersRes,
+          partnersRes,
+          analyticsRes,
+        ] =
           results
 
         if (projectsRes.status === 'fulfilled') {
@@ -199,6 +200,16 @@ function DashboardHomePage() {
         } else {
           setPartners([])
           setPartnersCount(0)
+        }
+
+        if (isAdmin && analyticsRes?.status === 'fulfilled') {
+          const analytics = analyticsRes.value?.data?.data || analyticsRes.value?.data || {}
+          setTypeSupportAnalytics({
+            months: Array.isArray(analytics?.months) ? analytics.months : [],
+            series: Array.isArray(analytics?.series) ? analytics.series : [],
+          })
+        } else {
+          setTypeSupportAnalytics({ months: [], series: [] })
         }
 
         if (
@@ -267,41 +278,20 @@ function DashboardHomePage() {
   }, [partners, users])
 
   const supportByTypeChart = useMemo(() => {
-    const projectLookup = new Map(projects.map((project) => [project.id, project]))
-    const grouped = new Map()
-
-    donations.forEach((donation) => {
-      const projectId = getDonationProjectId(donation)
-      const project = projectLookup.get(projectId)
-      if (!project) return
-
-      const amount = Number(donation?.amount || 0)
-      const donatedAt = getDonationDate(donation)
-      const date = donatedAt ? new Date(donatedAt) : null
-      if (!date || Number.isNaN(date.getTime())) return
-
-      const label = getProjectTypeLabel(project)
-      if (!grouped.has(label)) {
-        grouped.set(label, { label, months: Array(12).fill(0), total: 0 })
-      }
-
-      const entry = grouped.get(label)
-      entry.months[date.getMonth()] += amount
-      entry.total += amount
-    })
-
-    const series = Array.from(grouped.values())
-      .sort((a, b) => b.total - a.total)
+    const months = typeSupportAnalytics?.months?.length ? typeSupportAnalytics.months : []
+    const series = (typeSupportAnalytics?.series || [])
       .slice(0, 4)
       .map((item, index) => ({
-        ...item,
+        label: item?.project_type_display || item?.project_type || 'Other',
+        total: Number(item?.total_amount || 0),
+        months: Array.isArray(item?.monthly_amounts) ? item.monthly_amounts.map((value) => Number(value || 0)) : Array(12).fill(0),
         color: TYPE_COLORS[index % TYPE_COLORS.length],
       }))
 
     const maxValue = Math.max(...series.flatMap((item) => item.months), 0)
 
-    return { series, maxValue }
-  }, [donations, projects])
+    return { months, series, maxValue }
+  }, [typeSupportAnalytics])
 
   if (loading) {
     return (
@@ -616,8 +606,8 @@ function DashboardHomePage() {
                   )
                 })}
 
-                {MONTH_LABELS.map((month, index) => {
-                  const x = 44 + (index / 11) * 646
+                {supportByTypeChart.months.map((month, index) => {
+                  const x = 44 + (index / Math.max(supportByTypeChart.months.length - 1, 1)) * 646
                   return (
                     <g key={month}>
                       <line x1={x} y1="24" x2={x} y2="200" stroke="#f3f4f6" strokeWidth="1" />
@@ -636,7 +626,9 @@ function DashboardHomePage() {
 
                 {supportByTypeChart.series.map((item) => {
                   const points = item.months.map((value, index) => {
-                    const x = 44 + (index / 11) * 646
+                    const x =
+                      44 +
+                      (index / Math.max(item.months.length - 1, 1)) * 646
                     const ratio = supportByTypeChart.maxValue > 0 ? value / supportByTypeChart.maxValue : 0
                     const y = 200 - ratio * 176
                     return { x, y, value }
@@ -664,7 +656,7 @@ function DashboardHomePage() {
                           r="3.5"
                           fill={item.color}
                         >
-                          <title>{`${item.label} - ${MONTH_LABELS[index]}: ${formatCurrency(point.value)}`}</title>
+                          <title>{`${item.label} - ${supportByTypeChart.months[index] || `Month ${index + 1}`}: ${formatCurrency(point.value)}`}</title>
                         </circle>
                       ))}
                     </g>
