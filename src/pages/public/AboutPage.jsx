@@ -39,7 +39,7 @@ function AboutPage() {
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               About our Organization
             </h2>
 
@@ -49,13 +49,13 @@ function AboutPage() {
 
                 return (
                   <div key={item.title} className="flex gap-5">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-700 text-white shadow-md">
-                      <Icon size={22} />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-700 text-white shadow-md">
+                      <Icon size={20} />
                     </div>
 
                     <div>
-                      <h3 className="text-2xl font-semibold text-gray-900">{item.title}</h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-8 text-gray-600 sm:text-base">
+                      <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
+                      <p className="mt-2 max-w-2xl text-xs leading-7 text-gray-600 sm:text-sm">
                         {item.text}
                       </p>
                     </div>
@@ -93,12 +93,12 @@ function AboutPage() {
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-green-300">
               Why this matters
             </p>
-            <h3 className="mt-4 text-3xl font-bold sm:text-4xl">
+            <h3 className="mt-4 text-2xl font-bold sm:text-3xl">
               Better visibility creates stronger donor confidence
             </h3>
           </div>
 
-          <p className="text-base leading-8 text-white/70">
+          <p className="text-sm leading-7 text-white/70">
             This platform is not just about collecting donations. It is about helping NGOs
             communicate real progress, helping donors understand where support goes, and building a
             public digital space where impact can be followed with confidence.
