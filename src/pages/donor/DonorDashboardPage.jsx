@@ -234,7 +234,7 @@ function DonorDashboardPage() {
                 to="/projects"
                 className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#166534] transition hover:bg-green-50"
               >
-                Browse Projects
+                <span className="text-[#166534]">Browse Projects</span>
               </Link>
 
               <Link
