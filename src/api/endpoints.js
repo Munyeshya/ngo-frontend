@@ -7,6 +7,8 @@ const endpoints = {
 
   beneficiaries: '/beneficiaries/',
   beneficiaryDetails: (id) => `/beneficiaries/${id}/`,
+  beneficiaryImages: '/beneficiaries/images/',
+  beneficiaryImageDetails: (id) => `/beneficiaries/images/${id}/`,
 
   donations: '/donations/',
 
