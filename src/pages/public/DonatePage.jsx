@@ -8,8 +8,6 @@ import {
   Wallet,
   BadgeDollarSign,
   ShieldCheck,
-  CheckCircle2,
-  Landmark,
   MapPin,
   Loader2,
   AlertCircle,
@@ -154,19 +152,6 @@ function DonatePage() {
     payment_method: 'momo',
     message: '',
     is_anonymous: false,
-
-    momo_phone: '',
-    momo_provider: 'mtn',
-    momo_reference: '',
-
-    card_holder_name: '',
-    card_number: '',
-    card_expiry: '',
-    card_cvv: '',
-
-    cash_payer_name: '',
-    cash_reference: '',
-    cash_collection_point: '',
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -287,19 +272,6 @@ function DonatePage() {
         payment_method: 'momo',
         message: '',
         is_anonymous: false,
-
-        momo_phone: '',
-        momo_provider: 'mtn',
-        momo_reference: '',
-
-        card_holder_name: '',
-        card_number: '',
-        card_expiry: '',
-        card_cvv: '',
-
-        cash_payer_name: '',
-        cash_reference: '',
-        cash_collection_point: '',
       })
 
       setTimeout(() => {
@@ -440,7 +412,7 @@ function DonatePage() {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Complete your donation</h2>
                   <p className="mt-0.5 text-xs text-gray-600 sm:text-sm">
-                    Fill in donor info, choose amount, then complete payment details.
+                    Fill in donor info, choose an amount, and submit your donation record.
                   </p>
                 </div>
               </div>
@@ -594,200 +566,37 @@ function DonatePage() {
                               </div>
 
                               <div
-                                className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                                className={`h-2.5 w-2.5 rounded-full ${
                                   isActive
-                                    ? 'border-green-700 bg-green-700 text-white'
-                                    : 'border-gray-300 bg-white text-transparent'
+                                    ? 'bg-green-700'
+                                    : 'bg-gray-300'
                                 }`}
-                              >
-                                <CheckCircle2 size={12} />
-                              </div>
+                              />
                             </button>
                           )
                         })}
                       </div>
                     </div>
 
-                    <div className="mt-4">
-                      {formData.payment_method === 'momo' && (
-                        <div className="rounded-xl bg-white p-4">
-                          <div className="mb-3 flex items-center gap-2">
-                            <Smartphone size={16} className="text-green-700" />
-                            <p className="text-sm font-semibold text-gray-900">
-                              Mobile Money details
-                            </p>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Phone Number
-                              </label>
-                              <input
-                                type="text"
-                                name="momo_phone"
-                                value={formData.momo_phone}
-                                onChange={handleChange}
-                                placeholder="e.g. 0788 000 000"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Provider
-                              </label>
-                              <select
-                                name="momo_provider"
-                                value={formData.momo_provider}
-                                onChange={handleChange}
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              >
-                                <option value="mtn">MTN MoMo</option>
-                                <option value="airtel">Airtel Money</option>
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Transaction Reference
-                              </label>
-                              <input
-                                type="text"
-                                name="momo_reference"
-                                value={formData.momo_reference}
-                                onChange={handleChange}
-                                placeholder="Optional reference"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-                          </div>
+                    <div className="mt-4 rounded-xl bg-white p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 rounded-xl bg-green-100 p-2 text-green-800">
+                          {formData.payment_method === 'momo' && <Smartphone size={16} />}
+                          {formData.payment_method === 'card' && <CreditCard size={16} />}
+                          {formData.payment_method === 'cash' && <Wallet size={16} />}
                         </div>
-                      )}
 
-                      {formData.payment_method === 'card' && (
-                        <div className="rounded-xl bg-white p-4">
-                          <div className="mb-3 flex items-center gap-2">
-                            <CreditCard size={16} className="text-green-700" />
-                            <p className="text-sm font-semibold text-gray-900">Card details</p>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Cardholder Name
-                              </label>
-                              <input
-                                type="text"
-                                name="card_holder_name"
-                                value={formData.card_holder_name}
-                                onChange={handleChange}
-                                placeholder="Name on card"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Card Number
-                              </label>
-                              <input
-                                type="text"
-                                name="card_number"
-                                value={formData.card_number}
-                                onChange={handleChange}
-                                placeholder="1234 5678 9012 3456"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                  Expiry
-                                </label>
-                                <input
-                                  type="text"
-                                  name="card_expiry"
-                                  value={formData.card_expiry}
-                                  onChange={handleChange}
-                                  placeholder="MM/YY"
-                                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                  CVV
-                                </label>
-                                <input
-                                  type="password"
-                                  name="card_cvv"
-                                  value={formData.card_cvv}
-                                  onChange={handleChange}
-                                  placeholder="***"
-                                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                                />
-                              </div>
-                            </div>
-                          </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            Payment method noted
+                          </p>
+                          <p className="mt-1 text-xs leading-6 text-gray-600">
+                            This form records your donation choice and contact information.
+                            If you want to add transfer or receipt details, include them in the
+                            message box above.
+                          </p>
                         </div>
-                      )}
-
-                      {formData.payment_method === 'cash' && (
-                        <div className="rounded-xl bg-white p-4">
-                          <div className="mb-3 flex items-center gap-2">
-                            <Landmark size={16} className="text-green-700" />
-                            <p className="text-sm font-semibold text-gray-900">
-                              Cash donation details
-                            </p>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Payer Name
-                              </label>
-                              <input
-                                type="text"
-                                name="cash_payer_name"
-                                value={formData.cash_payer_name}
-                                onChange={handleChange}
-                                placeholder="Person making the cash payment"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Receipt / Reference
-                              </label>
-                              <input
-                                type="text"
-                                name="cash_reference"
-                                value={formData.cash_reference}
-                                onChange={handleChange}
-                                placeholder="Receipt number or note"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                                Collection Point
-                              </label>
-                              <input
-                                type="text"
-                                name="cash_collection_point"
-                                value={formData.cash_collection_point}
-                                onChange={handleChange}
-                                placeholder="Office or collection location"
-                                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-green-700"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
 
                     <div className="mt-4 rounded-xl bg-black p-4 text-white">
@@ -796,7 +605,8 @@ function DonatePage() {
                         <div>
                           <p className="text-sm font-semibold">Secure donation flow</p>
                           <p className="mt-1 text-xs leading-6 text-white/70">
-                            Your donation is linked to the live project loaded from the backend.
+                            Your donation is linked to the live project loaded from the backend,
+                            and guest donors can still claim an account later through email.
                           </p>
                         </div>
                       </div>
