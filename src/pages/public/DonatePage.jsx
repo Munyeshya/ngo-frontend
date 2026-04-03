@@ -19,6 +19,7 @@ import publicApi from '../../api/publicApi'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
+import { useToast } from '../../components/feedback/ToastProvider'
 
 const currencyFormatter = new Intl.NumberFormat('en-RW', {
   style: 'currency',
@@ -140,6 +141,7 @@ function DonatePage() {
   const params = useParams()
   const routeProjectId = params.projectId ?? params.id ?? ''
 
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [project, setProject] = useState(null)
@@ -156,8 +158,6 @@ function DonatePage() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
-  const [submitSuccess, setSubmitSuccess] = useState('')
 
   useEffect(() => {
     let active = true
@@ -240,12 +240,9 @@ function DonatePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitError('')
-    setSubmitSuccess('')
-
     const validationError = validateForm()
     if (validationError) {
-      setSubmitError(validationError)
+      showToast({ type: 'error', message: validationError })
       return
     }
 
@@ -264,7 +261,7 @@ function DonatePage() {
 
       await api.post(resolveDonationEndpoint(), payload)
 
-      setSubmitSuccess('Donation submitted successfully.')
+      showToast({ type: 'success', message: 'Donation submitted successfully.' })
 
       setFormData({
         donor_name: '',
@@ -284,7 +281,7 @@ function DonatePage() {
         error?.response?.data?.detail ||
         'Failed to submit donation.'
 
-      setSubmitError(message)
+      showToast({ type: 'error', message })
     } finally {
       setIsSubmitting(false)
     }
@@ -615,18 +612,6 @@ function DonatePage() {
                   </div>
                 </div>
               </div>
-
-              {submitError && (
-                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {submitError}
-                </div>
-              )}
-
-              {submitSuccess && (
-                <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                  {submitSuccess}
-                </div>
-              )}
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button
