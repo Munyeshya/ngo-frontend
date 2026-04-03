@@ -16,6 +16,27 @@ React + Vite frontend for the NGO management platform. It includes the public si
 - npm
 - The backend running locally or at a reachable API URL
 
+## Clone And Folder Structure
+
+Clone the frontend and backend into the same parent folder so the project stays in the expected local layout:
+
+```powershell
+mkdir NGOs
+cd NGOs
+git clone https://github.com/Munyeshya/ngo-frontend.git
+git clone https://github.com/Munyeshya/ngo-backend.git
+```
+
+Recommended structure:
+
+```text
+NGOs/
+  ngo-frontend/
+  ngo-backend/
+```
+
+Run frontend commands inside `ngo-frontend` and backend commands inside `ngo-backend`.
+
 ## Install
 
 1. Install dependencies:
