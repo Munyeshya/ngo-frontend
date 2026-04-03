@@ -623,8 +623,7 @@ function ProjectDetailsPage() {
                         This project is under review
                       </p>
                       <p className="mt-1 text-xs leading-6 text-sky-800">
-                        Donations are still open, but cashout activity stays restricted until admin
-                        clears the review.
+                        Admin is reviewing recent reports related to this project.
                       </p>
                     </div>
                   </div>
