@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Mail, Save, ShieldCheck, UserCircle2 } from 'lucide-react'
+import { Mail, Save, ShieldCheck, Upload, UserCircle2 } from 'lucide-react'
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
@@ -50,6 +50,7 @@ function DonorProfilePage() {
     username: '',
     email: '',
     phone_number: '',
+    profile_image: null,
   })
 
   useEffect(() => {
@@ -79,6 +80,7 @@ function DonorProfilePage() {
           username: mergedProfile?.username || '',
           email: mergedProfile?.email || '',
           phone_number: mergedProfile?.phone_number || '',
+          profile_image: null,
         })
       } catch (err) {
         if (!active) return
@@ -105,12 +107,26 @@ function DonorProfilePage() {
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
+  const uploadedImagePreview = useMemo(() => {
+    if (!(formData.profile_image instanceof File)) return ''
+    return URL.createObjectURL(formData.profile_image)
+  }, [formData.profile_image])
+  const profileImagePreview = uploadedImagePreview || profile?.profile_image || ''
+
+  useEffect(() => {
+    return () => {
+      if (uploadedImagePreview) {
+        URL.revokeObjectURL(uploadedImagePreview)
+      }
+    }
+  }, [uploadedImagePreview])
+
   function handleChange(event) {
-    const { name, value } = event.target
+    const { name, value, files } = event.target
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: files ? files[0] || null : value,
     }))
   }
 
@@ -129,15 +145,19 @@ function DonorProfilePage() {
     try {
       setSaving(true)
 
-      const payload = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        phone_number: formData.phone_number.trim(),
+      const payload = new FormData()
+      payload.append('first_name', formData.first_name.trim())
+      payload.append('last_name', formData.last_name.trim())
+      payload.append('username', formData.username.trim())
+      payload.append('email', formData.email.trim())
+      payload.append('phone_number', formData.phone_number.trim())
+      if (formData.profile_image) {
+        payload.append('profile_image', formData.profile_image)
       }
 
-      const response = await api.patch(endpoints.userDetails(profile.id), payload)
+      const response = await api.patch(endpoints.userDetails(profile.id), payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       const updatedProfile = unwrapPayload(response.data)
       const mergedProfile = {
         ...(getUser() || {}),
@@ -154,6 +174,7 @@ function DonorProfilePage() {
         username: mergedProfile?.username || '',
         email: mergedProfile?.email || '',
         phone_number: mergedProfile?.phone_number || '',
+        profile_image: null,
       })
 
       showToast({ type: 'success', message: 'Profile updated successfully.' })
@@ -212,9 +233,17 @@ function DonorProfilePage() {
         <div className="space-y-5">
           <div className="rounded-[28px] border border-gray-200 bg-white p-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#166534] text-2xl font-bold text-white">
-                {initials}
-              </div>
+              {profileImagePreview ? (
+                <img
+                  src={profileImagePreview}
+                  alt={displayName}
+                  className="h-20 w-20 rounded-[24px] object-cover"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#166534] text-2xl font-bold text-white">
+                  {initials}
+                </div>
+              )}
 
               <div className="min-w-0">
                   <p className="truncate text-xl font-bold text-gray-900">{displayName}</p>
@@ -289,6 +318,36 @@ function DonorProfilePage() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+            <div className="rounded-[22px] border border-gray-200 bg-[#F8F8F6] p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                {profileImagePreview ? (
+                  <img
+                    src={profileImagePreview}
+                    alt={displayName}
+                    className="h-20 w-20 rounded-[24px] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#166534] text-2xl font-bold text-white">
+                    {initials}
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900">Profile Image</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Upload a clear profile image for your donor account.
+                  </p>
+                  <input
+                    type="file"
+                    name="profile_image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="mt-3 block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-[11px] file:font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <label className="mb-2.5 block text-sm font-semibold text-gray-900">
@@ -366,7 +425,7 @@ function DonorProfilePage() {
               disabled={saving}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] bg-[#166534] px-6 text-sm font-semibold text-white transition hover:bg-[#0F4D27] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <Save size={16} />
+              {saving ? <Upload size={16} /> : <Save size={16} />}
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
