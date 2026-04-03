@@ -1,9 +1,6 @@
 import {
   LayoutDashboard,
   FolderKanban,
-  Users,
-  HandCoins,
-  Bell,
   BriefcaseBusiness,
   ArrowLeft,
 } from 'lucide-react'
@@ -13,9 +10,6 @@ import { getUser } from '../../utils/storage'
 const items = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
-  { name: 'Beneficiaries', href: '/dashboard/beneficiaries', icon: Users },
-  { name: 'Donations', href: '/dashboard/donations', icon: HandCoins },
-  { name: 'Updates', href: '/dashboard/updates', icon: Bell },
 ]
 
 function DashboardSidebar() {
