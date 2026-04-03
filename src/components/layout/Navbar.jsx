@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import Logo from '../common/Logo'
 import Button from '../ui/Button'
-import { clearAuth, getToken, getUser } from '../../utils/storage'
+import { clearAuth, getRefreshToken, getToken, getUser } from '../../utils/storage'
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
 
@@ -91,7 +91,7 @@ function Navbar() {
 
   async function handleLogout() {
     try {
-      const refresh = localStorage.getItem('ngo_refresh_token')
+      const refresh = getRefreshToken()
 
       if (refresh) {
         await api.post(endpoints.logout, { refresh })
