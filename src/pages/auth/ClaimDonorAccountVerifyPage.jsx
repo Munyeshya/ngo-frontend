@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowLeft,
-  CheckCircle2,
   KeyRound,
   Loader2,
   LockKeyhole,
@@ -11,10 +9,12 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 
 function ClaimDonorAccountVerifyPage() {
+  const { showToast } = useToast()
   const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({
     token: '',
@@ -22,8 +22,6 @@ function ClaimDonorAccountVerifyPage() {
     confirm_password: '',
   })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const token = searchParams.get('token') || ''
@@ -47,21 +45,19 @@ function ClaimDonorAccountVerifyPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setError('')
-    setSuccess('')
 
     if (!formData.token.trim()) {
-      setError('Verification token is required.')
+      showToast({ type: 'error', message: 'Verification token is required.' })
       return
     }
 
     if (!formData.password.trim()) {
-      setError('Password is required.')
+      showToast({ type: 'error', message: 'Password is required.' })
       return
     }
 
     if (formData.password !== formData.confirm_password) {
-      setError('Passwords do not match.')
+      showToast({ type: 'error', message: 'Passwords do not match.' })
       return
     }
 
@@ -74,20 +70,24 @@ function ClaimDonorAccountVerifyPage() {
         confirm_password: formData.confirm_password,
       })
 
-      setSuccess(
-        response?.data?.message ||
-          'Donor account verified successfully. You can now log in.'
-      )
+      showToast({
+        type: 'success',
+        message:
+          response?.data?.message ||
+          'Donor account verified successfully. You can now log in.',
+      })
     } catch (err) {
       const data = err?.response?.data
       const tokenError = data?.token?.[0] || data?.token
 
-      setError(
-        data?.message ||
+      showToast({
+        type: 'error',
+        message:
+          data?.message ||
           data?.detail ||
           tokenError ||
-          'The claim token is invalid or expired.'
-      )
+          'The claim token is invalid or expired.',
+      })
     } finally {
       setLoading(false)
     }
@@ -162,27 +162,6 @@ function ClaimDonorAccountVerifyPage() {
                 className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 outline-none transition focus:border-green-700 focus:ring-4 focus:ring-green-100"
               />
             </div>
-
-            {error && (
-              <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {success && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                  <div>
-                    <p>{success}</p>
-                    <p className="mt-2 text-sm text-green-800">
-                      Your account is ready. Continue to login and access your donation history.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <Button type="submit" className="h-12 w-full" disabled={loading}>
               {loading ? (
