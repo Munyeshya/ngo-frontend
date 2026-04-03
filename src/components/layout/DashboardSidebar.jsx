@@ -8,6 +8,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { getUser } from '../../utils/storage'
 
 const items = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -18,6 +19,10 @@ const items = [
 ]
 
 function DashboardSidebar() {
+  const user = getUser()
+  const isAdmin = String(user?.role || '').toLowerCase() === 'admin'
+  const portalLabel = isAdmin ? 'Admin Portal' : 'Staff Workspace'
+
   return (
     <aside className="flex h-full w-[272px] flex-col bg-[#166534] text-white">
       <div className="border-b border-white/10 px-5 py-5">
@@ -28,7 +33,7 @@ function DashboardSidebar() {
 
           <div>
             <p className="text-sm font-semibold text-white">NGO Platform</p>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-white/75">Admin / Staff Portal</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-white/75">{portalLabel}</p>
           </div>
         </Link>
       </div>
