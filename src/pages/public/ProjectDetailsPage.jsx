@@ -20,6 +20,7 @@ import {
 
 import api from '../../api/axios'
 import endpoints from '../../api/endpoints'
+import publicApi from '../../api/publicApi'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
@@ -199,7 +200,7 @@ function ProjectDetailsPage() {
         setError('')
         setNotFound(false)
 
-        const projectRes = await api.get(endpoints.projectDetails(routeProjectId))
+        const projectRes = await publicApi.get(endpoints.projectDetails(routeProjectId))
         if (!active) return
 
         const projectData = unwrapPayload(projectRes.data)
@@ -214,10 +215,10 @@ function ProjectDetailsPage() {
         }
 
         const [beneficiariesRes, updatesRes] = await Promise.allSettled([
-          api.get(endpoints.beneficiaries, {
+          publicApi.get(endpoints.beneficiaries, {
             params: { project: routeProjectId },
           }),
-          api.get(endpoints.projectUpdates, {
+          publicApi.get(endpoints.projectUpdates, {
             params: { project: routeProjectId },
           }),
         ])
