@@ -595,7 +595,8 @@ function ProjectDetailsPage() {
             <Card className="rounded-[28px] p-7">
               <h2 className="text-3xl font-bold text-gray-900">Funding summary</h2>
 
-              {(project?.funding_status !== 'open' || project?.moderation_status !== 'clear') && (
+              {(project?.funding_status !== 'open' ||
+                project?.moderation_status === 'taken_down') && (
                 <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                   <div className="flex items-start gap-3">
                     <ShieldAlert size={18} className="mt-0.5 shrink-0 text-amber-700" />
@@ -604,8 +605,26 @@ function ProjectDetailsPage() {
                         Donations are currently restricted
                       </p>
                       <p className="mt-1 text-xs leading-6 text-amber-800">
-                        This project is under admin review or has frozen funding. New donations
-                        may be unavailable until it is cleared.
+                        This project is currently not open for new donations. Please wait for the
+                        latest admin decision before contributing again.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {project?.moderation_status === 'under_review' &&
+                project?.funding_status === 'open' && (
+                <div className="mt-5 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <ShieldAlert size={18} className="mt-0.5 shrink-0 text-sky-700" />
+                    <div>
+                      <p className="text-sm font-semibold text-sky-900">
+                        This project is under review
+                      </p>
+                      <p className="mt-1 text-xs leading-6 text-sky-800">
+                        Donations are still open, but cashout activity stays restricted until admin
+                        clears the review.
                       </p>
                     </div>
                   </div>
