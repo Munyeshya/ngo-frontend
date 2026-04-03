@@ -25,6 +25,7 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
 import SectionTitle from '../../components/common/SectionTitle'
+import { useToast } from '../../components/feedback/ToastProvider'
 import { getUser } from '../../utils/storage'
 
 const REPORT_REASON_OPTIONS = [
@@ -171,6 +172,7 @@ function ProjectDetailsPage() {
   const currentUser = getUser()
   const canReportProject = Boolean(currentUser?.role)
 
+  const { showToast } = useToast()
   const [project, setProject] = useState(null)
   const [partners, setPartners] = useState([])
   const [beneficiaries, setBeneficiaries] = useState([])
@@ -183,13 +185,9 @@ function ProjectDetailsPage() {
   const [subscriberName, setSubscriberName] = useState('')
   const [subscriberEmail, setSubscriberEmail] = useState('')
   const [subscribeLoading, setSubscribeLoading] = useState(false)
-  const [subscribeSuccess, setSubscribeSuccess] = useState('')
-  const [subscribeError, setSubscribeError] = useState('')
   const [reportReason, setReportReason] = useState(REPORT_REASON_OPTIONS[0].value)
   const [reportClaim, setReportClaim] = useState('')
   const [reportLoading, setReportLoading] = useState(false)
-  const [reportSuccess, setReportSuccess] = useState('')
-  const [reportError, setReportError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -323,8 +321,6 @@ function ProjectDetailsPage() {
 
     if (!project?.id) return
 
-    setSubscribeSuccess('')
-    setSubscribeError('')
     setSubscribeLoading(true)
 
     try {
@@ -334,15 +330,20 @@ function ProjectDetailsPage() {
         email: subscriberEmail.trim(),
       })
 
-      setSubscribeSuccess('You have subscribed successfully to project updates.')
+      showToast({
+        type: 'success',
+        message: 'You have subscribed successfully to project updates.',
+      })
       setSubscriberName('')
       setSubscriberEmail('')
     } catch (err) {
-      setSubscribeError(
+      showToast({
+        type: 'error',
+        message:
         err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Subscription failed. Please check the information and try again.'
-      )
+          'Subscription failed. Please check the information and try again.',
+      })
     } finally {
       setSubscribeLoading(false)
     }
@@ -353,8 +354,6 @@ function ProjectDetailsPage() {
 
     if (!project?.id || !canReportProject) return
 
-    setReportSuccess('')
-    setReportError('')
     setReportLoading(true)
 
     try {
@@ -364,15 +363,20 @@ function ProjectDetailsPage() {
         claim_text: reportClaim.trim(),
       })
 
-      setReportSuccess('Your report has been sent for admin review.')
+      showToast({
+        type: 'success',
+        message: 'Your report has been sent for admin review.',
+      })
       setReportClaim('')
       setReportReason(REPORT_REASON_OPTIONS[0].value)
     } catch (err) {
-      setReportError(
+      showToast({
+        type: 'error',
+        message:
         err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Unable to submit your report right now.'
-      )
+          'Unable to submit your report right now.',
+      })
     } finally {
       setReportLoading(false)
     }
@@ -961,18 +965,6 @@ function ProjectDetailsPage() {
                     />
                   </label>
 
-                  {reportSuccess ? (
-                    <div className="rounded-2xl bg-green-50 px-3 py-2.5 text-xs text-green-700">
-                      {reportSuccess}
-                    </div>
-                  ) : null}
-
-                  {reportError ? (
-                    <div className="rounded-2xl bg-red-50 px-3 py-2.5 text-xs text-red-700">
-                      {reportError}
-                    </div>
-                  ) : null}
-
                   <Button
                     type="submit"
                     className="w-full px-3 py-2 text-xs"
@@ -1032,18 +1024,6 @@ function ProjectDetailsPage() {
                       className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none backdrop-blur"
                       required
                     />
-
-                    {subscribeSuccess && (
-                      <div className="rounded-2xl bg-emerald-500/15 p-3 text-sm text-emerald-200">
-                        {subscribeSuccess}
-                      </div>
-                    )}
-
-                    {subscribeError && (
-                      <div className="rounded-2xl bg-red-500/15 p-3 text-sm text-red-200">
-                        {subscribeError}
-                      </div>
-                    )}
 
                     <div className="grid gap-3">
                       <Button className="w-full" type="submit" disabled={subscribeLoading}>
