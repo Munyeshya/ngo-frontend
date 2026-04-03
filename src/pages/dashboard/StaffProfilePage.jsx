@@ -35,7 +35,8 @@ function buildDisplayName(user) {
 
 function StaffProfilePage() {
   const { showToast } = useToast()
-  const [profile, setProfile] = useState(getUser())
+  const storedUser = getUser()
+  const [profile, setProfile] = useState(storedUser)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -55,19 +56,26 @@ function StaffProfilePage() {
       try {
         setLoading(true)
         setError('')
-        const response = await api.get(endpoints.profile)
-        const profileData = unwrapPayload(response.data)
+        const userId = storedUser?.id
+        const response = userId
+          ? await api.get(endpoints.userDetails(userId))
+          : await api.get(endpoints.profile)
+        const profileData = unwrapPayload(response.data) || {}
+        const mergedProfile = {
+          ...(storedUser || {}),
+          ...profileData,
+        }
 
         if (!active) return
 
-        setProfile(profileData)
-        setUser(profileData)
+        setProfile(mergedProfile)
+        setUser(mergedProfile)
         setFormData({
-          first_name: profileData?.first_name || '',
-          last_name: profileData?.last_name || '',
-          username: profileData?.username || '',
-          email: profileData?.email || '',
-          phone_number: profileData?.phone_number || '',
+          first_name: mergedProfile?.first_name || '',
+          last_name: mergedProfile?.last_name || '',
+          username: mergedProfile?.username || '',
+          email: mergedProfile?.email || '',
+          phone_number: mergedProfile?.phone_number || '',
           profile_image: null,
         })
       } catch (err) {
@@ -75,7 +83,7 @@ function StaffProfilePage() {
         const message =
           err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Failed to load your staff profile.'
+          'Failed to load your account profile.'
         setError(message)
         showToast({ type: 'error', message })
       } finally {
@@ -87,10 +95,14 @@ function StaffProfilePage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [showToast, storedUser])
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
+  const roleLabel =
+    String(profile?.role || storedUser?.role || 'staff').toLowerCase() === 'admin'
+      ? 'Admin'
+      : 'Staff'
   const profileImagePreview = useMemo(() => {
     if (formData.profile_image instanceof File) {
       return URL.createObjectURL(formData.profile_image)
@@ -148,14 +160,14 @@ function StaffProfilePage() {
         phone_number: mergedProfile?.phone_number || '',
         profile_image: null,
       })
-      showToast({ type: 'success', message: 'Staff profile updated successfully.' })
+      showToast({ type: 'success', message: `${roleLabel} profile updated successfully.` })
     } catch (err) {
       showToast({
         type: 'error',
         message:
           err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Failed to update staff profile.',
+          'Failed to update account profile.',
       })
     } finally {
       setSaving(false)
@@ -167,7 +179,7 @@ function StaffProfilePage() {
       <div className="space-y-4">
         <Card className="rounded-[24px] p-5">
           <p className="text-lg font-bold text-gray-900">Loading profile...</p>
-          <p className="mt-2 text-sm text-gray-500">Preparing your staff account details.</p>
+          <p className="mt-2 text-sm text-gray-500">Preparing your account details.</p>
         </Card>
       </div>
     )
@@ -176,10 +188,10 @@ function StaffProfilePage() {
   return (
     <div className="space-y-4">
       <Card className="rounded-[24px] p-5">
-        <p className="text-sm font-medium text-[#166534]">Staff Profile</p>
+        <p className="text-sm font-medium text-[#166534]">{roleLabel} Profile</p>
         <h1 className="mt-2 text-[1.7rem] font-bold text-gray-900">Account Details</h1>
         <p className="mt-2 text-sm text-gray-500">
-          Manage your personal account information used across the staff portal.
+          Manage your personal account information used across the portal.
         </p>
       </Card>
 
@@ -254,7 +266,7 @@ function StaffProfilePage() {
           <Card className="rounded-[24px] p-5">
             <h2 className="text-sm font-bold text-gray-900">Profile Notes</h2>
             <p className="mt-3 text-sm leading-7 text-gray-600">
-              Keep your staff identity current so project ownership, approval messages, and account
+              Keep your account identity current so ownership, review messages, and account
               communication stay accurate.
             </p>
           </Card>
@@ -264,7 +276,7 @@ function StaffProfilePage() {
           <div>
             <h2 className="text-lg font-bold text-gray-900">Edit Profile</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Update the safe account fields available to your staff profile.
+              Update the safe account fields available to your profile.
             </p>
           </div>
 
@@ -286,7 +298,7 @@ function StaffProfilePage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-gray-900">Profile Image</p>
                   <p className="mt-1 text-xs text-gray-500">
-                    Upload a clear profile image for your staff account.
+                    Upload a clear profile image for your account.
                   </p>
                   <input
                     type="file"
