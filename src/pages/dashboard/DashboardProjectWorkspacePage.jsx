@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Bell,
   CalendarDays,
+  CircleDollarSign,
   FolderKanban,
   HandCoins,
   HeartHandshake,
@@ -110,6 +111,7 @@ const UPDATES_PER_PAGE = 5
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: FolderKanban },
+  { id: 'funds', label: 'Funds', icon: CircleDollarSign },
   { id: 'beneficiaries', label: 'Beneficiaries', icon: HeartHandshake },
   { id: 'donations', label: 'Donations', icon: HandCoins },
   { id: 'updates', label: 'Updates', icon: Bell },
@@ -133,6 +135,7 @@ function DashboardProjectWorkspacePage() {
   const [beneficiaries, setBeneficiaries] = useState([])
   const [donations, setDonations] = useState([])
   const [updates, setUpdates] = useState([])
+  const [cashouts, setCashouts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
@@ -150,6 +153,7 @@ function DashboardProjectWorkspacePage() {
   const [uploadingBeneficiaryImageFor, setUploadingBeneficiaryImageFor] = useState(null)
   const [uploadingUpdateImageFor, setUploadingUpdateImageFor] = useState(null)
   const [deletingImageId, setDeletingImageId] = useState(null)
+  const [submittingCashout, setSubmittingCashout] = useState(false)
   const [projectForm, setProjectForm] = useState({
     title: '',
     description: '',
@@ -169,6 +173,10 @@ function DashboardProjectWorkspacePage() {
     title: '',
     description: '',
   })
+  const [cashoutForm, setCashoutForm] = useState({
+    amount: '',
+    purpose: '',
+  })
 
   useEffect(() => {
     let active = true
@@ -178,12 +186,13 @@ function DashboardProjectWorkspacePage() {
         setLoading(true)
         setError('')
 
-        const [projectResponse, beneficiariesResponse, donationsResponse, updatesResponse] =
+        const [projectResponse, beneficiariesResponse, donationsResponse, updatesResponse, cashoutsResponse] =
           await Promise.allSettled([
             api.get(endpoints.projectDetails(projectId)),
             api.get(endpoints.beneficiaries, { params: { project: projectId } }),
             api.get(endpoints.donations, { params: { project: projectId } }),
             api.get(endpoints.projectUpdates, { params: { project: projectId } }),
+            api.get(endpoints.projectCashouts, { params: { project: projectId } }),
           ])
 
         if (!active) return
@@ -207,6 +216,11 @@ function DashboardProjectWorkspacePage() {
         setUpdates(
           updatesResponse.status === 'fulfilled'
             ? normalizeListResponse(updatesResponse.value.data)
+            : []
+        )
+        setCashouts(
+          cashoutsResponse.status === 'fulfilled'
+            ? normalizeListResponse(cashoutsResponse.value.data)
             : []
         )
       } catch (err) {
@@ -320,6 +334,12 @@ function DashboardProjectWorkspacePage() {
     return { points, target, maxValue, latestTotal: runningTotal }
   }, [project?.target_amount, sortedDonations])
 
+  const sortedCashouts = useMemo(() => {
+    return [...cashouts].sort(
+      (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0)
+    )
+  }, [cashouts])
+
   const selectedTab = tabs.find((tab) => tab.id === activeTab) || tabs[0]
 
   function switchTab(tabId) {
@@ -353,18 +373,20 @@ function DashboardProjectWorkspacePage() {
   }
 
   async function refreshWorkspace() {
-    const [projectResponse, beneficiariesResponse, donationsResponse, updatesResponse] =
+    const [projectResponse, beneficiariesResponse, donationsResponse, updatesResponse, cashoutsResponse] =
       await Promise.all([
         api.get(endpoints.projectDetails(projectId)),
         api.get(endpoints.beneficiaries, { params: { project: projectId } }),
         api.get(endpoints.donations, { params: { project: projectId } }),
         api.get(endpoints.projectUpdates, { params: { project: projectId } }),
+        api.get(endpoints.projectCashouts, { params: { project: projectId } }),
       ])
 
     setProject(unwrapPayload(projectResponse.data))
     setBeneficiaries(normalizeListResponse(beneficiariesResponse.data))
     setDonations(normalizeListResponse(donationsResponse.data))
     setUpdates(normalizeListResponse(updatesResponse.data))
+    setCashouts(normalizeListResponse(cashoutsResponse.data))
   }
 
   function resetBeneficiaryForm() {
@@ -455,6 +477,11 @@ function DashboardProjectWorkspacePage() {
   function handleUpdateFieldChange(event) {
     const { name, value } = event.target
     setUpdateForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function handleCashoutFieldChange(event) {
+    const { name, value } = event.target
+    setCashoutForm((prev) => ({ ...prev, [name]: value }))
   }
 
   async function handleProjectSubmit(event) {
@@ -550,6 +577,33 @@ function DashboardProjectWorkspacePage() {
       )
     } finally {
       setSubmittingUpdate(false)
+    }
+  }
+
+  async function handleCashoutSubmit(event) {
+    event.preventDefault()
+    setActionError('')
+    setActionSuccess('')
+
+    try {
+      setSubmittingCashout(true)
+      await api.post(endpoints.projectCashouts, {
+        project: Number(projectId),
+        amount: cashoutForm.amount,
+        purpose: cashoutForm.purpose.trim(),
+      })
+      await refreshWorkspace()
+      setCashoutForm({ amount: '', purpose: '' })
+      switchTab('funds')
+      setActionSuccess('Cashout recorded and published into project updates.')
+    } catch (err) {
+      setActionError(
+        err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to record project cashout.'
+      )
+    } finally {
+      setSubmittingCashout(false)
     }
   }
 
@@ -1031,6 +1085,149 @@ function DashboardProjectWorkspacePage() {
                 )}
               </div>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {selectedTab.id === 'funds' && (
+        <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+          <Card className="rounded-[24px] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Cashout</h2>
+                <p className="mt-1 text-xs leading-6 text-gray-500">
+                  Record project spending. Each cashout is also published as a normal public update.
+                </p>
+              </div>
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-green-50 text-green-800">
+                <CircleDollarSign size={16} />
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#F8F8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
+                  Available Balance
+                </p>
+                <p className="mt-1 text-sm font-bold text-gray-900">
+                  {formatCurrency(project?.available_balance)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
+                  Total Cashouts
+                </p>
+                <p className="mt-1 text-sm font-bold text-gray-900">
+                  {formatCurrency(project?.total_cashouts)}
+                </p>
+              </div>
+            </div>
+
+            {(project?.funding_status !== 'open' || project?.moderation_status !== 'clear') && (
+              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p className="text-xs font-semibold text-amber-900">
+                  Cashout is currently restricted
+                </p>
+                <p className="mt-1 text-[11px] leading-5 text-amber-800">
+                  This project is under review or has frozen funding, so no new cashout can be
+                  recorded until it is cleared.
+                </p>
+              </div>
+            )}
+
+            <form onSubmit={handleCashoutSubmit} className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  min="0"
+                  step="0.01"
+                  value={cashoutForm.amount}
+                  onChange={handleCashoutFieldChange}
+                  required
+                  className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
+                  Activity details
+                </label>
+                <textarea
+                  name="purpose"
+                  rows="5"
+                  value={cashoutForm.purpose}
+                  onChange={handleCashoutFieldChange}
+                  required
+                  placeholder="What is this cashout being used for?"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  className="px-3 py-2 text-xs"
+                  disabled={
+                    submittingCashout ||
+                    project?.funding_status !== 'open' ||
+                    project?.moderation_status !== 'clear'
+                  }
+                >
+                  {submittingCashout ? 'Recording...' : 'Record Cashout'}
+                </Button>
+              </div>
+            </form>
+          </Card>
+
+          <Card className="rounded-[24px] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Cashout Ledger</h2>
+                <p className="mt-1 text-xs leading-6 text-gray-500">
+                  Recent fund movements and the remaining balance after each record.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold text-gray-700">
+                {sortedCashouts.length} records
+              </span>
+            </div>
+
+            {sortedCashouts.length === 0 ? (
+              <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">
+                No cashout activity has been recorded for this project yet.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {sortedCashouts.slice(0, 8).map((cashout) => (
+                  <div
+                    key={cashout.id}
+                    className="rounded-2xl border border-gray-200 bg-[#FCFCFB] p-3.5"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(cashout.amount)}
+                        </p>
+                        <p className="mt-1 text-[11px] text-gray-500">
+                          {formatDate(cashout.created_at)} •{' '}
+                          {cashout.requested_by_username || 'Staff'}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold text-gray-700">
+                        Balance {formatCurrency(cashout.remaining_balance)}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-6 text-gray-600">
+                      {cashout.purpose || 'No purpose recorded.'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
       )}
