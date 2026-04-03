@@ -725,12 +725,12 @@ function DashboardHomePage() {
                     {supportByTypeChart.series.map((item) => (
                       <th
                         key={`${item.label}-head`}
-                        className="pb-1.5 pr-2 text-center"
+                        className="pb-1.5 pr-2"
                         aria-label={item.label}
                         title={item.label}
                       >
                         <span
-                          className="inline-block h-2.5 w-2.5 rounded-full"
+                          className="block h-3.5 w-full rounded-sm"
                           style={{ backgroundColor: item.color }}
                         />
                       </th>
