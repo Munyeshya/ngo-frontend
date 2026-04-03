@@ -36,6 +36,14 @@ function statusTone(status) {
   return 'bg-[#F3F5F0] text-gray-700'
 }
 
+function inputClassName() {
+  return 'h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100'
+}
+
+function fileInputClassName() {
+  return 'block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-[#F3F5F0] file:px-3 file:py-2 file:text-[11px] file:font-semibold'
+}
+
 function StaffSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -230,146 +238,196 @@ function StaffSettingsPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="rounded-[22px] p-4">
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">Verification Details</h2>
-            <p className="mt-1 text-xs text-gray-500">
-              Choose whether you are applying as an individual or a group representative.
-            </p>
+          <div className="rounded-[18px] bg-[#F8F8F6] p-3.5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-gray-900">Application Overview</h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  Complete the required details below, then submit your documents for admin review.
+                </p>
+              </div>
+              <div className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${statusTone(application?.status)}`}>
+                {STATUS_LABELS[application?.status] || 'Draft'}
+              </div>
+            </div>
           </div>
 
           <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-gray-700">Applicant Type</span>
-                <select
-                  name="applicant_type"
-                  value={form.applicant_type}
-                  onChange={handleChange}
-                  className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                >
-                  <option value="individual">Individual</option>
-                  <option value="group">Group / Organization</option>
-                </select>
-              </label>
+            <div className="rounded-[20px] border border-gray-200 bg-white p-4">
+              <div className="mb-3">
+                <h3 className="text-sm font-bold text-gray-900">Applicant Details</h3>
+                <p className="mt-1 text-xs text-gray-500">
+                  Tell us who is applying and where the work is based.
+                </p>
+              </div>
 
-              <label className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-gray-700">Location</span>
-                <input
-                  type="text"
-                  name="location"
-                  value={form.location}
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-700">Applicant Type</span>
+                  <select
+                    name="applicant_type"
+                    value={form.applicant_type}
+                    onChange={handleChange}
+                    className={inputClassName()}
+                  >
+                    <option value="individual">Individual</option>
+                    <option value="group">Group / Organization</option>
+                  </select>
+                </label>
+
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-700">Location</span>
+                  <input
+                    type="text"
+                    name="location"
+                    value={form.location}
+                    onChange={handleChange}
+                    className={inputClassName()}
+                  />
+                </label>
+              </div>
+
+              <label className="mt-4 block space-y-1.5">
+                <span className="text-[11px] font-semibold text-gray-700">Mission Summary</span>
+                <textarea
+                  rows="4"
+                  name="mission_summary"
+                  value={form.mission_summary}
                   onChange={handleChange}
-                  className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                 />
               </label>
             </div>
 
-            <label className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-gray-700">Mission Summary</span>
-              <textarea
-                rows="4"
-                name="mission_summary"
-                value={form.mission_summary}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-              />
-            </label>
-
             {form.applicant_type === 'individual' ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-gray-700">National ID Number</span>
-                  <input
-                    type="text"
-                    name="individual_id_number"
-                    value={form.individual_id_number}
-                    onChange={handleChange}
-                    className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                  />
-                </label>
+              <div className="rounded-[20px] border border-gray-200 bg-white p-4">
+                <div className="mb-3">
+                  <h3 className="text-sm font-bold text-gray-900">Individual Verification</h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Upload the national ID information required for individual applicants.
+                  </p>
+                </div>
 
-                <label className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-gray-700">ID Document</span>
-                  <input
-                    type="file"
-                    name="individual_id_document"
-                    onChange={handleChange}
-                    className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-[#F3F5F0] file:px-3 file:py-2 file:text-[11px] file:font-semibold"
-                  />
-                </label>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="space-y-1.5">
+                    <span className="text-[11px] font-semibold text-gray-700">National ID Number</span>
+                    <input
+                      type="text"
+                      name="individual_id_number"
+                      value={form.individual_id_number}
+                      onChange={handleChange}
+                      className={inputClassName()}
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <span className="text-[11px] font-semibold text-gray-700">ID Document</span>
+                    <input
+                      type="file"
+                      name="individual_id_document"
+                      onChange={handleChange}
+                      className={fileInputClassName()}
+                    />
+                    <p className="text-[10px] text-gray-500">
+                      Current file: {fileNameFromUrl(application?.individual_id_document) || 'None yet'}
+                    </p>
+                  </label>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Organization / Group Name</span>
-                    <input
-                      type="text"
-                      name="organization_name"
-                      value={form.organization_name}
-                      onChange={handleChange}
-                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                    />
-                  </label>
+                <div className="rounded-[20px] border border-gray-200 bg-white p-4">
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold text-gray-900">Group Details</h3>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Add the organization and representative details tied to this application.
+                    </p>
+                  </div>
 
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Registration Number</span>
-                    <input
-                      type="text"
-                      name="registration_number"
-                      value={form.registration_number}
-                      onChange={handleChange}
-                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                    />
-                  </label>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Organization / Group Name</span>
+                      <input
+                        type="text"
+                        name="organization_name"
+                        value={form.organization_name}
+                        onChange={handleChange}
+                        className={inputClassName()}
+                      />
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Registration Number</span>
+                      <input
+                        type="text"
+                        name="registration_number"
+                        value={form.registration_number}
+                        onChange={handleChange}
+                        className={inputClassName()}
+                      />
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Representative Name</span>
+                      <input
+                        type="text"
+                        name="representative_name"
+                        value={form.representative_name}
+                        onChange={handleChange}
+                        className={inputClassName()}
+                      />
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Representative ID Number</span>
+                      <input
+                        type="text"
+                        name="representative_id_number"
+                        value={form.representative_id_number}
+                        onChange={handleChange}
+                        className={inputClassName()}
+                      />
+                    </label>
+                  </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Representative Name</span>
-                    <input
-                      type="text"
-                      name="representative_name"
-                      value={form.representative_name}
-                      onChange={handleChange}
-                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                    />
-                  </label>
+                <div className="rounded-[20px] border border-gray-200 bg-white p-4">
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold text-gray-900">Required Documents</h3>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Upload the legal and representative files needed for review.
+                    </p>
+                  </div>
 
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Representative ID Number</span>
-                    <input
-                      type="text"
-                      name="representative_id_number"
-                      value={form.representative_id_number}
-                      onChange={handleChange}
-                      className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                    />
-                  </label>
-                </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Legal Document</span>
+                      <input
+                        type="file"
+                        name="group_legal_document"
+                        onChange={handleChange}
+                        className={fileInputClassName()}
+                      />
+                      <p className="text-[10px] text-gray-500">
+                        Current file: {fileNameFromUrl(application?.group_legal_document) || 'None yet'}
+                      </p>
+                    </label>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Legal Document</span>
-                    <input
-                      type="file"
-                      name="group_legal_document"
-                      onChange={handleChange}
-                      className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-[#F3F5F0] file:px-3 file:py-2 file:text-[11px] file:font-semibold"
-                    />
-                  </label>
-
-                  <label className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-gray-700">Representative ID Document</span>
-                    <input
-                      type="file"
-                      name="representative_id_document"
-                      onChange={handleChange}
-                      className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-[#F3F5F0] file:px-3 file:py-2 file:text-[11px] file:font-semibold"
-                    />
-                  </label>
+                    <label className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-gray-700">Representative ID Document</span>
+                      <input
+                        type="file"
+                        name="representative_id_document"
+                        onChange={handleChange}
+                        className={fileInputClassName()}
+                      />
+                      <p className="text-[10px] text-gray-500">
+                        Current file: {fileNameFromUrl(application?.representative_id_document) || 'None yet'}
+                      </p>
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
@@ -388,6 +446,24 @@ function StaffSettingsPage() {
         </Card>
 
         <div className="space-y-4">
+          <Card className="rounded-[22px] p-4">
+            <h2 className="text-sm font-bold text-gray-900">Progress</h2>
+            <div className="mt-3 grid gap-3">
+              <div className="rounded-2xl bg-[#F8F8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">Applicant Type</p>
+                <p className="mt-1 text-sm font-semibold capitalize text-gray-900">
+                  {form.applicant_type === 'group' ? 'Group / Organization' : 'Individual'}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">Review Status</p>
+                <p className="mt-1 text-sm font-semibold text-gray-900">
+                  {STATUS_LABELS[application?.status] || 'Draft'}
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Card className="rounded-[22px] p-4">
             <h2 className="text-sm font-bold text-gray-900">Review Notes</h2>
             {application?.admin_message ? (
