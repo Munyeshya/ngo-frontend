@@ -36,7 +36,7 @@ function buildDisplayName(user) {
 
 function StaffProfilePage() {
   const { showToast } = useToast()
-  const storedUser = getUser()
+  const [storedUser, setStoredUserState] = useState(() => getUser())
   const [profile, setProfile] = useState(storedUser)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -70,6 +70,7 @@ function StaffProfilePage() {
         if (!active) return
 
         setProfile(mergedProfile)
+        setStoredUserState(mergedProfile)
         setUser(mergedProfile)
         setFormData({
           first_name: mergedProfile?.first_name || '',
@@ -96,7 +97,7 @@ function StaffProfilePage() {
     return () => {
       active = false
     }
-  }, [showToast, storedUser])
+  }, [showToast, storedUser?.id])
 
   const displayName = useMemo(() => buildDisplayName(profile), [profile])
   const initials = useMemo(() => getInitials(displayName), [displayName])
@@ -159,6 +160,7 @@ function StaffProfilePage() {
         ...updatedProfile,
       }
       setProfile(mergedProfile)
+      setStoredUserState(mergedProfile)
       setUser(mergedProfile)
       setFormData({
         first_name: mergedProfile?.first_name || '',
