@@ -56,7 +56,7 @@ export function ToastProvider({ children }) {
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto rounded-2xl border px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.14)] ${getToastTone(toast.type)}`}
+              className={`pointer-events-auto border px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.14)] ${getToastTone(toast.type)}`}
             >
               <div className="flex items-start gap-3">
                 <Icon size={18} className="mt-0.5 shrink-0" />
@@ -64,7 +64,7 @@ export function ToastProvider({ children }) {
                 <button
                   type="button"
                   onClick={() => dismissToast(toast.id)}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-current/70 transition hover:bg-black/5 hover:text-current"
+                  className="inline-flex h-6 w-6 items-center justify-center text-current/70 transition hover:bg-black/5 hover:text-current"
                   aria-label="Dismiss notification"
                 >
                   <X size={14} />
