@@ -30,7 +30,7 @@ function AboutPage() {
           <SectionTitle
             badge="About us"
             title="About our organization"
-            text="A public NGO platform designed to present projects, donations, updates, and community impact with more clarity and trust."
+            text="A public NGO transparency platform designed to present projects, donations, updates, and community impact with more clarity and trust."
             center
           />
         </div>
