@@ -216,7 +216,7 @@ function Footer() {
 
       <div className="relative z-10 border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm text-white/50 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <p>© 2026 NGO Platform. All rights reserved.</p>
+          <p>© 2026 NGO Transparency. All rights reserved.</p>
           <p>Designed for transparency, accountability, and community impact.</p>
         </div>
       </div>
