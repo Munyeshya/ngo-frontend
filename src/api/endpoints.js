@@ -29,6 +29,9 @@ const endpoints = {
   me: '/users/me/',
   users: '/users/',
   userDetails: (id) => `/users/${id}/`,
+  myStaffApplication: '/users/staff-application/',
+  staffApplications: '/users/staff-applications/',
+  staffApplicationDetails: (id) => `/users/staff-applications/${id}/`,
   claimDonorAccount: '/users/claim-donor-account/',
   claimDonorAccountVerify: '/users/claim-donor-account/verify/',
    
