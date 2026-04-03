@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut, Settings, UserCircle2 } from 'lucide-react'
+import { FileBadge2, LogOut, Settings, UserCircle2 } from 'lucide-react'
 
 import api from '../api/axios'
 import endpoints from '../api/endpoints'
@@ -106,6 +106,17 @@ function DashboardLayout() {
                         <Settings size={18} />
                         <span className="capitalize">{role} account</span>
                       </div>
+
+                      {role === 'staff' ? (
+                        <Link
+                          to="/dashboard/settings"
+                          onClick={() => setAccountOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition hover:bg-green-50 hover:text-green-800"
+                        >
+                          <FileBadge2 size={18} />
+                          Staff settings
+                        </Link>
+                      ) : null}
 
                       <Link
                         to="/"
