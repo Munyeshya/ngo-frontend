@@ -22,6 +22,7 @@ import DonorSubscriptionsPage from '../pages/donor/DonorSubscriptionsPage'
 import DashboardHomePage from '../pages/dashboard/DashboardHomePage'
 import DashboardProjectsPage from '../pages/dashboard/DashboardProjectsPage'
 import DashboardProjectWorkspacePage from '../pages/dashboard/DashboardProjectWorkspacePage'
+import StaffSettingsPage from '../pages/dashboard/StaffSettingsPage'
 import AdminUsersPage from '../pages/dashboard/AdminUsersPage'
 import AdminPartnersPage from '../pages/dashboard/AdminPartnersPage'
 
@@ -67,6 +68,7 @@ function AppRouter() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
             <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
+              <Route path="/dashboard/settings" element={<StaffSettingsPage />} />
               <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
               <Route
                 path="/dashboard/projects/:projectId"
