@@ -822,6 +822,9 @@ function ProjectDetailsPage() {
                   {updates.map((update, index) => {
                     const images = extractUpdateImages(update)
                     const documents = extractUpdateDocuments(update)
+                    const expenseItems = Array.isArray(update?.expense_items)
+                      ? update.expense_items
+                      : []
 
                     return (
                       <div key={update.id || index} className="flex gap-4">
@@ -853,6 +856,31 @@ function ProjectDetailsPage() {
                           )}
 
                           <RichTextContent html={update.description} className="mt-3 leading-7" />
+
+                          {expenseItems.length > 0 ? (
+                            <div className="mt-4 overflow-x-auto border-y border-gray-100 py-2">
+                              <table className="min-w-full text-[11px]">
+                                <thead className="text-left text-gray-500">
+                                  <tr>
+                                    <th className="pb-2 font-semibold">Item or service</th>
+                                    <th className="pb-2 font-semibold">Description</th>
+                                    <th className="pb-2 font-semibold">Quantity</th>
+                                    <th className="pb-2 text-right font-semibold">Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                  {expenseItems.map((item) => (
+                                    <tr key={item.id}>
+                                      <td className="py-2 pr-3 font-semibold text-gray-800">{item.item_name}</td>
+                                      <td className="py-2 pr-3 text-gray-600">{item.description || '—'}</td>
+                                      <td className="py-2 pr-3 text-gray-600">{Number(item.quantity)}</td>
+                                      <td className="py-2 text-right font-semibold text-gray-800">{formatCurrency(item.amount)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : null}
 
                           {images.length > 0 && (
                             <div className="mt-5 grid gap-4 sm:grid-cols-2">
