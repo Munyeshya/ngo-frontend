@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowRight,
+  Activity,
   Bell,
   CalendarDays,
   CircleDollarSign,
@@ -26,6 +27,7 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import RichTextContent from '../../components/common/RichTextContent'
 import RichTextEditor from '../../components/forms/RichTextEditor'
+import ProjectImpactPanel from '../../components/project/ProjectImpactPanel'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -121,6 +123,7 @@ const tabs = [
   { id: 'funds', label: 'Funds', icon: CircleDollarSign },
   { id: 'beneficiaries', label: 'Beneficiaries', icon: HeartHandshake },
   { id: 'donations', label: 'Donations', icon: HandCoins },
+  { id: 'impact', label: 'Impact', icon: Activity },
   { id: 'updates', label: 'Updates', icon: Bell },
 ]
 
@@ -1782,6 +1785,8 @@ function DashboardProjectWorkspacePage() {
           )}
         </Card>
       )}
+
+      {selectedTab.id === 'impact' && <ProjectImpactPanel projectId={projectId} />}
 
       {showProjectForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4 py-6">
