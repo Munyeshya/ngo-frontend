@@ -36,11 +36,13 @@ import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
 import ProjectDetailsPage from '../pages/public/ProjectDetailsPage'
 import DonatePage from '../pages/public/DonatePage'
+import ProjectTransparencyReportPage from '../pages/public/ProjectTransparencyReportPage'
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/projects/:projectId/transparency-report" element={<ProjectTransparencyReportPage />} />
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
