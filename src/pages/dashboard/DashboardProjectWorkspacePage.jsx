@@ -6,6 +6,7 @@ import {
   Bell,
   CalendarDays,
   CircleDollarSign,
+  FileText,
   FolderKanban,
   HandCoins,
   HeartHandshake,
@@ -23,6 +24,8 @@ import endpoints from '../../api/endpoints'
 import { useToast } from '../../components/feedback/ToastProvider'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
+import RichTextContent from '../../components/common/RichTextContent'
+import RichTextEditor from '../../components/forms/RichTextEditor'
 
 function unwrapPayload(payload) {
   if (!payload) return payload
@@ -75,6 +78,10 @@ function getUpdateImages(item) {
   if (Array.isArray(item?.images)) return item.images
   if (Array.isArray(item?.project_update_images)) return item.project_update_images
   return []
+}
+
+function getUpdateDocuments(item) {
+  return Array.isArray(item?.documents) ? item.documents : []
 }
 
 function getBeneficiaryImages(item) {
@@ -151,7 +158,9 @@ function DashboardProjectWorkspacePage() {
   const [deletingUpdateId, setDeletingUpdateId] = useState(null)
   const [uploadingBeneficiaryImageFor, setUploadingBeneficiaryImageFor] = useState(null)
   const [uploadingUpdateImageFor, setUploadingUpdateImageFor] = useState(null)
+  const [uploadingUpdateDocumentFor, setUploadingUpdateDocumentFor] = useState(null)
   const [deletingImageId, setDeletingImageId] = useState(null)
+  const [deletingDocumentId, setDeletingDocumentId] = useState(null)
   const [submittingCashout, setSubmittingCashout] = useState(false)
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -696,6 +705,33 @@ function DashboardProjectWorkspacePage() {
     }
   }
 
+  async function handleUpdateDocumentUpload(updateId, file) {
+    if (!file) return
+
+    try {
+      setUploadingUpdateDocumentFor(updateId)
+      const payload = new FormData()
+      payload.append('project_update', updateId)
+      payload.append('file', file)
+      payload.append('title', file.name)
+      await api.post(endpoints.projectUpdateDocuments, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      await refreshWorkspace()
+      showToast({ type: 'success', message: 'PDF evidence uploaded successfully.' })
+    } catch (err) {
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to upload the PDF document.',
+      })
+    } finally {
+      setUploadingUpdateDocumentFor(null)
+    }
+  }
+
   async function handleDeleteBeneficiaryImage(imageId) {
     if (!window.confirm('Remove this beneficiary image?')) return
 
@@ -735,6 +771,27 @@ function DashboardProjectWorkspacePage() {
       })
     } finally {
       setDeletingImageId(null)
+    }
+  }
+
+  async function handleDeleteUpdateDocument(documentId) {
+    if (!window.confirm('Remove this update document?')) return
+
+    try {
+      setDeletingDocumentId(documentId)
+      await api.delete(endpoints.projectUpdateDocumentDetails(documentId))
+      await refreshWorkspace()
+      showToast({ type: 'success', message: 'Update document deleted successfully.' })
+    } catch (err) {
+      showToast({
+        type: 'error',
+        message:
+          err?.response?.data?.message ||
+          err?.response?.data?.detail ||
+          'Failed to delete update document.',
+      })
+    } finally {
+      setDeletingDocumentId(null)
     }
   }
 
@@ -1446,6 +1503,7 @@ function DashboardProjectWorkspacePage() {
             <div className="mt-5 space-y-4">
               {paginatedUpdates.map((update) => {
                 const images = getUpdateImages(update)
+                const documents = getUpdateDocuments(update)
 
                 return (
                   <div
@@ -1473,6 +1531,19 @@ function DashboardProjectWorkspacePage() {
                             }}
                           />
                         </label>
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800">
+                          <FileText size={12} />
+                          {uploadingUpdateDocumentFor === update.id ? 'Uploading...' : 'PDF'}
+                          <input
+                            type="file"
+                            accept="application/pdf,.pdf"
+                            className="hidden"
+                            onChange={(event) => {
+                              handleUpdateDocumentUpload(update.id, event.target.files?.[0])
+                              event.target.value = ''
+                            }}
+                          />
+                        </label>
                         <button
                           type="button"
                           onClick={() => openUpdateForm(update)}
@@ -1493,9 +1564,7 @@ function DashboardProjectWorkspacePage() {
                       </div>
                     </div>
 
-                    <p className="mt-3 text-sm leading-6 text-gray-600">
-                      {update.description || 'No update description available.'}
-                    </p>
+                    <RichTextContent html={update.description} className="mt-3" />
 
                     {images.length > 0 && (
                       <div className="mt-4 grid grid-cols-3 gap-2.5">
@@ -1518,6 +1587,32 @@ function DashboardProjectWorkspacePage() {
                         ))}
                       </div>
                     )}
+
+                    {documents.length > 0 ? (
+                      <div className="mt-3 divide-y divide-gray-100 border-y border-gray-100">
+                        {documents.map((document) => (
+                          <div key={document.id} className="flex items-center justify-between gap-3 py-2">
+                            <a
+                              href={document.file}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold text-green-800 hover:text-green-950"
+                            >
+                              <FileText size={14} className="shrink-0" />
+                              <span className="truncate">{document.title || 'Supporting document'}</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUpdateDocument(document.id)}
+                              disabled={deletingDocumentId === document.id}
+                              className="text-[10px] font-semibold text-red-700 disabled:opacity-50"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 )
               })}
@@ -1780,13 +1875,12 @@ function DashboardProjectWorkspacePage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-[11px] font-medium text-gray-700">Description</label>
-                  <textarea
-                    name="description"
+                  <RichTextEditor
                     value={updateForm.description}
-                    onChange={handleUpdateFieldChange}
-                    rows="6"
+                    onChange={(description) =>
+                      setUpdateForm((current) => ({ ...current, description }))
+                    }
                     required
-                    className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
                   />
                 </div>
               </div>
