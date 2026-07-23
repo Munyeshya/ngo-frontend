@@ -23,7 +23,7 @@ const roleOptions = [
   {
     value: 'staff',
     title: 'Staff application',
-    description: 'Apply for project management access. An admin must approve your account before login.',
+    description: 'Sign in immediately, then complete verification to unlock project creation.',
   },
 ]
 
