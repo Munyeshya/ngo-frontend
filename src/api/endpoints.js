@@ -1,6 +1,7 @@
 const endpoints = {
   projects: '/projects/',
   projectDetails: (id) => `/projects/${id}/`,
+  projectTransparencyReport: (id) => `/projects/${id}/transparency-report/`,
 
   partners: '/projects/partners/',
   partnerDetails: (id) => `/projects/partners/${id}/`,
