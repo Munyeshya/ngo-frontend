@@ -182,8 +182,8 @@ function DashboardProjectWorkspacePage() {
     description: '',
   })
   const [cashoutForm, setCashoutForm] = useState({
-    amount: '',
     purpose: '',
+    items: [{ item_name: '', description: '', quantity: '1', amount: '' }],
   })
 
   useEffect(() => {
@@ -349,6 +349,15 @@ function DashboardProjectWorkspacePage() {
     )
   }, [cashouts])
 
+  const cashoutTotal = useMemo(
+    () =>
+      cashoutForm.items.reduce(
+        (total, item) => total + Number(item.amount || 0),
+        0
+      ),
+    [cashoutForm.items]
+  )
+
   const selectedTab = tabs.find((tab) => tab.id === activeTab) || tabs[0]
 
   function switchTab(tabId) {
@@ -485,6 +494,33 @@ function DashboardProjectWorkspacePage() {
     setCashoutForm((prev) => ({ ...prev, [name]: value }))
   }
 
+  function handleExpenseItemChange(index, event) {
+    const { name, value } = event.target
+    setCashoutForm((current) => ({
+      ...current,
+      items: current.items.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [name]: value } : item
+      ),
+    }))
+  }
+
+  function addExpenseItem() {
+    setCashoutForm((current) => ({
+      ...current,
+      items: [
+        ...current.items,
+        { item_name: '', description: '', quantity: '1', amount: '' },
+      ],
+    }))
+  }
+
+  function removeExpenseItem(index) {
+    setCashoutForm((current) => ({
+      ...current,
+      items: current.items.filter((_, itemIndex) => itemIndex !== index),
+    }))
+  }
+
   async function handleProjectSubmit(event) {
     event.preventDefault()
 
@@ -586,13 +622,26 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setSubmittingCashout(true)
+      const amount = cashoutForm.items.reduce(
+        (total, item) => total + Number(item.amount || 0),
+        0
+      )
       await api.post(endpoints.projectCashouts, {
         project: Number(projectId),
-        amount: cashoutForm.amount,
+        amount,
         purpose: cashoutForm.purpose.trim(),
+        items: cashoutForm.items.map((item) => ({
+          item_name: item.item_name.trim(),
+          description: item.description.trim(),
+          quantity: item.quantity,
+          amount: item.amount,
+        })),
       })
       await refreshWorkspace()
-      setCashoutForm({ amount: '', purpose: '' })
+      setCashoutForm({
+        purpose: '',
+        items: [{ item_name: '', description: '', quantity: '1', amount: '' }],
+      })
       switchTab('funds')
       showToast({
         type: 'success',
@@ -1162,14 +1211,16 @@ function DashboardProjectWorkspacePage() {
               </div>
             </div>
 
-            {(project?.funding_status !== 'open' || project?.moderation_status !== 'clear') && (
+            {(project?.approval_status !== 'approved' ||
+              project?.funding_status !== 'open' ||
+              project?.moderation_status !== 'clear') && (
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                 <p className="text-xs font-semibold text-amber-900">
                   Cashout is currently restricted
                 </p>
                 <p className="mt-1 text-[11px] leading-5 text-amber-800">
-                  This project is under review or has frozen funding, so no new cashout can be
-                  recorded until it is cleared.
+                  This project must be approved, clear of moderation restrictions, and open for
+                  funding before a cashout can be recorded.
                 </p>
               </div>
             )}
@@ -1177,27 +1228,11 @@ function DashboardProjectWorkspacePage() {
             <form onSubmit={handleCashoutSubmit} className="mt-4 space-y-3">
               <div>
                 <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
-                  Amount
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  min="0"
-                  step="0.01"
-                  value={cashoutForm.amount}
-                  onChange={handleCashoutFieldChange}
-                  required
-                  className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm outline-none transition focus:border-[#166534] focus:ring-4 focus:ring-green-100"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-[11px] font-medium text-gray-700">
                   Activity details
                 </label>
                 <textarea
                   name="purpose"
-                  rows="5"
+                  rows="3"
                   value={cashoutForm.purpose}
                   onChange={handleCashoutFieldChange}
                   required
@@ -1206,12 +1241,90 @@ function DashboardProjectWorkspacePage() {
                 />
               </div>
 
+              <div className="border-y border-gray-100 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-800">Expense lines</p>
+                    <p className="mt-0.5 text-[10px] text-gray-500">Line amounts form the cashout total.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addExpenseItem}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-800"
+                  >
+                    <Plus size={12} /> Add line
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-3">
+                  {cashoutForm.items.map((item, index) => (
+                    <div key={index} className="bg-[#F8F8F6] p-3">
+                      <div className="grid gap-2 sm:grid-cols-[1.4fr_0.55fr_0.8fr_auto]">
+                        <input
+                          name="item_name"
+                          value={item.item_name}
+                          onChange={(event) => handleExpenseItemChange(index, event)}
+                          required
+                          placeholder="Item or service"
+                          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-green-700"
+                        />
+                        <input
+                          type="number"
+                          name="quantity"
+                          min="0.01"
+                          step="0.01"
+                          value={item.quantity}
+                          onChange={(event) => handleExpenseItemChange(index, event)}
+                          required
+                          placeholder="Qty"
+                          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-green-700"
+                        />
+                        <input
+                          type="number"
+                          name="amount"
+                          min="0.01"
+                          step="0.01"
+                          value={item.amount}
+                          onChange={(event) => handleExpenseItemChange(index, event)}
+                          required
+                          placeholder="Total RWF"
+                          className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-green-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExpenseItem(index)}
+                          disabled={cashoutForm.items.length === 1}
+                          className="inline-flex h-9 w-9 items-center justify-center text-red-700 disabled:opacity-25"
+                          aria-label="Remove expense line"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                      <input
+                        name="description"
+                        value={item.description}
+                        onChange={(event) => handleExpenseItemChange(index, event)}
+                        placeholder="Optional description"
+                        className="mt-2 h-8 w-full border-0 border-b border-gray-200 bg-transparent px-1 text-[11px] outline-none focus:border-green-700"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <span className="font-medium text-gray-500">Calculated cashout</span>
+                  <span className="font-bold text-gray-900">{formatCurrency(cashoutTotal)}</span>
+                </div>
+              </div>
+
               <div className="flex justify-end">
                 <Button
                   type="submit"
                   className="px-3 py-2 text-xs"
                   disabled={
                     submittingCashout ||
+                    cashoutTotal <= 0 ||
+                    project?.approval_status !== 'approved' ||
                     project?.funding_status !== 'open' ||
                     project?.moderation_status !== 'clear'
                   }
@@ -1263,6 +1376,31 @@ function DashboardProjectWorkspacePage() {
                     <p className="mt-2 text-xs leading-6 text-gray-600">
                       {cashout.purpose || 'No purpose recorded.'}
                     </p>
+                    {Array.isArray(cashout.items) && cashout.items.length > 0 ? (
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="min-w-full text-[10px]">
+                          <thead className="text-left text-gray-500">
+                            <tr>
+                              <th className="pb-1.5 font-semibold">Item</th>
+                              <th className="pb-1.5 font-semibold">Qty</th>
+                              <th className="pb-1.5 text-right font-semibold">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {cashout.items.map((item) => (
+                              <tr key={item.id}>
+                                <td className="py-1.5 pr-2">
+                                  <span className="font-semibold text-gray-800">{item.item_name}</span>
+                                  {item.description ? <span className="ml-1 text-gray-500">· {item.description}</span> : null}
+                                </td>
+                                <td className="py-1.5 text-gray-600">{Number(item.quantity)}</td>
+                                <td className="py-1.5 text-right font-semibold text-gray-800">{formatCurrency(item.amount)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
