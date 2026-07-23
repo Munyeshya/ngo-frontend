@@ -27,7 +27,7 @@ const areaRows = [
     route: '/dashboard/*',
     who: 'Approved staff',
     details:
-      'Project-centered workspace for own projects only, with Overview, Funds, Beneficiaries, Donations, and Updates.',
+      'Project-centered workspace for own projects only, with Overview, Funds, Beneficiaries, Donations, Impact, and Updates.',
   },
   {
     area: 'Admin portal',
@@ -73,11 +73,14 @@ const roleCards = [
       'Maintain own profile and staff verification documents.',
       'Work only inside own project workspace in the dashboard.',
       'Create and manage own projects, beneficiaries, updates, and cashouts once approved.',
+      'Publish formatted updates with image and PDF evidence.',
+      'Define impact targets, record dated measurements, and generate printable transparency reports.',
       'See only own project donations and own cashout history in dashboard space.',
     ],
     conditions: [
       'Can register and log in before approval.',
       'Cannot create projects until staff verification is approved.',
+      'New projects remain private until admin approves the project submission.',
       'Cannot change project moderation or funding controls.',
       'Cashout works only when project funding is open and the project is not under review.',
       'Document uploads and profile management live in the staff account menu.',
@@ -89,6 +92,7 @@ const roleCards = [
       'Oversee users, staff applications, partners, analytics, and reported projects.',
       'Review and preview staff documents inside the app.',
       'Review reported projects and set moderation and funding decisions.',
+      'Approve projects, request project changes, or reject submissions without editing staff content.',
       'See platform-wide data across users, projects, donations, and reports.',
     ],
     conditions: [
@@ -138,7 +142,32 @@ const featureRows = [
   {
     feature: 'Project workspace',
     who: 'Approved staff',
-    details: 'Staff manage projects from a project-centered workspace with Overview, Funds, Beneficiaries, Donations, and Updates tabs.',
+    details: 'Staff manage projects from a project-centered workspace with Overview, Funds, Beneficiaries, Donations, Impact, and Updates tabs.',
+  },
+  {
+    feature: 'Project approval',
+    who: 'Staff and admin',
+    details: 'Staff submit projects for review. Only admin-approved projects become public and accept donations or cashouts.',
+  },
+  {
+    feature: 'Evidence-backed updates',
+    who: 'Staff and public',
+    details: 'Updates support formatted text, images, and PDF receipts or evidence, with unsafe markup removed by the backend.',
+  },
+  {
+    feature: 'Structured spending',
+    who: 'Staff and public',
+    details: 'Every new cashout requires expense lines whose amounts equal the cashout total; the same table is published publicly.',
+  },
+  {
+    feature: 'Impact monitoring',
+    who: 'Staff and public',
+    details: 'Staff define outcome targets and record cumulative dated measurements; public pages show current progress and history.',
+  },
+  {
+    feature: 'Transparency report',
+    who: 'Public, staff, admin',
+    details: 'A live project report combines funding, spending, updates, evidence, beneficiaries, and impact and can be printed or saved as PDF.',
   },
   {
     feature: 'Toast feedback',
