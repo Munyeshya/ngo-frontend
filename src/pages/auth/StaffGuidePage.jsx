@@ -12,13 +12,13 @@ const steps = [
   },
   {
     icon: ShieldCheck,
-    title: 'Wait for admin approval',
-    text: 'An admin reviews your request. You will receive an email when your staff account becomes active.',
+    title: 'Complete verification',
+    text: 'Sign in, submit the required documents, and watch your email for the admin review outcome.',
   },
   {
     icon: FolderKanban,
-    title: 'Log in and manage projects',
-    text: 'Once approved, sign in and start creating and updating projects, beneficiaries, and progress updates.',
+    title: 'Manage approved projects',
+    text: 'Once approved, create and manage your projects, beneficiaries, and progress updates.',
   },
 ]
 
