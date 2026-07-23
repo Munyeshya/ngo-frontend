@@ -230,3 +230,15 @@
   padding-left: 0.75rem;
   color: #4b5563;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  .print-report-shell {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
