@@ -113,16 +113,29 @@ npm run preview
 
 - Public pages for browsing projects, donating, reading updates, and reporting projects
 - Donor portal for profile, donation history, and subscriptions
-- Staff portal for verified project management and project-centered workspaces
-- Admin portal for users, staff verification, partners, analytics, and reported projects
+- Staff portal for project workspaces, evidence-backed updates, spending tables, and impact monitoring
+- Admin portal for users, staff verification, project approval, partners, analytics, and reported projects
+- Printable project transparency reports that can be saved as PDF
 
 ## Key Behaviors
 
 - Public project browsing always stays public, even when someone is logged in
 - Donors can donate with or without creating an account first
 - Staff can register and log in, but project creation requires approved verification
+- New staff projects require admin approval before becoming public or accepting donations
 - Admin handles oversight, moderation, partner management, and analytics
+- Cashout totals are calculated from required expense lines and published in public updates
+- Impact targets and dated measurements appear in staff and public project views
 - Toast feedback is used for short-lived action messages
+
+## Verification
+
+```powershell
+npm run lint
+npm run build
+```
+
+The printable report route is `/projects/:projectId/transparency-report`.
 
 ## Notes
 
