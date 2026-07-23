@@ -351,10 +351,12 @@ function DashboardProjectWorkspacePage() {
 
   const cashoutTotal = useMemo(
     () =>
-      cashoutForm.items.reduce(
-        (total, item) => total + Number(item.amount || 0),
-        0
-      ),
+      Math.round(
+        cashoutForm.items.reduce(
+          (total, item) => total + Number(item.amount || 0),
+          0
+        ) * 100
+      ) / 100,
     [cashoutForm.items]
   )
 
@@ -622,13 +624,9 @@ function DashboardProjectWorkspacePage() {
 
     try {
       setSubmittingCashout(true)
-      const amount = cashoutForm.items.reduce(
-        (total, item) => total + Number(item.amount || 0),
-        0
-      )
       await api.post(endpoints.projectCashouts, {
         project: Number(projectId),
-        amount,
+        amount: cashoutTotal,
         purpose: cashoutForm.purpose.trim(),
         items: cashoutForm.items.map((item) => ({
           item_name: item.item_name.trim(),
