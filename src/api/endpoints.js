@@ -19,6 +19,10 @@ const endpoints = {
   projectUpdateImageDetails: (id) => `/projects/updates/images/${id}/`,
   projectUpdateDocuments: '/projects/updates/documents/',
   projectUpdateDocumentDetails: (id) => `/projects/updates/documents/${id}/`,
+  projectImpactMetrics: '/projects/impact-metrics/',
+  projectImpactMetricDetails: (id) => `/projects/impact-metrics/${id}/`,
+  projectImpactRecords: '/projects/impact-records/',
+  projectImpactRecordDetails: (id) => `/projects/impact-records/${id}/`,
   projectReports: '/projects/reports/',
   projectCashouts: '/projects/cashouts/',
 
