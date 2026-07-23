@@ -565,6 +565,12 @@ function ProjectDetailsPage() {
                     Subscribe
                   </Button>
                 </a>
+
+                <Link to={`/projects/${project.id}/transparency-report`} className="sm:col-span-2">
+                  <Button variant="outline" className="w-full">
+                    <FileText size={15} className="mr-2" /> View Transparency Report
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
