@@ -17,6 +17,7 @@ function DashboardSidebar() {
   const items = isAdmin
     ? [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Project Reviews', href: '/dashboard/project-reviews', icon: FolderKanban },
         { name: 'Reports', href: '/dashboard/reports', icon: ShieldAlert },
         { name: 'User Management', href: '/dashboard/users', icon: Users },
         { name: 'Partners', href: '/dashboard/partners', icon: Handshake },
