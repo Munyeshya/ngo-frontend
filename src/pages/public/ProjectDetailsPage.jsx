@@ -337,6 +337,17 @@ function ProjectDetailsPage() {
     }
   }, [project, beneficiaries, updates, partners])
 
+  function scrollToSubscription() {
+    const subscriptionSection = document.getElementById('subscribe-section')
+    if (!subscriptionSection) return
+
+    window.history.replaceState(window.history.state, '', '#subscribe-section')
+    subscriptionSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   async function handleSubscribe(event) {
     event.preventDefault()
 
@@ -574,11 +585,13 @@ function ProjectDetailsPage() {
                   <Button className="w-full">Donate Now</Button>
                 </Link>
 
-                <a href="#subscribe-section" className="block">
-                  <Button variant="darkOutline" className="w-full">
-                    Subscribe
-                  </Button>
-                </a>
+                <Button
+                  variant="darkOutline"
+                  className="w-full"
+                  onClick={scrollToSubscription}
+                >
+                  Subscribe
+                </Button>
 
                 <Link to={`/projects/${project.id}/transparency-report`} className="sm:col-span-2">
                   <Button variant="outline" className="w-full">
