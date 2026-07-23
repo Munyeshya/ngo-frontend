@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   MapPin,
@@ -175,6 +175,7 @@ function extractUpdateDocuments(update) {
 
 function ProjectDetailsPage() {
   const params = useParams()
+  const location = useLocation()
   const routeProjectId = params.projectId ?? params.id ?? ''
   const currentUser = getUser()
   const canReportProject = Boolean(currentUser?.role)
@@ -269,6 +270,19 @@ function ProjectDetailsPage() {
       active = false
     }
   }, [routeProjectId])
+
+  useEffect(() => {
+    if (loading || location.hash !== '#subscribe-section') return
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('subscribe-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [loading, location.hash, project?.id])
 
   const derived = useMemo(() => {
     if (!project) return null
@@ -1048,7 +1062,7 @@ function ProjectDetailsPage() {
 
             <Card
               id="subscribe-section"
-              className="overflow-hidden rounded-[28px] bg-black text-white"
+              className="scroll-mt-24 overflow-hidden rounded-[28px] bg-black text-white"
             >
               <div className="relative overflow-hidden p-6">
                 <AnimatedBackground variant="dark" />
