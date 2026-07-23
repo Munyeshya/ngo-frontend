@@ -912,6 +912,12 @@ function DashboardProjectWorkspacePage() {
             View Public Page
             <ArrowRight size={14} />
           </Link>
+          <Link
+            to={`/projects/${project.id}/transparency-report`}
+            className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-green-300 hover:text-green-800"
+          >
+            <FileText size={14} /> Report
+          </Link>
         </div>
       </div>
 
