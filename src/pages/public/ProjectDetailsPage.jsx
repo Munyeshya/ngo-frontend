@@ -16,6 +16,7 @@ import {
   Target,
   ShieldAlert,
   Flag,
+  FileText,
 } from 'lucide-react'
 
 import api from '../../api/axios'
@@ -25,6 +26,7 @@ import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
 import SectionTitle from '../../components/common/SectionTitle'
+import RichTextContent from '../../components/common/RichTextContent'
 import { useToast } from '../../components/feedback/ToastProvider'
 import { getUser } from '../../utils/storage'
 
@@ -164,6 +166,10 @@ function extractUpdateImages(update) {
   if (Array.isArray(update?.images)) return update.images
   if (Array.isArray(update?.project_update_images)) return update.project_update_images
   return []
+}
+
+function extractUpdateDocuments(update) {
+  return Array.isArray(update?.documents) ? update.documents : []
 }
 
 function ProjectDetailsPage() {
@@ -815,6 +821,7 @@ function ProjectDetailsPage() {
                 <div className="mt-8 space-y-6">
                   {updates.map((update, index) => {
                     const images = extractUpdateImages(update)
+                    const documents = extractUpdateDocuments(update)
 
                     return (
                       <div key={update.id || index} className="flex gap-4">
@@ -845,9 +852,7 @@ function ProjectDetailsPage() {
                             </div>
                           )}
 
-                          <p className="mt-3 text-sm leading-7 text-gray-600">
-                            {update.description || 'No update description available.'}
-                          </p>
+                          <RichTextContent html={update.description} className="mt-3 leading-7" />
 
                           {images.length > 0 && (
                             <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -865,6 +870,23 @@ function ProjectDetailsPage() {
                               ))}
                             </div>
                           )}
+
+                          {documents.length > 0 ? (
+                            <div className="mt-4 divide-y divide-gray-100 border-y border-gray-100">
+                              {documents.map((document) => (
+                                <a
+                                  key={document.id}
+                                  href={buildMediaUrl(document.file)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center gap-2 py-2.5 text-xs font-semibold text-green-800 transition hover:text-green-950"
+                                >
+                                  <FileText size={14} />
+                                  {document.title || 'View supporting PDF'}
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     )
