@@ -27,6 +27,7 @@ import Card from '../../components/ui/Card'
 import AnimatedBackground from '../../components/common/AnimatedBackground'
 import SectionTitle from '../../components/common/SectionTitle'
 import RichTextContent from '../../components/common/RichTextContent'
+import ProjectImpactSummary from '../../components/project/ProjectImpactSummary'
 import { useToast } from '../../components/feedback/ToastProvider'
 import { getUser } from '../../utils/storage'
 
@@ -922,6 +923,7 @@ function ProjectDetailsPage() {
                 </div>
               )}
             </Card>
+            <ProjectImpactSummary projectId={projectId} />
           </div>
 
           <div className="space-y-8">
