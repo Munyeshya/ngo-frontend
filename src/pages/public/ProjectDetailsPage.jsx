@@ -923,7 +923,7 @@ function ProjectDetailsPage() {
                 </div>
               )}
             </Card>
-            <ProjectImpactSummary projectId={projectId} />
+            <ProjectImpactSummary projectId={routeProjectId} />
           </div>
 
           <div className="space-y-8">
