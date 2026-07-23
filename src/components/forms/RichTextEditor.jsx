@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { createElement, useEffect, useRef } from 'react'
 import { Bold, Heading2, Heading3, Italic, List, ListOrdered, Pilcrow, Quote } from 'lucide-react'
 
 const actions = [
@@ -31,7 +31,7 @@ function RichTextEditor({ value, onChange, required = false }) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-300 bg-white focus-within:border-green-700 focus-within:ring-4 focus-within:ring-green-100">
       <div className="flex flex-wrap gap-0.5 border-b border-gray-200 bg-gray-50 px-2 py-1.5">
-        {actions.map(({ label, icon: Icon, command, value: commandValue }) => (
+        {actions.map(({ label, icon, command, value: commandValue }) => (
           <button
             key={label}
             type="button"
@@ -40,7 +40,7 @@ function RichTextEditor({ value, onChange, required = false }) {
             onMouseDown={(event) => applyFormat(event, command, commandValue)}
             className="inline-flex h-7 w-7 items-center justify-center text-gray-600 transition hover:bg-white hover:text-green-800"
           >
-            <Icon size={13} />
+            {createElement(icon, { size: 13 })}
           </button>
         ))}
       </div>
