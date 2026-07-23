@@ -107,17 +107,6 @@ function LoginPage() {
         err?.message ||
         'Login failed. Please check your credentials and try again.'
 
-      if (
-        String(backendMessage).toLowerCase().includes('pending admin approval')
-      ) {
-        showToast({
-          type: 'error',
-          message:
-            'Your staff account is pending admin approval. Watch your email for approval updates, or review the staff guide below.',
-        })
-        return
-      }
-
       showToast({ type: 'error', message: backendMessage })
     } finally {
       setLoading(false)
