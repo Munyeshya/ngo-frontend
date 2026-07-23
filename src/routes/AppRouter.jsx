@@ -13,7 +13,6 @@ import ApiGuidePage from '../pages/public/ApiGuidePage'
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
 import ClaimDonorAccountPage from '../pages/auth/ClaimDonorAccountPage'
-import ClaimDonorAccountVerifyPage from '../pages/auth/ClaimDonorAccountVerifyPage'
 import StaffGuidePage from '../pages/auth/StaffGuidePage'
 import DonorProfilePage from '../pages/donor/DonorProfilePage'
 import DonorDashboardPage from '../pages/donor/DonorDashboardPage'
@@ -59,7 +58,7 @@ function AppRouter() {
           <Route path="/claim-donor-account" element={<ClaimDonorAccountPage />} />
           <Route
             path="/claim-donor-account/verify"
-            element={<ClaimDonorAccountVerifyPage />}
+            element={<ClaimDonorAccountPage />}
           />
           <Route path="/staff-guide" element={<StaffGuidePage />} />
         </Route>
