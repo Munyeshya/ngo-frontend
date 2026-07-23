@@ -58,12 +58,12 @@ const roleCards = [
     abilities: [
       'Everything a public visitor can do.',
       'Report projects from the public project details page.',
-      'Claim a donor account later through the email token flow.',
+      'Claim a donor account later with a six-digit email OTP.',
       'View own donations, own subscriptions, and own profile area.',
     ],
     conditions: [
       'Anonymous donations hide donor identity from public-facing contexts.',
-      'Claim flow requires the emailed token before account activation.',
+      'Claim flow requires an email used for a completed guest donation or active project subscription, plus the emailed OTP.',
       'Donor profile can be updated from the donor portal, including profile image upload.',
     ],
   },
