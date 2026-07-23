@@ -31,6 +31,7 @@ function ProjectImpactPanel({ projectId }) {
   const { showToast } = useToast()
   const [metrics, setMetrics] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [showMetricForm, setShowMetricForm] = useState(false)
   const [activeMetricId, setActiveMetricId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -59,13 +60,14 @@ function ProjectImpactPanel({ projectId }) {
     async function initialize() {
       try {
         setLoading(true)
+        setLoadError('')
         const response = await api.get(endpoints.projectImpactMetrics, {
           params: { project: projectId },
         })
         if (active) setMetrics(normalizeList(response.data))
       } catch (error) {
         if (active) {
-          showToast({ type: 'error', message: errorMessage(error, 'Impact metrics could not be loaded.') })
+          setLoadError(errorMessage(error, 'Impact metrics could not be loaded.'))
         }
       } finally {
         if (active) setLoading(false)
@@ -140,6 +142,10 @@ function ProjectImpactPanel({ projectId }) {
 
   if (loading) {
     return <Card className="p-5 text-xs text-gray-500">Loading impact monitoring...</Card>
+  }
+
+  if (loadError) {
+    return <Card className="p-5 text-xs text-red-600">{loadError}</Card>
   }
 
   return (
