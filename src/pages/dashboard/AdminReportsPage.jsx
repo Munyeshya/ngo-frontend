@@ -63,7 +63,7 @@ function AdminReportsPage() {
         setLoading(true)
         setError('')
         const [reportsResponse, projectsResponse] = await Promise.all([
-          api.get(endpoints.projectReports),
+          api.get(endpoints.projectReports, { params: { status: 'open' } }),
           api.get(endpoints.projects),
         ])
 
