@@ -94,6 +94,13 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
+function getApprovalTone(status) {
+  if (status === 'approved') return 'bg-green-100 text-green-800'
+  if (status === 'changes_requested') return 'bg-amber-100 text-amber-800'
+  if (status === 'rejected') return 'bg-red-100 text-red-700'
+  return 'bg-sky-100 text-sky-700'
+}
+
 const projectStatuses = [
   { value: 'planning', label: 'Planning' },
   { value: 'active', label: 'Active' },
@@ -296,7 +303,7 @@ function DashboardProjectsPage() {
         await api.post(endpoints.projects, payload, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        showToast({ type: 'success', message: 'Project created successfully.' })
+        showToast({ type: 'success', message: 'Project submitted for admin review.' })
       }
 
       await refreshProjects()
@@ -705,6 +712,14 @@ function DashboardProjectsPage() {
                       >
                         {project?.status || 'Unknown'}
                       </span>
+
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getApprovalTone(
+                          project?.approval_status
+                        )}`}
+                      >
+                        {String(project?.approval_status || 'pending_review').replace(/_/g, ' ')}
+                      </span>
                     </div>
                   </div>
 
@@ -719,6 +734,12 @@ function DashboardProjectsPage() {
                 <p className="mt-4 line-clamp-3 text-sm leading-7 text-gray-600">
                   {project?.description || 'No description available for this project.'}
                 </p>
+
+                {project?.approval_note ? (
+                  <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+                    Admin note: {project.approval_note}
+                  </p>
+                ) : null}
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-3">
                   <div className="rounded-2xl bg-white p-4">
@@ -766,13 +787,15 @@ function DashboardProjectsPage() {
                       Open Workspace
                     </Link>
 
-                    <Link
-                      to={`/projects/${project.id}`}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
-                    >
-                      View Public Page
-                      <ArrowRight size={15} />
-                    </Link>
+                    {project?.approval_status === 'approved' ? (
+                      <Link
+                        to={`/projects/${project.id}`}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-[#166534] transition hover:text-[#0F4D27]"
+                      >
+                        View Public Page
+                        <ArrowRight size={15} />
+                      </Link>
+                    ) : null}
 
                     {canManageProjects && (
                       <>
