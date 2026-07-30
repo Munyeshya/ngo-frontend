@@ -699,7 +699,7 @@ function DonatePage() {
                   className="min-w-[190px] px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <HandCoins size={15} className="mr-2" />
-                  {isSubmitting ? 'Processing simulation...' : 'Simulate & Submit Donation'}
+                  {isSubmitting ? 'Processing simulation...' : 'Submit Donation'}
                 </Button>
 
                 <Link to={`/projects/${project.id}`}>
