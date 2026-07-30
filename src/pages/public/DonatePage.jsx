@@ -5,7 +5,6 @@ import {
   HandCoins,
   CreditCard,
   Smartphone,
-  Wallet,
   Landmark,
   BadgeDollarSign,
   ShieldCheck,
@@ -42,12 +41,6 @@ const paymentMethods = [
     icon: CreditCard,
   },
   {
-    value: 'cash',
-    label: 'Cash',
-    description: 'Record an offline cash donation',
-    icon: Wallet,
-  },
-  {
     value: 'bank',
     label: 'Bank Transfer',
     description: 'Simulate a direct bank transfer',
@@ -58,7 +51,13 @@ const paymentMethods = [
 const paymentDetailFields = {
   momo: [
     { name: 'mobile_number', label: 'Mobile number', placeholder: 'e.g. 0788 000 000', type: 'tel' },
-    { name: 'mobile_provider', label: 'Network', placeholder: 'MTN or Airtel' },
+    {
+      name: 'mobile_provider',
+      label: 'Mobile network',
+      placeholder: 'Choose a network',
+      options: ['MTN Mobile Money', 'Airtel Money'],
+    },
+    { name: 'momo_reference', label: 'Transaction reference', placeholder: 'Optional transaction ID' },
   ],
   card: [
     { name: 'cardholder_name', label: 'Name on card', placeholder: 'Cardholder name' },
@@ -67,12 +66,10 @@ const paymentDetailFields = {
     { name: 'card_cvv', label: 'CVV', placeholder: '000', inputMode: 'numeric', type: 'password' },
   ],
   bank: [
+    { name: 'account_holder', label: 'Account holder', placeholder: 'Name on the bank account' },
     { name: 'bank_name', label: 'Bank name', placeholder: 'Enter bank name' },
+    { name: 'account_number', label: 'Account number', placeholder: 'Enter account number', inputMode: 'numeric' },
     { name: 'bank_reference', label: 'Transfer reference', placeholder: 'Optional reference' },
-  ],
-  cash: [
-    { name: 'cash_reference', label: 'Receipt reference', placeholder: 'Optional receipt number' },
-    { name: 'cash_location', label: 'Collection location', placeholder: 'Where the cash was received' },
   ],
 }
 
@@ -630,16 +627,32 @@ function DonatePage() {
                             <span className="mb-1 block text-[11px] font-medium text-gray-600">
                               {field.label}
                             </span>
-                            <input
-                              type={field.type || 'text'}
-                              name={field.name}
-                              value={paymentDetails[field.name] || ''}
-                              onChange={handlePaymentDetailChange}
-                              placeholder={field.placeholder}
-                              inputMode={field.inputMode}
-                              autoComplete="off"
-                              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none transition focus:border-green-700"
-                            />
+                            {field.options ? (
+                              <select
+                                name={field.name}
+                                value={paymentDetails[field.name] || ''}
+                                onChange={handlePaymentDetailChange}
+                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs outline-none transition focus:border-green-700"
+                              >
+                                <option value="">{field.placeholder}</option>
+                                {field.options.map((option) => (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                type={field.type || 'text'}
+                                name={field.name}
+                                value={paymentDetails[field.name] || ''}
+                                onChange={handlePaymentDetailChange}
+                                placeholder={field.placeholder}
+                                inputMode={field.inputMode}
+                                autoComplete="off"
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none transition focus:border-green-700"
+                              />
+                            )}
                           </label>
                         ))}
                       </div>
@@ -655,7 +668,6 @@ function DonatePage() {
                         <div className="mt-0.5 rounded-xl bg-green-100 p-2 text-green-800">
                           {formData.payment_method === 'momo' && <Smartphone size={16} />}
                           {formData.payment_method === 'card' && <CreditCard size={16} />}
-                          {formData.payment_method === 'cash' && <Wallet size={16} />}
                           {formData.payment_method === 'bank' && <Landmark size={16} />}
                         </div>
 
