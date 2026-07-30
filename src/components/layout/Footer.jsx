@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Facebook, Instagram, Twitter, HeartHandshake } from 'lucide-react'
+import { HeartHandshake } from 'lucide-react'
 import AnimatedBackground from '../common/AnimatedBackground'
 import publicApi from '../../api/publicApi'
 import endpoints from '../../api/endpoints'
@@ -8,16 +8,15 @@ import endpoints from '../../api/endpoints'
 const aboutLinks = [
   { name: 'About Us', to: '/about' },
   { name: 'Projects', to: '/projects' },
-  { name: 'Volunteers', to: '/about' },
   { name: 'Contact Us', to: '/contact' },
+  { name: 'Platform Guide', to: '/frontend-guide' },
 ]
 
 const usefulLinks = [
-  { name: 'F.A.Q', to: '/contact' },
-  { name: 'News', to: '/projects' },
-  { name: 'Reports', to: '/about' },
-  { name: 'Terms of Use', to: '/about' },
-  { name: 'Privacy Policy', to: '/about' },
+  { name: 'Staff Application Guide', to: '/staff-guide' },
+  { name: 'Create Account', to: '/register' },
+  { name: 'Sign In', to: '/login' },
+  { name: 'Claim Donor Account', to: '/claim-donor-account' },
 ]
 
 function normalizeListResponse(data) {
@@ -122,7 +121,7 @@ function Footer() {
         <div>
           <div className="flex items-center gap-2">
             <HeartHandshake size={18} className="text-white" />
-            <p className="text-sm font-bold tracking-wide">NGO PLATFORM</p>
+            <p className="text-sm font-bold tracking-wide">NGO TRANSPARENCY</p>
           </div>
 
           <p className="mt-5 max-w-xs text-sm leading-7 text-white/70">
@@ -139,26 +138,6 @@ function Footer() {
             </p>
           </div>
 
-          <div className="mt-8 flex items-center gap-3">
-            <a
-              href="#"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
-            >
-              <Facebook size={16} className="text-black" />
-            </a>
-            <a
-              href="#"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
-            >
-              <Twitter size={16} className="text-black" />
-            </a>
-            <a
-              href="#"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition hover:bg-green-200"
-            >
-              <Instagram size={16} className="text-black" />
-            </a>
-          </div>
         </div>
 
         <div>
@@ -196,13 +175,18 @@ function Footer() {
           <div className="mt-5 grid grid-cols-3 gap-3">
             {causeImages.length > 0
               ? causeImages.map((item) => (
-                  <div key={item.id} className="overflow-hidden rounded-xl">
+                  <Link
+                    key={item.id}
+                    to={`/projects/${item.id}`}
+                    aria-label={`View ${item.title}`}
+                    className="overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
+                  >
                     <img
                       src={item.image}
                       alt={item.title}
                       className="h-16 w-full object-cover transition duration-300 hover:scale-105"
                     />
-                  </div>
+                  </Link>
                 ))
               : Array.from({ length: 6 }).map((_, index) => (
                   <div
