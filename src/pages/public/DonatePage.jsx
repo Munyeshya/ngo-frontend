@@ -6,6 +6,7 @@ import {
   CreditCard,
   Smartphone,
   Wallet,
+  Landmark,
   BadgeDollarSign,
   ShieldCheck,
   MapPin,
@@ -46,7 +47,34 @@ const paymentMethods = [
     description: 'Record an offline cash donation',
     icon: Wallet,
   },
+  {
+    value: 'bank',
+    label: 'Bank Transfer',
+    description: 'Simulate a direct bank transfer',
+    icon: Landmark,
+  },
 ]
+
+const paymentDetailFields = {
+  momo: [
+    { name: 'mobile_number', label: 'Mobile number', placeholder: 'e.g. 0788 000 000', type: 'tel' },
+    { name: 'mobile_provider', label: 'Network', placeholder: 'MTN or Airtel' },
+  ],
+  card: [
+    { name: 'cardholder_name', label: 'Name on card', placeholder: 'Cardholder name' },
+    { name: 'card_number', label: 'Card number', placeholder: '0000 0000 0000 0000', inputMode: 'numeric' },
+    { name: 'card_expiry', label: 'Expiry', placeholder: 'MM/YY' },
+    { name: 'card_cvv', label: 'CVV', placeholder: '000', inputMode: 'numeric', type: 'password' },
+  ],
+  bank: [
+    { name: 'bank_name', label: 'Bank name', placeholder: 'Enter bank name' },
+    { name: 'bank_reference', label: 'Transfer reference', placeholder: 'Optional reference' },
+  ],
+  cash: [
+    { name: 'cash_reference', label: 'Receipt reference', placeholder: 'Optional receipt number' },
+    { name: 'cash_location', label: 'Collection location', placeholder: 'Where the cash was received' },
+  ],
+}
 
 const quickAmounts = [1000, 5000, 10000, 25000, 50000, 100000]
 
@@ -156,6 +184,7 @@ function DonatePage() {
     message: '',
     is_anonymous: false,
   })
+  const [paymentDetails, setPaymentDetails] = useState({})
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -221,6 +250,11 @@ function DonatePage() {
     }))
   }
 
+  const handlePaymentDetailChange = (e) => {
+    const { name, value } = e.target
+    setPaymentDetails((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleQuickAmount = (amount) => {
     setFormData((prev) => ({
       ...prev,
@@ -271,6 +305,7 @@ function DonatePage() {
         message: '',
         is_anonymous: false,
       })
+      setPaymentDetails({})
 
       setTimeout(() => {
         navigate(`/projects/${project.id}`)
@@ -576,12 +611,52 @@ function DonatePage() {
                       </div>
                     </div>
 
+                    <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">Payment details</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">
+                            Optional fields for this payment simulation.
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">
+                          Simulation only
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {paymentDetailFields[formData.payment_method].map((field) => (
+                          <label key={field.name} className="block">
+                            <span className="mb-1 block text-[11px] font-medium text-gray-600">
+                              {field.label}
+                            </span>
+                            <input
+                              type={field.type || 'text'}
+                              name={field.name}
+                              value={paymentDetails[field.name] || ''}
+                              onChange={handlePaymentDetailChange}
+                              placeholder={field.placeholder}
+                              inputMode={field.inputMode}
+                              autoComplete="off"
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none transition focus:border-green-700"
+                            />
+                          </label>
+                        ))}
+                      </div>
+
+                      <p className="mt-3 text-[10px] leading-4 text-gray-500">
+                        These details are not stored or sent to the backend. Submitting creates only
+                        the donation record using the selected payment method.
+                      </p>
+                    </div>
+
                     <div className="mt-4 rounded-xl bg-white p-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 rounded-xl bg-green-100 p-2 text-green-800">
                           {formData.payment_method === 'momo' && <Smartphone size={16} />}
                           {formData.payment_method === 'card' && <CreditCard size={16} />}
                           {formData.payment_method === 'cash' && <Wallet size={16} />}
+                          {formData.payment_method === 'bank' && <Landmark size={16} />}
                         </div>
 
                         <div>
@@ -589,9 +664,8 @@ function DonatePage() {
                             Payment method noted
                           </p>
                           <p className="mt-1 text-xs leading-6 text-gray-600">
-                            This form records your donation choice and contact information.
-                            If you want to add transfer or receipt details, include them in the
-                            message box above.
+                            This demonstration records your donation choice and contact information
+                            without connecting to a live payment provider.
                           </p>
                         </div>
                       </div>
@@ -620,7 +694,7 @@ function DonatePage() {
                   className="min-w-[190px] px-5 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <HandCoins size={15} className="mr-2" />
-                  {isSubmitting ? 'Submitting...' : 'Submit Donation'}
+                  {isSubmitting ? 'Processing simulation...' : 'Simulate & Submit Donation'}
                 </Button>
 
                 <Link to={`/projects/${project.id}`}>
