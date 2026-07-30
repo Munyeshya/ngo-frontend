@@ -609,17 +609,10 @@ function DonatePage() {
                     </div>
 
                     <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Payment details</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">
-                            Optional fields for this payment simulation.
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">
-                          Simulation only
-                        </span>
-                      </div>
+                      <p className="text-sm font-semibold text-gray-900">Payment details</p>
+                      <p className="mt-0.5 text-[11px] text-gray-500">
+                        Optional fields for this payment simulation.
+                      </p>
 
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
                         {paymentDetailFields[formData.payment_method].map((field) => (
