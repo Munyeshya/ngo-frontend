@@ -20,7 +20,7 @@ import endpoints from '../../api/endpoints'
 import { useToast } from '../../components/feedback/ToastProvider'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
-import { getUser } from '../../utils/storage'
+import { getUser, setUser } from '../../utils/storage'
 import { getProjectTypeLabel, PROJECT_TYPE_OPTIONS } from '../../utils/projectHelpers'
 
 function unwrapPayload(payload) {
@@ -112,7 +112,9 @@ function DashboardProjectsPage() {
   const { showToast } = useToast()
   const currentUser = getUser()
   const isStaff = String(currentUser?.role || '').toLowerCase() === 'staff'
-  const staffApplicationStatus = String(currentUser?.staff_application_status || '').toLowerCase()
+  const [staffApplicationStatus, setStaffApplicationStatus] = useState(() =>
+    String(currentUser?.staff_application_status || '').toLowerCase()
+  )
   const [projects, setProjects] = useState([])
   const [partners, setPartners] = useState([])
   const [projectsCount, setProjectsCount] = useState(0)
@@ -150,10 +152,12 @@ function DashboardProjectsPage() {
         setLoading(true)
         setError('')
 
-        const [projectsResponse, partnersResponse] = await Promise.allSettled([
-          api.get(endpoints.projects),
-          api.get(endpoints.partners),
-        ])
+        const [projectsResponse, partnersResponse, staffApplicationResponse] =
+          await Promise.allSettled([
+            api.get(endpoints.projects),
+            api.get(endpoints.partners),
+            ...(isStaff ? [api.get(endpoints.myStaffApplication)] : []),
+          ])
         if (!active) return
 
         if (projectsResponse.status === 'fulfilled') {
@@ -168,6 +172,16 @@ function DashboardProjectsPage() {
           setPartners(normalizeListResponse(partnersResponse.value.data))
         } else {
           setPartners([])
+        }
+
+        if (isStaff && staffApplicationResponse?.status === 'fulfilled') {
+          const application = unwrapPayload(staffApplicationResponse.value.data)
+          const liveStatus = String(application?.status || '').toLowerCase()
+          setStaffApplicationStatus(liveStatus)
+          setUser({
+            ...(getUser() || currentUser),
+            staff_application_status: liveStatus || null,
+          })
         }
       } catch (err) {
         if (!active) return
@@ -189,7 +203,7 @@ function DashboardProjectsPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [isStaff])
 
   const canManageProjects = useMemo(() => {
     const role = String(currentUser?.role || '').toLowerCase()
