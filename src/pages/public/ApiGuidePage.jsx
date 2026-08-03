@@ -72,17 +72,17 @@ const roleCards = [
     abilities: [
       'Maintain own profile and staff verification documents.',
       'Work only inside own project workspace in the dashboard.',
-      'Create and manage own projects, beneficiaries, updates, and cashouts once approved.',
+      'Create and manage own projects, beneficiaries, updates, and cashout requests once approved.',
       'Publish formatted updates with image and PDF evidence.',
       'Define impact targets, record dated measurements, and generate printable transparency reports.',
-      'See only own project donations and own cashout history in dashboard space.',
+      'See only own project donations and track pending, approved, or rejected cashout requests.',
     ],
     conditions: [
       'Can register and log in before approval.',
       'Cannot create projects until staff verification is approved.',
       'New projects remain private until admin approves the project submission.',
       'Cannot change project moderation or funding controls.',
-      'Cashout works only when project funding is open and the project is not under review.',
+      'Cashout requests require a clear project with open funding and enough unreserved balance.',
       'Document uploads and profile management live in the staff account menu.',
     ],
   },
@@ -91,6 +91,7 @@ const roleCards = [
     abilities: [
       'Oversee users, staff applications, partners, analytics, and reported projects.',
       'Review and preview staff documents inside the app.',
+      'Review staff cashout requests and approve or reject them with an admin note.',
       'Review reported projects and set moderation and funding decisions.',
       'Approve projects, request project changes, or reject submissions without editing staff content.',
       'See platform-wide data across users, projects, donations, and reports.',
@@ -121,13 +122,13 @@ const featureRows = [
   },
   {
     feature: 'Cashout restriction',
-    who: 'Staff and admin',
-    details: 'Cashout is stricter than donations and requires a clear project with open funding and enough available balance.',
+    who: 'Staff request, admin decides',
+    details: 'Staff submits itemized requests only for owned projects. Pending requests reserve requestable balance, and admin approval rechecks restrictions and live funds.',
   },
   {
     feature: 'Cashout transparency',
     who: 'Public, donor, staff, admin',
-    details: 'Each cashout is also published as a normal project update so money usage details appear on public project pages.',
+    details: 'Only an admin-approved cashout counts as spent and becomes a normal public project update. Rejected and pending requests stay private.',
   },
   {
     feature: 'Staff verification',
@@ -157,7 +158,7 @@ const featureRows = [
   {
     feature: 'Structured spending',
     who: 'Staff and public',
-    details: 'Every new cashout requires expense lines whose amounts equal the cashout total; the same table is published publicly.',
+    details: 'Every request requires expense lines whose amounts equal its total. The table becomes public only after admin approval.',
   },
   {
     feature: 'Impact monitoring',
