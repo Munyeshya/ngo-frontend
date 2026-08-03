@@ -26,6 +26,7 @@ const endpoints = {
   projectImpactRecordDetails: (id) => `/projects/impact-records/${id}/`,
   projectReports: '/projects/reports/',
   projectCashouts: '/projects/cashouts/',
+  projectCashoutReview: (id) => `/projects/cashouts/${id}/review/`,
 
   subscribeToProject: '/projects/interests/subscribe/',
   unsubscribeFromProject: '/projects/interests/unsubscribe/',
