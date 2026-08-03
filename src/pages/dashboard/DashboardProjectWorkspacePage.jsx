@@ -114,6 +114,12 @@ function getStatusTone(status) {
   return 'bg-gray-100 text-gray-700'
 }
 
+function getCashoutStatusTone(status) {
+  if (status === 'approved') return 'bg-green-100 text-green-800'
+  if (status === 'rejected') return 'bg-red-100 text-red-700'
+  return 'bg-amber-100 text-amber-800'
+}
+
 const DONATIONS_PER_PAGE = 5
 const BENEFICIARIES_PER_PAGE = 5
 const UPDATES_PER_PAGE = 5
@@ -646,7 +652,7 @@ function DashboardProjectWorkspacePage() {
       switchTab('funds')
       showToast({
         type: 'success',
-        message: 'Cashout recorded and published into project updates.',
+        message: 'Cashout request submitted for admin review.',
       })
     } catch (err) {
       showToast({
@@ -654,7 +660,7 @@ function DashboardProjectWorkspacePage() {
         message:
           err?.response?.data?.message ||
           err?.response?.data?.detail ||
-          'Failed to record project cashout.',
+          'Failed to submit the cashout request.',
       })
     } finally {
       setSubmittingCashout(false)
@@ -1189,9 +1195,9 @@ function DashboardProjectWorkspacePage() {
           <Card className="rounded-[24px] p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-gray-900">Cashout</h2>
+                <h2 className="text-base font-bold text-gray-900">Request Cashout</h2>
                 <p className="mt-1 text-xs leading-6 text-gray-500">
-                  Record project spending. Each cashout is also published as a normal public update.
+                  Submit planned spending for admin review. Approval records it as spent and publishes the update.
                 </p>
               </div>
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-green-50 text-green-800">
@@ -1199,18 +1205,26 @@ function DashboardProjectWorkspacePage() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl bg-[#F8F8F6] p-3">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
-                  Available Balance
+                  Available to Request
                 </p>
                 <p className="mt-1 text-sm font-bold text-gray-900">
-                  {formatCurrency(project?.available_balance)}
+                  {formatCurrency(project?.available_to_request)}
                 </p>
               </div>
               <div className="rounded-2xl bg-[#F8F8F6] p-3">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
-                  Total Cashouts
+                  Pending Requests
+                </p>
+                <p className="mt-1 text-sm font-bold text-gray-900">
+                  {formatCurrency(project?.pending_cashout_total)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F8F8F6] p-3">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
+                  Approved Spending
                 </p>
                 <p className="mt-1 text-sm font-bold text-gray-900">
                   {formatCurrency(project?.total_cashouts)}
@@ -1223,11 +1237,11 @@ function DashboardProjectWorkspacePage() {
               project?.moderation_status !== 'clear') && (
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                 <p className="text-xs font-semibold text-amber-900">
-                  Cashout is currently restricted
+                  Cashout requests are currently restricted
                 </p>
                 <p className="mt-1 text-[11px] leading-5 text-amber-800">
                   This project must be approved, clear of moderation restrictions, and open for
-                  funding before a cashout can be recorded.
+                  funding before a cashout request can be submitted.
                 </p>
               </div>
             )}
@@ -1336,7 +1350,7 @@ function DashboardProjectWorkspacePage() {
                     project?.moderation_status !== 'clear'
                   }
                 >
-                  {submittingCashout ? 'Recording...' : 'Record Cashout'}
+                  {submittingCashout ? 'Submitting...' : 'Submit Request'}
                 </Button>
               </div>
             </form>
@@ -1345,9 +1359,9 @@ function DashboardProjectWorkspacePage() {
           <Card className="rounded-[24px] p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-gray-900">Cashout Ledger</h2>
+                <h2 className="text-base font-bold text-gray-900">Submitted Requests</h2>
                 <p className="mt-1 text-xs leading-6 text-gray-500">
-                  Recent fund movements and the remaining balance after each record.
+                  Track pending requests and decisions for this project.
                 </p>
               </div>
               <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold text-gray-700">
@@ -1357,7 +1371,7 @@ function DashboardProjectWorkspacePage() {
 
             {sortedCashouts.length === 0 ? (
               <div className="mt-4 rounded-2xl bg-[#F8F8F6] p-4 text-xs text-gray-600">
-                No cashout activity has been recorded for this project yet.
+                No cashout requests have been submitted for this project yet.
               </div>
             ) : (
               <div className="mt-4 space-y-3">
@@ -1376,13 +1390,25 @@ function DashboardProjectWorkspacePage() {
                           {cashout.requested_by_username || 'Staff'}
                         </p>
                       </div>
-                      <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold text-gray-700">
-                        Balance {formatCurrency(cashout.remaining_balance)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${getCashoutStatusTone(cashout.status)}`}>
+                          {cashout.status || 'pending'}
+                        </span>
+                        {cashout.status === 'approved' ? (
+                          <span className="rounded-full bg-[#F3F5F0] px-2.5 py-1 text-[10px] font-semibold text-gray-700">
+                            Balance {formatCurrency(cashout.remaining_balance)}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                     <p className="mt-2 text-xs leading-6 text-gray-600">
                       {cashout.purpose || 'No purpose recorded.'}
                     </p>
+                    {cashout.review_note ? (
+                      <p className="mt-2 bg-[#F8F8F6] px-3 py-2 text-[10px] leading-5 text-gray-600">
+                        Admin note: {cashout.review_note}
+                      </p>
+                    ) : null}
                     {Array.isArray(cashout.items) && cashout.items.length > 0 ? (
                       <div className="mt-3 overflow-x-auto">
                         <table className="min-w-full text-[10px]">
