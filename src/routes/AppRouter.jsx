@@ -30,6 +30,7 @@ import AdminPartnersPage from '../pages/dashboard/AdminPartnersPage'
 import AdminReportsPage from '../pages/dashboard/AdminReportsPage'
 import AdminReportDetailsPage from '../pages/dashboard/AdminReportDetailsPage'
 import AdminProjectReviewsPage from '../pages/dashboard/AdminProjectReviewsPage'
+import CashoutRequestsPage from '../pages/dashboard/CashoutRequestsPage'
 
 import UnauthorizedPage from '../pages/shared/UnauthorizedPage'
 import NotFoundPage from '../pages/shared/NotFoundPage'
@@ -76,6 +77,7 @@ function AppRouter() {
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHomePage />} />
             <Route path="/dashboard/profile" element={<StaffProfilePage />} />
+            <Route path="/dashboard/cashouts" element={<CashoutRequestsPage />} />
             <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
               <Route path="/dashboard/settings" element={<StaffSettingsPage />} />
               <Route path="/dashboard/projects" element={<DashboardProjectsPage />} />
