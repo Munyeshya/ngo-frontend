@@ -82,7 +82,7 @@ const roleCards = [
       'Cannot create projects until staff verification is approved.',
       'New projects remain private until admin approves the project submission.',
       'Cannot change project moderation or funding controls.',
-      'Cashout requests require a clear project with open funding and enough unreserved balance.',
+      'Cashout requests require a clear project with open funding and enough currently available balance.',
       'Document uploads and profile management live in the staff account menu.',
     ],
   },
@@ -123,7 +123,7 @@ const featureRows = [
   {
     feature: 'Cashout restriction',
     who: 'Staff request, admin decides',
-    details: 'Staff submits itemized requests only for owned projects. Pending requests reserve requestable balance, and admin approval rechecks restrictions and live funds.',
+    details: 'Staff submits itemized requests only for owned projects. Pending requests do not reserve funds; admin approval rechecks restrictions and the live balance before any spending is recorded.',
   },
   {
     feature: 'Cashout transparency',
