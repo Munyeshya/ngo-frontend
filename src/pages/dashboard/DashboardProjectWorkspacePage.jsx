@@ -1208,10 +1208,10 @@ function DashboardProjectWorkspacePage() {
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl bg-[#F8F8F6] p-3">
                 <p className="text-[10px] uppercase tracking-[0.08em] text-gray-500">
-                  Available to Request
+                  Available Balance
                 </p>
                 <p className="mt-1 text-sm font-bold text-gray-900">
-                  {formatCurrency(project?.available_to_request)}
+                  {formatCurrency(project?.available_balance)}
                 </p>
               </div>
               <div className="rounded-2xl bg-[#F8F8F6] p-3">
