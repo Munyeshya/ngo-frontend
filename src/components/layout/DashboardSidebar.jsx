@@ -6,6 +6,7 @@ import {
   Users,
   Handshake,
   ShieldAlert,
+  CircleDollarSign,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { getUser } from '../../utils/storage'
@@ -19,12 +20,14 @@ function DashboardSidebar() {
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Project Reviews', href: '/dashboard/project-reviews', icon: FolderKanban },
         { name: 'Reports', href: '/dashboard/reports', icon: ShieldAlert },
+        { name: 'Cashout Requests', href: '/dashboard/cashouts', icon: CircleDollarSign },
         { name: 'User Management', href: '/dashboard/users', icon: Users },
         { name: 'Partners', href: '/dashboard/partners', icon: Handshake },
       ]
     : [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
+        { name: 'Cashout Requests', href: '/dashboard/cashouts', icon: CircleDollarSign },
       ]
 
   return (
