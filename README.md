@@ -124,7 +124,7 @@ npm run preview
 - Staff can register and log in, but project creation requires approved verification
 - New staff projects require admin approval before becoming public or accepting donations
 - Admin handles oversight, moderation, partner management, and analytics
-- Cashout totals are calculated from required expense lines and published in public updates
+- Staff submits itemized cashout requests; admin approval records spending and publishes the public update
 - Impact targets and dated measurements appear in staff and public project views
 - Toast feedback is used for short-lived action messages
 
